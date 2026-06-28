@@ -3,14 +3,6 @@ import 'package:flutter/material.dart';
 import '../../core/app_colors.dart';
 import '../../widgets/pairy_button.dart';
 
-/// Semi-transparent pause panel drawn on top of the game.
-///
-/// Controlled from [GameplayScreen] state — not using Flame's built-in
-/// overlay manager so we keep all Flutter UI in one place and avoid
-/// mixing two overlay systems.
-///
-/// Matches the wireframe popup: dark scrim → centered card with "Pause"
-/// header → Retry / Resume / Exit buttons.
 class PauseOverlay extends StatelessWidget {
   const PauseOverlay({
     super.key,
@@ -27,12 +19,11 @@ class PauseOverlay extends StatelessWidget {
   Widget build(BuildContext context) {
     return Stack(
       children: [
-        // Scrim
         Positioned.fill(
-          child: ColoredBox(color: Colors.black.withOpacity(0.45)),
+          child: ColoredBox(
+            color: Colors.black.withValues(alpha: 0.45),
+          ),
         ),
-
-        // Panel
         Center(
           child: Container(
             width: 300,
@@ -43,7 +34,6 @@ class PauseOverlay extends StatelessWidget {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                // Header bar
                 Container(
                   width: double.infinity,
                   padding: const EdgeInsets.symmetric(vertical: 14),
@@ -63,7 +53,6 @@ class PauseOverlay extends StatelessWidget {
                     ),
                   ),
                 ),
-
                 Padding(
                   padding: const EdgeInsets.symmetric(
                     horizontal: 24,

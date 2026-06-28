@@ -3,14 +3,6 @@ import 'package:flutter/material.dart';
 import '../pairy_game.dart';
 import '../../core/app_colors.dart';
 
-/// On-screen D-pad overlay drawn on top of [GameWidget].
-///
-/// Layout matches the wireframe:
-///   - Bottom-left  → LEFT + RIGHT arrow buttons
-///   - Bottom-right → UP (jump) button
-///
-/// Uses raw [GestureDetector] with `onTapDown`/`onTapUp`/`onTapCancel`
-/// so holding a button sustains movement (crucial for a platformer).
 class HudControlsOverlay extends StatelessWidget {
   const HudControlsOverlay({super.key, required this.game});
 
@@ -20,7 +12,6 @@ class HudControlsOverlay extends StatelessWidget {
   Widget build(BuildContext context) {
     return Stack(
       children: [
-        // Left / Right arrows — bottom-left
         Positioned(
           left: 12,
           bottom: 16,
@@ -40,15 +31,13 @@ class HudControlsOverlay extends StatelessWidget {
             ],
           ),
         ),
-
-        // Jump arrow — bottom-right
         Positioned(
           right: 16,
           bottom: 16,
           child: _HudButton(
             icon: Icons.arrow_upward,
             onDown: game.pressJump,
-            onUp: () {}, // jump is a one-shot; no release action needed
+            onUp: () {},
           ),
         ),
       ],
@@ -77,10 +66,14 @@ class _HudButton extends StatelessWidget {
         width: 52,
         height: 52,
         decoration: BoxDecoration(
-          color: AppColors.surfaceMuted.withOpacity(0.75),
+          color: AppColors.surfaceMuted.withValues(alpha: 0.75),
           borderRadius: BorderRadius.circular(12),
         ),
-        child: Icon(icon, color: Colors.white.withOpacity(0.85), size: 28),
+        child: Icon(
+          icon,
+          color: Colors.white.withValues(alpha: 0.85),
+          size: 28,
+        ),
       ),
     );
   }

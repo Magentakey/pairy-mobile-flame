@@ -1,19 +1,19 @@
-import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
+import 'package:flame/flame.dart';
+import 'package:flame/game.dart';
+import 'package:flutter/foundation.dart';
+import 'package:flutter/widgets.dart';
 
-import 'app.dart';
+import 'game/pairy_game.dart';
 
-Future<void> main() async {
+void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await Flame.device.fullScreen();
+  await Flame.device.setLandscape();
 
-  // Lock to landscape (PRD §13 — Android landscape only).
-  await SystemChrome.setPreferredOrientations([
-    DeviceOrientation.landscapeLeft,
-    DeviceOrientation.landscapeRight,
-  ]);
-
-  // Hide status and navigation bars for a full-screen game feel.
-  await SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
-
-  runApp(const PairyApp());
+  final game = PairyGame();
+  runApp(
+    GameWidget(
+      game: kDebugMode ? PairyGame() : game,
+    ),
+  );
 }

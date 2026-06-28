@@ -1,34 +1,49 @@
-import 'package:flame/camera.dart';
 import 'package:flame/collisions.dart';
+import 'package:flame/components.dart';
 import 'package:flame/game.dart';
 import 'package:flutter/material.dart';
 
 import 'components/player_component.dart';
-import 'pairy_world.dart';
+import 'level.dart';
 
-class PairyGame extends FlameGame<PairyWorld> with HasCollisionDetection {
-  PairyGame({this.onLevelComplete})
-      : super(
-          world: PairyWorld(),
-          camera: CameraComponent.withFixedResolution(
-            width: virtualWidth,
-            height: virtualHeight,
-          ),
-        );
+class PairyGame extends FlameGame with HasCollisionDetection {
+  PairyGame({this.onLevelComplete});
 
-  static const double virtualWidth = 480;
-  static const double virtualHeight = 270;
+  static const double gameWidth  = 648;
+  static const double gameHeight = 360;
 
   final VoidCallback? onLevelComplete;
 
-  PlayerComponent get player => world.player;
+  // Di-set oleh Level setelah player di-spawn
+  PlayerComponent? player;
+  late Level _level;
 
+  @override
+  Future<void> onLoad() async {
+    _level = Level();
+    final cam = CameraComponent.withFixedResolution(
+      width: gameWidth,
+      height: gameHeight,
+      world: _level,
+    );
+    cam.viewfinder.anchor = Anchor.topLeft;
+    await addAll([cam, _level]);
+  }
+
+  @override
+  Color backgroundColor() => const Color(0xFF211F30);
+
+  // ── Level ────────────────────────────────────────────────────────
   void completeLevel() => onLevelComplete?.call();
 
-  Future<void> restartLevel() => world.buildDemoLevel();
+  Future<void> restartLevel() async {
+    player = null;
+    await _level.reload();
+  }
 
-  void pressLeft() => player.moveLeft();
-  void pressRight() => player.moveRight();
-  void releaseHorizontal() => player.stopMoving();
-  void pressJump() => player.jump();
+  // ── Player pass-throughs ─────────────────────────────────────────
+  void pressLeft()         => player?.moveLeft();
+  void pressRight()        => player?.moveRight();
+  void releaseHorizontal() => player?.stopMoving();
+  void pressJump()         => player?.jump();
 }
