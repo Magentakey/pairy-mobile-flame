@@ -16,8 +16,8 @@ class PlayerComponent extends PositionComponent
     with CollisionCallbacks, HasGameReference<PairyGame> {
   PlayerComponent({required super.position}) : super(size: Vector2(26, 34));
 
-  static const double moveSpeed = 130;
-  static const double gravity = 700;
+  static const double moveSpeed    = 130;
+  static const double gravity      = 700;
   static const double jumpVelocity = -300;
 
   final Vector2 velocity = Vector2.zero();
@@ -30,19 +30,13 @@ class PlayerComponent extends PositionComponent
     add(RectangleHitbox(collisionType: CollisionType.active));
   }
 
-  void moveLeft() => _input = _HorizontalInput.left;
-  void moveRight() => _input = _HorizontalInput.right;
+  void moveLeft()   => _input = _HorizontalInput.left;
+  void moveRight()  => _input = _HorizontalInput.right;
   void stopMoving() => _input = _HorizontalInput.none;
 
   void jump() {
-    if (_nearExitDoor) {
-      game.completeLevel();
-      return;
-    }
-    if (isOnGround) {
-      velocity.y = jumpVelocity;
-      isOnGround = false;
-    }
+    if (_nearExitDoor) { game.completeLevel(); return; }
+    if (isOnGround) { velocity.y = jumpVelocity; isOnGround = false; }
   }
 
   @override
@@ -50,21 +44,60 @@ class PlayerComponent extends PositionComponent
     super.update(dt);
 
     switch (_input) {
-      case _HorizontalInput.left:
-        velocity.x = -moveSpeed;
-      case _HorizontalInput.right:
-        velocity.x = moveSpeed;
-      case _HorizontalInput.none:
-        velocity.x = 0;
+      case _HorizontalInput.left:  velocity.x = -moveSpeed;
+      case _HorizontalInput.right: velocity.x =  moveSpeed;
+      case _HorizontalInput.none:  velocity.x = 0;
     }
 
     velocity.y += gravity * dt;
+    isOnGround  = false;
+    position   += velocity * dt;
 
-    // Reset setiap frame — dikonfirmasi ulang oleh onCollision jika masih
-    // berdiri di atas solid.
-    isOnGround = false;
+    _checkGroundCollisions();
+  }
 
-    position += velocity * dt;
+  void _checkGroundCollisions() {
+    if (parent == null) return;
+    for (final child in parent!.children) {
+      if (child is GroundComponent) {
+        _resolveAgainst(child);
+      } else if (child is GateComponent && !child.isOpenState) {
+        _resolveAgainst(child);
+      } else if (child is LeverComponent) {
+        _resolveAgainst(child);
+      }
+    }
+  }
+
+  void _resolveAgainst(PositionComponent other) {
+    final ox = other.position.x;
+    final oy = other.position.y;
+    final ow = other.size.x;
+    final oh = other.size.y;
+
+    final overlapR = (position.x + size.x) - ox;
+    final overlapL = (ox + ow) - position.x;
+    final overlapB = (position.y + size.y) - oy;
+    final overlapT = (oy + oh) - position.y;
+
+    if (overlapR <= 0 || overlapL <= 0 || overlapB <= 0 || overlapT <= 0) return;
+
+    final minX = min(overlapR, overlapL);
+    final minY = min(overlapB, overlapT);
+
+    if (minY <= minX) {
+      if (velocity.y >= 0) {
+        position.y = oy - size.y;
+        velocity.y = 0;
+        isOnGround = true;
+      } else {
+        position.y = oy + oh;
+        velocity.y = 0;
+      }
+    } else {
+      position.x = overlapR <= overlapL ? ox - size.x : ox + ow;
+      velocity.x = 0;
+    }
   }
 
   @override
@@ -73,73 +106,13 @@ class PlayerComponent extends PositionComponent
     PositionComponent other,
   ) {
     super.onCollisionStart(intersectionPoints, other);
-    _handleSolidCollision(other);
     if (other is ExitDoorComponent) _nearExitDoor = true;
-  }
-
-  @override
-  void onCollision(Set<Vector2> intersectionPoints, PositionComponent other) {
-    super.onCollision(intersectionPoints, other);
-    _handleSolidCollision(other);
   }
 
   @override
   void onCollisionEnd(PositionComponent other) {
     super.onCollisionEnd(other);
     if (other is ExitDoorComponent) _nearExitDoor = false;
-  }
-
-  /// Resolusi AABB berdasarkan overlap terkecil + arah velocity.
-  ///
-  /// Tidak pakai threshold pixel tetap — sehingga penetrasi dalam apapun
-  /// (misal frame-rate drop atau frame pertama setelah restart) tetap
-  /// diselesaikan dengan benar.
-  void _handleSolidCollision(PositionComponent other) {
-    final isSolid = other is GroundComponent ||
-        (other is GateComponent && !other.isOpenState) ||
-        other is LeverComponent;
-    if (!isSolid) return;
-
-    final ox = other.position.x;
-    final oy = other.position.y;
-    final ow = other.size.x;
-    final oh = other.size.y;
-
-    // Hitung overlap di setiap sisi
-    final overlapR = (position.x + size.x) - ox; // sisi kanan player ke kiri solid
-    final overlapL = (ox + ow) - position.x;       // sisi kiri player ke kanan solid
-    final overlapB = (position.y + size.y) - oy;   // bawah player ke atas solid
-    final overlapT = (oy + oh) - position.y;        // atas player ke bawah solid
-
-    // Tidak ada tumpang-tindih nyata (hanya menyentuh atau floating point)
-    if (overlapR <= 0 || overlapL <= 0 || overlapB <= 0 || overlapT <= 0) return;
-
-    final minX = min(overlapR, overlapL);
-    final minY = min(overlapB, overlapT);
-
-    if (minY <= minX) {
-      // ── Resolusi vertikal ────────────────────────────────────────────
-      // Gunakan arah velocity (bukan kedalaman penetrasi) agar posisi
-      // yang sangat dalam pun tetap benar.
-      if (velocity.y >= 0) {
-        // Sedang jatuh / berdiri → mendarat di atas permukaan
-        position.y = oy - size.y;
-        velocity.y = 0;
-        isOnGround = true;
-      } else {
-        // Sedang naik → membentur bagian bawah solid
-        position.y = oy + oh;
-        velocity.y = 0;
-      }
-    } else {
-      // ── Resolusi horizontal ──────────────────────────────────────────
-      if (overlapR <= overlapL) {
-        position.x = ox - size.x; // dorong ke kiri
-      } else {
-        position.x = ox + ow;     // dorong ke kanan
-      }
-      velocity.x = 0;
-    }
   }
 
   @override

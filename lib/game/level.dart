@@ -25,14 +25,21 @@ class Level extends World with HasGameReference<PairyGame> {
     );
     add(levelMap);
 
+    // GroundComponent ditambahkan di sini (onLoad) supaya hitbox-nya
+    // selesai mount SEBELUM player di-spawn di onMount().
     _addCollisions();
-    _spawnObjects();
 
     await super.onLoad();
   }
 
-  /// Setiap tile di layer "Ground" dibuatkan GroundComponent (hitbox saja, tidak render).
-  /// Dengan begitu PlayerComponent bisa collision dengan tile yang digambar di Tiled.
+  @override
+  void onMount() {
+    super.onMount();
+    // Player di-spawn SETELAH semua GroundComponent selesai mount
+    // sehingga tidak ada frame di mana player jatuh tanpa hitbox lantai.
+    _spawnObjects();
+  }
+
   void _addCollisions() {
     final groundLayer = levelMap.tileMap.getLayer<TileLayer>('Ground');
     if (groundLayer == null) return;
@@ -61,7 +68,10 @@ class Level extends World with HasGameReference<PairyGame> {
       switch (spawnPoint.class_) {
         case 'Player':
           final player = PlayerComponent(
-            position: Vector2(spawnPoint.x, spawnPoint.y),
+            // Pakai spawnPoint sebagai posisi KAKI player (bukan kepala).
+            // Kurangi tinggi player (34) agar player berdiri tepat di spawn,
+            // bukan spawns dengan badannya di bawah spawn point.
+            position: Vector2(spawnPoint.x, spawnPoint.y - 34),
           );
           game.player = player;
           add(player);
