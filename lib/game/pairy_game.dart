@@ -27,7 +27,8 @@ class PairyGame extends FlameGame with HasCollisionDetection {
       height: gameHeight,
       world: _level,
     );
-    cam.viewfinder.anchor = Anchor.topLeft;
+    // Anchor.center (default) supaya cam.follow() menaruh player di tengah layar
+    // Anchor.topLeft dihapus karena konflik dengan follow()
 
     await addAll([cam, _level]);
   }
