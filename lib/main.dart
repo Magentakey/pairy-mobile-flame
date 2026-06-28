@@ -1,6 +1,5 @@
 import 'package:flame/flame.dart';
 import 'package:flame/game.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 import 'game/overlays/hud_controls_overlay.dart';
@@ -17,11 +16,17 @@ void main() async {
     MaterialApp(
       debugShowCheckedModeBanner: false,
       home: GameWidget<PairyGame>(
-        game: kDebugMode ? PairyGame() : game,
+        game: game,
         overlayBuilderMap: {
           'HudControls': (context, game) => HudControlsOverlay(game: game),
         },
         initialActiveOverlays: const ['HudControls'],
+        errorBuilder: (context, error) => Center(
+          child: Text(
+            'Error: $error',
+            style: const TextStyle(color: Colors.red),
+          ),
+        ),
       ),
     ),
   );
