@@ -14,19 +14,21 @@ class PairyGame extends FlameGame with HasCollisionDetection {
 
   final VoidCallback? onLevelComplete;
 
-  // Di-set oleh Level setelah player di-spawn
   PlayerComponent? player;
   late Level _level;
+  late CameraComponent cam;
 
   @override
   Future<void> onLoad() async {
-    _level = Level();
-    final cam = CameraComponent.withFixedResolution(
+    _level = Level(levelName: 'level-01');
+
+    cam = CameraComponent.withFixedResolution(
       width: gameWidth,
       height: gameHeight,
       world: _level,
     );
     cam.viewfinder.anchor = Anchor.topLeft;
+
     await addAll([cam, _level]);
   }
 

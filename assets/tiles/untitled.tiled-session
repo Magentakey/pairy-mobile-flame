@@ -1,8 +1,24 @@
 {
-    "activeFile": "",
+    "activeFile": "level-01.tmx",
     "expandedProjectPaths": [
+        "."
     ],
     "fileStates": {
+        "level-01.tmx": {
+            "expandedObjectLayers": [
+                2
+            ],
+            "scale": 1.3150462962962963,
+            "selectedLayer": -1,
+            "viewCenter": {
+                "x": 475.6486534060905,
+                "y": 179.84157718711495
+            }
+        },
+        "tileset-tiles.tsx": {
+            "scaleInDock": 1,
+            "scaleInEditor": 1
+        }
     },
     "last.imagePath": "D:/ramdan/kuliah/semester 4/project_flutter/flame/real pairy/pairy/assets/images",
     "map.lastUsedFormat": "tmx",
@@ -10,9 +26,13 @@
     "map.tileWidth": 18,
     "map.width": 36,
     "openFiles": [
+        "tileset-tiles.tsx",
+        "level-01.tmx"
     ],
     "project": "untitled.tiled-project",
     "recentFiles": [
+        "tileset-tiles.tsx",
+        "level-01.tmx"
     ],
     "tileset.lastUsedFormat": "tsx",
     "tileset.tileSize": {
