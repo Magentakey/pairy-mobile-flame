@@ -1,3 +1,5 @@
+import 'dart:math' show min;
+
 import 'package:flame/collisions.dart';
 import 'package:flame/components.dart';
 import 'package:flutter/material.dart';
@@ -10,24 +12,13 @@ import 'lever_component.dart';
 
 enum _HorizontalInput { none, left, right }
 
-/// The player-controlled character (PRD 6.1–6.3).
-///
-/// Movement is driven by [moveLeft]/[moveRight]/[stopMoving]/[jump], which
-/// are called by `HudControlsOverlay` rather than reading raw input here —
-/// that keeps this component testable and input-method-agnostic (works the
-/// same whether the trigger is an on-screen button, a keyboard, or a
-/// gamepad later on).
-///
-/// Collision is resolved with a deliberately simple AABB approach: good
-/// enough for a flat/staircase MVP level, not meant to survive slopes or
-/// fast-moving platforms. Swap for a proper resolver if the design grows.
 class PlayerComponent extends PositionComponent
     with CollisionCallbacks, HasGameReference<PairyGame> {
   PlayerComponent({required super.position}) : super(size: Vector2(26, 34));
 
-  static const double moveSpeed = 130; // px/s
-  static const double gravity = 700; // px/s^2
-  static const double jumpVelocity = -300; // px/s (negative = upward)
+  static const double moveSpeed = 130;
+  static const double gravity = 700;
+  static const double jumpVelocity = -300;
 
   final Vector2 velocity = Vector2.zero();
   bool isOnGround = false;
@@ -40,13 +31,9 @@ class PlayerComponent extends PositionComponent
   }
 
   void moveLeft() => _input = _HorizontalInput.left;
-
   void moveRight() => _input = _HorizontalInput.right;
-
   void stopMoving() => _input = _HorizontalInput.none;
 
-  /// PRD 6.3: pressing jump while near the exit door completes the level
-  /// instead of making the player actually jump.
   void jump() {
     if (_nearExitDoor) {
       game.completeLevel();
@@ -73,8 +60,8 @@ class PlayerComponent extends PositionComponent
 
     velocity.y += gravity * dt;
 
-    // Re-confirmed true this frame by onCollision below if still resting
-    // on something solid; otherwise the player has walked off a ledge.
+    // Reset setiap frame — dikonfirmasi ulang oleh onCollision jika masih
+    // berdiri di atas solid.
     isOnGround = false;
 
     position += velocity * dt;
@@ -87,9 +74,7 @@ class PlayerComponent extends PositionComponent
   ) {
     super.onCollisionStart(intersectionPoints, other);
     _handleSolidCollision(other);
-    if (other is ExitDoorComponent) {
-      _nearExitDoor = true;
-    }
+    if (other is ExitDoorComponent) _nearExitDoor = true;
   }
 
   @override
@@ -101,26 +86,59 @@ class PlayerComponent extends PositionComponent
   @override
   void onCollisionEnd(PositionComponent other) {
     super.onCollisionEnd(other);
-    if (other is ExitDoorComponent) {
-      _nearExitDoor = false;
-    }
+    if (other is ExitDoorComponent) _nearExitDoor = false;
   }
 
-  /// Treats ground, closed gates, and levers as solid (PRD 6.2), landing
-  /// the player on top of them when falling onto their upper edge.
+  /// Resolusi AABB berdasarkan overlap terkecil + arah velocity.
+  ///
+  /// Tidak pakai threshold pixel tetap — sehingga penetrasi dalam apapun
+  /// (misal frame-rate drop atau frame pertama setelah restart) tetap
+  /// diselesaikan dengan benar.
   void _handleSolidCollision(PositionComponent other) {
     final isSolid = other is GroundComponent ||
         (other is GateComponent && !other.isOpenState) ||
         other is LeverComponent;
     if (!isSolid) return;
 
-    final otherTop = other.position.y;
-    final playerBottom = position.y + size.y;
+    final ox = other.position.x;
+    final oy = other.position.y;
+    final ow = other.size.x;
+    final oh = other.size.y;
 
-    if (velocity.y >= 0 && playerBottom - otherTop < 14) {
-      position.y = otherTop - size.y;
-      velocity.y = 0;
-      isOnGround = true;
+    // Hitung overlap di setiap sisi
+    final overlapR = (position.x + size.x) - ox; // sisi kanan player ke kiri solid
+    final overlapL = (ox + ow) - position.x;       // sisi kiri player ke kanan solid
+    final overlapB = (position.y + size.y) - oy;   // bawah player ke atas solid
+    final overlapT = (oy + oh) - position.y;        // atas player ke bawah solid
+
+    // Tidak ada tumpang-tindih nyata (hanya menyentuh atau floating point)
+    if (overlapR <= 0 || overlapL <= 0 || overlapB <= 0 || overlapT <= 0) return;
+
+    final minX = min(overlapR, overlapL);
+    final minY = min(overlapB, overlapT);
+
+    if (minY <= minX) {
+      // ── Resolusi vertikal ────────────────────────────────────────────
+      // Gunakan arah velocity (bukan kedalaman penetrasi) agar posisi
+      // yang sangat dalam pun tetap benar.
+      if (velocity.y >= 0) {
+        // Sedang jatuh / berdiri → mendarat di atas permukaan
+        position.y = oy - size.y;
+        velocity.y = 0;
+        isOnGround = true;
+      } else {
+        // Sedang naik → membentur bagian bawah solid
+        position.y = oy + oh;
+        velocity.y = 0;
+      }
+    } else {
+      // ── Resolusi horizontal ──────────────────────────────────────────
+      if (overlapR <= overlapL) {
+        position.x = ox - size.x; // dorong ke kiri
+      } else {
+        position.x = ox + ow;     // dorong ke kanan
+      }
+      velocity.x = 0;
     }
   }
 
