@@ -1,8 +1,9 @@
 import 'package:flame/flame.dart';
 import 'package:flame/game.dart';
 import 'package:flutter/foundation.dart';
-import 'package:flutter/widgets.dart';
+import 'package:flutter/material.dart';
 
+import 'game/overlays/hud_controls_overlay.dart';
 import 'game/pairy_game.dart';
 
 void main() async {
@@ -11,9 +12,17 @@ void main() async {
   await Flame.device.setLandscape();
 
   final game = PairyGame();
+
   runApp(
-    GameWidget(
-      game: kDebugMode ? PairyGame() : game,
+    MaterialApp(
+      debugShowCheckedModeBanner: false,
+      home: GameWidget<PairyGame>(
+        game: kDebugMode ? PairyGame() : game,
+        overlayBuilderMap: {
+          'HudControls': (context, game) => HudControlsOverlay(game: game),
+        },
+        initialActiveOverlays: const ['HudControls'],
+      ),
     ),
   );
 }
