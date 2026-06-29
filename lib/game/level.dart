@@ -109,7 +109,7 @@ class Level extends World with HasGameReference<PairyGame> {
           final targetGate = key != null ? gateMap[key] : null;
 
           add(LeverComponent(
-            position: Vector2(sp.x, sp.y - 24),
+            position: Vector2(sp.x, sp.y),
             onToggle: targetGate?.toggle,
           ));
 

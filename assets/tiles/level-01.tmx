@@ -29,6 +29,6 @@
   <object id="5" type="Player" x="46.5217" y="332.333"/>
   <object id="6" type="ExitDoor" x="603.25" y="40"/>
   <object id="7" name="gate1" type="Gate" x="182" y="220.667" width="14" height="72"/>
-  <object id="8" name="lever1" type="Lever" x="234" y="331.667" width="10" height="10"/>
+  <object id="8" name="lever1" type="Lever" x="254.818" y="343.633" width="10" height="10"/>
  </objectgroup>
 </map>
