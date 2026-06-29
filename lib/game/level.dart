@@ -3,6 +3,7 @@ import 'package:flame/components.dart';
 import 'package:flame/game.dart';
 import 'package:flame_tiled/flame_tiled.dart';
 
+import 'components/exit_door_component.dart';
 import 'components/ground_component.dart';
 import 'components/player_component.dart';
 import 'pairy_game.dart';
@@ -12,8 +13,6 @@ class Level extends World with HasGameReference<PairyGame> {
 
   final String levelName;
   late TiledComponent levelMap;
-
-  // List langsung — tidak perlu iterasi parent.children setiap frame
   final List<GroundComponent> groundComponents = [];
 
   @override
@@ -39,8 +38,6 @@ class Level extends World with HasGameReference<PairyGame> {
     final groundLayer = levelMap.tileMap.getLayer<TileLayer>('Ground');
     if (groundLayer == null) return;
 
-    // Gunakan .data (flat int list) — selalu populated untuk format CSV
-    // tileData (2D Gid list) kadang null tergantung versi flame_tiled
     final data = groundLayer.data;
     if (data == null || data.isEmpty) return;
 
@@ -54,7 +51,7 @@ class Level extends World with HasGameReference<PairyGame> {
           position: Vector2(x * 18.0, y * 18.0),
           size: Vector2.all(18),
         );
-        groundComponents.add(ground); // simpan di list sebelum add()
+        groundComponents.add(ground);
         add(ground);
       }
     }
@@ -74,6 +71,12 @@ class Level extends World with HasGameReference<PairyGame> {
           game.player = player;
           add(player);
           game.cam.follow(player);
+
+        case 'ExitDoor':
+          add(ExitDoorComponent(
+            position: Vector2(sp.x, sp.y - 40),
+          ));
+
         default:
           break;
       }
