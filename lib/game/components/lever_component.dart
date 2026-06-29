@@ -3,22 +3,21 @@ import 'package:flame/components.dart';
 import 'package:flame/events.dart';
 import 'package:flutter/material.dart';
 
-/// A puzzle lever the player can tap to flip on/off (PRD 6.4). It is also
-/// solid (PRD 6.2 lists "Lever" among things the player collides with),
-/// so it mixes both [TapCallbacks] and [CollisionCallbacks].
-///
-/// Wire a lever to a [onToggle] listener — typically
-/// `GateComponent.toggle` — to build simple puzzle logic.
+/// Tuas yang bisa diketuk untuk toggle gate.
+/// Ketuk saat player berada di dekat/di atas lever.
 class LeverComponent extends PositionComponent
     with TapCallbacks, CollisionCallbacks {
-  LeverComponent({required super.position, this.onToggle})
-      : super(size: Vector2(20, 30));
+  LeverComponent({
+    required super.position,
+    this.onToggle,
+  }) : super(size: Vector2(20, 24), anchor: Anchor.topLeft);
 
   final void Function(bool isOn)? onToggle;
   bool isOn = false;
 
   @override
   Future<void> onLoad() async {
+    // Passive hitbox — player bisa berdiri di atasnya, tidak menghalangi
     add(RectangleHitbox(collisionType: CollisionType.passive));
   }
 
@@ -30,13 +29,31 @@ class LeverComponent extends PositionComponent
 
   @override
   void render(Canvas canvas) {
-    final base = Paint()..color = const Color(0xFF9E9E9E);
-    final handle = Paint()
-      ..color = isOn ? const Color(0xFF2ECC71) : const Color(0xFFE74C3C);
-    canvas.drawRect(Rect.fromLTWH(0, size.y - 8, size.x, 8), base);
-    canvas.drawRect(
-      Rect.fromLTWH(size.x / 2 - 3, 0, 6, size.y - 8),
-      handle,
+    // Dudukan lever
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(
+        Rect.fromLTWH(2, size.y * 0.5, size.x - 4, size.y * 0.5),
+        const Radius.circular(3),
+      ),
+      Paint()..color = const Color(0xFF555577),
+    );
+
+    // Gagang lever (condong kiri=off, condong kanan=on)
+    final handleX = isOn ? size.x * 0.65 : size.x * 0.35;
+    canvas.drawLine(
+      Offset(size.x / 2, size.y * 0.55),
+      Offset(handleX, size.y * 0.1),
+      Paint()
+        ..color = isOn ? const Color(0xFF34C77B) : const Color(0xFFE85C4A)
+        ..strokeWidth = 3
+        ..strokeCap = StrokeCap.round,
+    );
+
+    // Bola ujung gagang
+    canvas.drawCircle(
+      Offset(handleX, size.y * 0.1),
+      4,
+      Paint()..color = isOn ? const Color(0xFF34C77B) : const Color(0xFFE85C4A),
     );
   }
 }
