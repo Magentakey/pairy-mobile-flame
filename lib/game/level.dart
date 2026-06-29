@@ -62,11 +62,32 @@ class Level extends World with HasGameReference<PairyGame> {
         levelMap.tileMap.getLayer<ObjectGroup>('Spawnpoints');
     if (spawnLayer == null) return;
 
-    // ── Kumpulkan gate dulu sebelum lever ────────────────────────────
-    final gates = <GateComponent>[];
-    final leverObjects = <TiledObject>[];
+    final objects = spawnLayer.objects;
 
-    for (final sp in spawnLayer.objects) {
+    // ── Pass 1: buat semua Gate, simpan di Map pakai key dari Name ──
+    // Konvensi Name: "gate1", "gate2", "gateA", dll.
+    // Key = bagian setelah "gate" → "1", "2", "A"
+    final gateMap = <String, GateComponent>{};
+
+    for (final sp in objects) {
+      if (sp.class_ != 'Gate') continue;
+
+      final gate = GateComponent(
+        position: Vector2(sp.x, sp.y),
+        size: Vector2(
+          sp.width  > 0 ? sp.width.toDouble()  : 14,
+          sp.height > 0 ? sp.height.toDouble() : 72,
+        ),
+      );
+      add(gate);
+
+      // Ambil pairing key dari nama, misal "gate1" → key "1"
+      final key = _pairingKey(sp.name, 'gate');
+      if (key != null) gateMap[key] = gate;
+    }
+
+    // ── Pass 2: spawn semua objek lainnya ────────────────────────────
+    for (final sp in objects) {
       switch (sp.class_) {
         case 'Player':
           final player = PlayerComponent(
@@ -80,36 +101,31 @@ class Level extends World with HasGameReference<PairyGame> {
           add(ExitDoorComponent(position: Vector2(sp.x, sp.y - 40)));
 
         case 'Gate':
-          // Buat ukuran gate dari objek Tiled (gambar rectangle di Tiled)
-          final gate = GateComponent(
-            position: Vector2(sp.x, sp.y),
-            size: Vector2(
-              sp.width  > 0 ? sp.width.toDouble()  : 14,
-              sp.height > 0 ? sp.height.toDouble() : 72,
-            ),
-          );
-          gates.add(gate);
-          add(gate);
+          break; // sudah dibuat di pass 1
 
         case 'Lever':
-          leverObjects.add(sp);
+          // Ambil pairing key, misal "lever1" → key "1" → cocokkan ke gateMap
+          final key = _pairingKey(sp.name, 'lever');
+          final targetGate = key != null ? gateMap[key] : null;
+
+          add(LeverComponent(
+            position: Vector2(sp.x, sp.y - 24),
+            onToggle: targetGate?.toggle,
+          ));
 
         default:
           break;
       }
     }
+  }
 
-    // ── Spawn lever, wire ke gate berdasarkan urutan ─────────────────
-    // Lever ke-1 → Gate ke-1, Lever ke-2 → Gate ke-2, dst.
-    for (int i = 0; i < leverObjects.length; i++) {
-      final sp = leverObjects[i];
-      final targetGate = i < gates.length ? gates[i] : null;
-
-      add(LeverComponent(
-        position: Vector2(sp.x, sp.y - 24),
-        onToggle: targetGate?.toggle,
-      ));
-    }
+  /// Ambil suffix dari name: "gate1" → "1", "lever_A" → "_A".
+  /// Return null jika name kosong atau tidak mengandung prefix.
+  static String? _pairingKey(String name, String prefix) {
+    final lower = name.toLowerCase();
+    if (lower.isEmpty || !lower.startsWith(prefix.toLowerCase())) return null;
+    final key = name.substring(prefix.length);
+    return key.isEmpty ? null : key;
   }
 
   Future<void> reload() async {
