@@ -8,11 +8,11 @@
             "expandedObjectLayers": [
                 2
             ],
-            "scale": 1.5,
+            "scale": 2,
             "selectedLayer": 1,
             "viewCenter": {
-                "x": 439,
-                "y": 180.33333333333337
+                "x": 192.5,
+                "y": 224.25
             }
         },
         "tileset-tiles.tsx": {

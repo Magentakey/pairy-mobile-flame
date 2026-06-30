@@ -16,7 +16,7 @@ class ExitDoorComponent extends PositionComponent with CollisionCallbacks {
   }
 
   @override
-  void onCollisionStart(Set<Vector2> pts, PositionComponent other) {
+  void onCollisionStart(Set<Vector2> intersectionPoints, PositionComponent other) {
     super.onCollisionStart(pts, other);
     _showTooltip = true;
   }

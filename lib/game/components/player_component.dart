@@ -7,7 +7,7 @@ import 'package:flutter/material.dart';
 import '../pairy_game.dart';
 import 'exit_door_component.dart';
 import 'gate_component.dart';
-import 'ground_component.dart';
+
 import 'lever_component.dart';
 
 enum _HorizontalInput { none, left, right }
@@ -58,9 +58,11 @@ class PlayerComponent extends PositionComponent
     _prevPosition.setFrom(position);
     position   += velocity * safeDt;
 
+    // Ground tiles
     for (final ground in game.groundComponents) {
       _resolveAgainst(ground);
     }
+    // Gate tertutup — lever sengaja TIDAK dicek (tetap tembus untuk player)
     if (parent != null) {
       for (final child in parent!.children) {
         if (child is GateComponent && !child.isOpenState) {
@@ -70,9 +72,15 @@ class PlayerComponent extends PositionComponent
     }
   }
 
+  /// Resolusi AABB berbasis prevPosition, anchor-aware (mendukung
+  /// component dengan anchor topLeft maupun bottomCenter, dll).
   void _resolveAgainst(PositionComponent other) {
-    final ox = other.position.x;
-    final oy = other.position.y;
+    final topLeft = other.position - Vector2(
+      other.size.x * other.anchor.x,
+      other.size.y * other.anchor.y,
+    );
+    final ox = topLeft.x;
+    final oy = topLeft.y;
     final ow = other.size.x;
     final oh = other.size.y;
 
@@ -115,7 +123,7 @@ class PlayerComponent extends PositionComponent
   }
 
   @override
-  void onCollisionStart(Set<Vector2> pts, PositionComponent other) {
+  void onCollisionStart(Set<Vector2> intersectionPoints, PositionComponent other) {
     super.onCollisionStart(pts, other);
     if (other is ExitDoorComponent) {
       _nearExitDoor = true;
