@@ -1,12 +1,12 @@
 import 'dart:ui' as ui;
 
-import 'package:flame/components.dart';
 import 'package:flame/collisions.dart';
+import 'package:flame/components.dart';
 import 'package:flutter/material.dart';
 
 class ExitDoorComponent extends PositionComponent with CollisionCallbacks {
   ExitDoorComponent({required super.position})
-      : super(size: Vector2(26, 40), anchor: Anchor.topLeft);
+      : super(size: Vector2(26, 40), anchor: Anchor.bottomCenter);
 
   bool _showTooltip = false;
 
@@ -16,11 +16,8 @@ class ExitDoorComponent extends PositionComponent with CollisionCallbacks {
   }
 
   @override
-  void onCollisionStart(
-    Set<Vector2> intersectionPoints,
-    PositionComponent other,
-  ) {
-    super.onCollisionStart(intersectionPoints, other);
+  void onCollisionStart(Set<Vector2> pts, PositionComponent other) {
+    super.onCollisionStart(pts, other);
     _showTooltip = true;
   }
 
@@ -32,8 +29,9 @@ class ExitDoorComponent extends PositionComponent with CollisionCallbacks {
 
   @override
   void render(Canvas canvas) {
-    // ── Pintu ─────────────────────────────────────────────────────
+    // Dengan Anchor.bottomCenter, (0,0) render = pojok kiri atas component
     final body = size.toRect();
+
     canvas.drawRect(body, Paint()..color = const Color(0xFFEEEEEE));
     canvas.drawRect(
       body,
@@ -56,11 +54,9 @@ class ExitDoorComponent extends PositionComponent with CollisionCallbacks {
       Paint()..color = const Color(0xFFFFCC44),
     );
 
-    // ── Tooltip (hanya saat player menyentuh pintu) ───────────────
     if (!_showTooltip) return;
 
-    const tooltipText = '↑  Keluar';
-    final paragraphBuilder = ui.ParagraphBuilder(
+    final pb = ui.ParagraphBuilder(
       ui.ParagraphStyle(textAlign: TextAlign.center),
     )
       ..pushStyle(ui.TextStyle(
@@ -69,14 +65,11 @@ class ExitDoorComponent extends PositionComponent with CollisionCallbacks {
         fontWeight: FontWeight.bold,
         shadows: const [ui.Shadow(color: Color(0xFF000000), blurRadius: 4)],
       ))
-      ..addText(tooltipText);
-
-    final paragraph = paragraphBuilder.build()
-      ..layout(const ui.ParagraphConstraints(width: 60));
-
+      ..addText('↑  Keluar');
+    final para = pb.build()..layout(const ui.ParagraphConstraints(width: 60));
     canvas.drawParagraph(
-      paragraph,
-      Offset(size.x / 2 - paragraph.maxIntrinsicWidth / 2, -16),
+      para,
+      Offset(size.x / 2 - para.maxIntrinsicWidth / 2, -14),
     );
   }
 }

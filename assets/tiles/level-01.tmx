@@ -26,8 +26,8 @@
 </data>
  </layer>
  <objectgroup id="2" name="Spawnpoints">
-  <object id="5" type="Player" x="46.5217" y="332.333"/>
-  <object id="6" type="ExitDoor" x="604.583" y="34.6667"/>
+  <object id="5" type="Player" x="45.5217" y="342.333" width="10" height="10"/>
+  <object id="6" type="ExitDoor" x="569.75" y="36.75" width="10" height="10"/>
   <object id="7" name="gate1" type="Gate" x="87" y="153.667" width="109" height="139"/>
   <object id="8" name="lever1" type="Lever" x="254.818" y="343.633" width="10" height="10"/>
  </objectgroup>

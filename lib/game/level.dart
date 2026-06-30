@@ -98,7 +98,7 @@ class Level extends World with HasGameReference<PairyGame> {
           game.cam.follow(player);
 
         case 'ExitDoor':
-          add(ExitDoorComponent(position: Vector2(sp.x, sp.y - 40)));
+          add(ExitDoorComponent(position: Vector2(sp.x, sp.y)));
 
         case 'Gate':
           break; // sudah dibuat di pass 1
