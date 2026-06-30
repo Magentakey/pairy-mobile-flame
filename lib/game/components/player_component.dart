@@ -25,7 +25,10 @@ class PlayerComponent extends PositionComponent
   final Vector2 _prevPosition = Vector2.zero();
   bool isOnGround    = false;
   bool _nearExitDoor = false;
-  LeverComponent? _nearLever;
+
+  // Public supaya PairyGame bisa akses untuk activateLever()
+  LeverComponent? nearLever;
+
   _HorizontalInput _input = _HorizontalInput.none;
 
   @override
@@ -37,12 +40,8 @@ class PlayerComponent extends PositionComponent
   void moveRight()  => _input = _HorizontalInput.right;
   void stopMoving() => _input = _HorizontalInput.none;
 
-  /// Prioritas ↑:
-  /// 1. Dekat lever  → aktifkan lever (tidak jump)
-  /// 2. Dekat exit   → selesaikan level
-  /// 3. Di tanah     → lompat
+  // ↑ = lompat atau selesaikan level (lever pakai tombol HUD sendiri)
   void jump() {
-    if (_nearLever != null) { _nearLever!.activate(); return; }
     if (_nearExitDoor) { game.completeLevel(); return; }
     if (isOnGround) { velocity.y = jumpVelocity; isOnGround = false; }
   }
@@ -60,14 +59,12 @@ class PlayerComponent extends PositionComponent
 
     velocity.y += gravity * safeDt;
     isOnGround  = false;
-
     _prevPosition.setFrom(position);
-    position += velocity * safeDt;
+    position   += velocity * safeDt;
 
     for (final ground in game.groundComponents) {
       _resolveAgainst(ground);
     }
-
     if (parent != null) {
       for (final child in parent!.children) {
         if (child is GateComponent && !child.isOpenState) {
@@ -80,15 +77,23 @@ class PlayerComponent extends PositionComponent
   }
 
   void _resolveAgainst(PositionComponent other) {
-    final ox = other.absolutePosition.x - absolutePosition.x + position.x;
-    final oy = other.absolutePosition.y - absolutePosition.y + position.y;
+    final ox = other.position.x;
+    final oy = other.position.y;
     final ow = other.size.x;
     final oh = other.size.y;
 
-    final overlapR = (position.x + size.x) - ox;
-    final overlapL = (ox + ow) - position.x;
-    final overlapB = (position.y + size.y) - oy;
-    final overlapT = (oy + oh) - position.y;
+    // Lever pakai anchor bottomCenter — sesuaikan posisi
+    final resolvedOx = (other.anchor == Anchor.bottomCenter)
+        ? ox - ow / 2
+        : ox;
+    final resolvedOy = (other.anchor == Anchor.bottomCenter)
+        ? oy - oh
+        : oy;
+
+    final overlapR = (position.x + size.x) - resolvedOx;
+    final overlapL = (resolvedOx + ow) - position.x;
+    final overlapB = (position.y + size.y) - resolvedOy;
+    final overlapT = (resolvedOy + oh) - position.y;
 
     if (overlapR <= 0 || overlapL <= 0 || overlapB <= 0 || overlapT <= 0) return;
 
@@ -97,32 +102,33 @@ class PlayerComponent extends PositionComponent
     final prevRight  = _prevPosition.x + size.x;
     final prevLeft   = _prevPosition.x;
 
-    if (prevBottom <= oy) {
-      position.y = oy - size.y;
+    if (prevBottom <= resolvedOy) {
+      position.y = resolvedOy - size.y;
       if (velocity.y > 0) { velocity.y = 0; isOnGround = true; }
-    } else if (prevTop >= oy + oh) {
-      position.y = oy + oh;
+    } else if (prevTop >= resolvedOy + oh) {
+      position.y = resolvedOy + oh;
       if (velocity.y < 0) velocity.y = 0;
-    } else if (prevRight <= ox) {
-      position.x = ox - size.x;
+    } else if (prevRight <= resolvedOx) {
+      position.x = resolvedOx - size.x;
       velocity.x = 0;
-    } else if (prevLeft >= ox + ow) {
-      position.x = ox + ow;
+    } else if (prevLeft >= resolvedOx + ow) {
+      position.x = resolvedOx + ow;
       velocity.x = 0;
     } else {
       final minX = min(overlapR, overlapL);
       final minY = min(overlapB, overlapT);
       if (minY <= minX) {
         if (velocity.y >= 0) {
-          position.y = oy - size.y;
-          velocity.y = 0;
-          isOnGround = true;
+          position.y = resolvedOy - size.y;
+          velocity.y = 0; isOnGround = true;
         } else {
-          position.y = oy + oh;
+          position.y = resolvedOy + oh;
           velocity.y = 0;
         }
       } else {
-        position.x = overlapR <= overlapL ? ox - size.x : ox + ow;
+        position.x = overlapR <= overlapL
+            ? resolvedOx - size.x
+            : resolvedOx + ow;
         velocity.x = 0;
       }
     }
@@ -135,14 +141,20 @@ class PlayerComponent extends PositionComponent
   ) {
     super.onCollisionStart(intersectionPoints, other);
     if (other is ExitDoorComponent) _nearExitDoor = true;
-    if (other is LeverComponent)    _nearLever    = other;
+    if (other is LeverComponent) {
+      nearLever = other;
+      game.overlays.add('LeverButton'); // tampilkan tombol lever di HUD
+    }
   }
 
   @override
   void onCollisionEnd(PositionComponent other) {
     super.onCollisionEnd(other);
     if (other is ExitDoorComponent) _nearExitDoor = false;
-    if (other is LeverComponent && _nearLever == other) _nearLever = null;
+    if (other is LeverComponent && nearLever == other) {
+      nearLever = null;
+      game.overlays.remove('LeverButton'); // sembunyikan tombol lever
+    }
   }
 
   @override

@@ -15,32 +15,53 @@ void main() async {
   runApp(
     MaterialApp(
       debugShowCheckedModeBanner: false,
-      // Reset default text decoration di seluruh app
       home: DefaultTextStyle(
         style: const TextStyle(decoration: TextDecoration.none),
         child: GameWidget<PairyGame>(
           game: game,
           overlayBuilderMap: {
-            'HudControls': (context, game) => HudControlsOverlay(game: game),
+            'HudControls': (context, game) =>
+                HudControlsOverlay(game: game),
+            'LeverButton': (context, game) =>
+                _LeverButtonOverlay(game: game),
             'LevelComplete': (context, game) =>
                 _LevelCompleteOverlay(game: game),
           },
           initialActiveOverlays: const ['HudControls'],
-          errorBuilder: (context, error) => Center(
-            child: Text(
-              'Error: $error',
-              style: const TextStyle(
-                color: Colors.red,
-                decoration: TextDecoration.none,
-              ),
-            ),
-          ),
         ),
       ),
     ),
   );
 }
 
+// ── Tombol lever — muncul di sebelah kiri tombol ↑ ─────────────────
+class _LeverButtonOverlay extends StatelessWidget {
+  const _LeverButtonOverlay({required this.game});
+  final PairyGame game;
+
+  @override
+  Widget build(BuildContext context) {
+    return Positioned(
+      right: 84, // sebelah kiri tombol ↑ (16 + 52 + 16)
+      bottom: 16,
+      child: GestureDetector(
+        onTap: game.activateLever,
+        child: Container(
+          width: 52,
+          height: 52,
+          decoration: BoxDecoration(
+            color: const Color(0xFF34C77B).withValues(alpha: 0.85),
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: const Icon(Icons.toggle_on_rounded,
+              color: Colors.white, size: 30),
+        ),
+      ),
+    );
+  }
+}
+
+// ── Level complete overlay ──────────────────────────────────────────
 class _LevelCompleteOverlay extends StatelessWidget {
   const _LevelCompleteOverlay({required this.game});
   final PairyGame game;
@@ -62,21 +83,12 @@ class _LevelCompleteOverlay extends StatelessWidget {
                 color: const Color(0xFF34C77B).withValues(alpha: 0.6),
                 width: 1.5,
               ),
-              boxShadow: [
-                BoxShadow(
-                  color: const Color(0xFF34C77B).withValues(alpha: 0.2),
-                  blurRadius: 24,
-                  spreadRadius: 2,
-                ),
-              ],
             ),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const Text(
-                  '🎉',
-                  style: TextStyle(fontSize: 40),
-                ),
+                const Text('🎉',
+                    style: TextStyle(fontSize: 40)),
                 const SizedBox(height: 8),
                 const Text(
                   'Level Selesai!',
@@ -84,7 +96,6 @@ class _LevelCompleteOverlay extends StatelessWidget {
                     color: Colors.white,
                     fontSize: 26,
                     fontWeight: FontWeight.w800,
-                    letterSpacing: 0.5,
                     decoration: TextDecoration.none,
                   ),
                 ),
@@ -92,19 +103,14 @@ class _LevelCompleteOverlay extends StatelessWidget {
                 Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    _Btn(
-                      label: 'Ulangi',
-                      icon: Icons.replay_rounded,
-                      color: const Color(0xFF444466),
-                      onTap: game.restartLevel,
-                    ),
+                    _Btn(label: 'Ulangi', icon: Icons.replay_rounded,
+                        color: const Color(0xFF444466),
+                        onTap: game.restartLevel),
                     const SizedBox(width: 14),
-                    _Btn(
-                      label: 'Lanjut',
-                      icon: Icons.arrow_forward_rounded,
-                      color: const Color(0xFF34C77B),
-                      onTap: game.loadNextLevel,
-                    ),
+                    _Btn(label: 'Lanjut',
+                        icon: Icons.arrow_forward_rounded,
+                        color: const Color(0xFF34C77B),
+                        onTap: game.loadNextLevel),
                   ],
                 ),
               ],
@@ -143,16 +149,13 @@ class _Btn extends StatelessWidget {
           children: [
             Icon(icon, color: Colors.white, size: 18),
             const SizedBox(width: 8),
-            Text(
-              label,
-              style: const TextStyle(
-                color: Colors.white,
-                fontSize: 16,
-                fontWeight: FontWeight.w700,
-                letterSpacing: 0.3,
-                decoration: TextDecoration.none,
-              ),
-            ),
+            Text(label,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 16,
+                  fontWeight: FontWeight.w700,
+                  decoration: TextDecoration.none,
+                )),
           ],
         ),
       ),

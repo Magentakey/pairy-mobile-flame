@@ -13,7 +13,6 @@ class PairyGame extends FlameGame with HasCollisionDetection {
   static const double gameWidth  = 648;
   static const double gameHeight = 360;
 
-  // Daftar level — tambah 'level-02' dst saat map baru siap
   static const List<String> _levelNames = ['level-01'];
   int _currentLevelIndex = 0;
 
@@ -43,24 +42,20 @@ class PairyGame extends FlameGame with HasCollisionDetection {
 
   List<GroundComponent> get groundComponents => _level.groundComponents;
 
+  // ── Lever ────────────────────────────────────────────────────────
+  void activateLever() => player?.nearLever?.activate();
+
   // ── Level complete ───────────────────────────────────────────────
   void completeLevel() {
     pauseEngine();
     overlays.add('LevelComplete');
   }
 
-  /// Dipanggil dari overlay "LevelComplete" saat user tekan tombol lanjut.
   Future<void> loadNextLevel() async {
     overlays.remove('LevelComplete');
-
     if (_currentLevelIndex < _levelNames.length - 1) {
       _currentLevelIndex++;
-    } else {
-      // Tidak ada level berikutnya — ulangi level terakhir
-      // Nanti ganti dengan navigasi ke MapSelect
     }
-
-    // Hapus level lama, muat yang baru
     removeAll(children.toList());
     player = null;
     await Future.delayed(const Duration(milliseconds: 300));
@@ -68,7 +63,6 @@ class PairyGame extends FlameGame with HasCollisionDetection {
     resumeEngine();
   }
 
-  // ── Restart level ────────────────────────────────────────────────
   Future<void> restartLevel() async {
     overlays.remove('LevelComplete');
     player = null;
