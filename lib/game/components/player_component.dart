@@ -25,10 +25,7 @@ class PlayerComponent extends PositionComponent
   final Vector2 _prevPosition = Vector2.zero();
   bool isOnGround    = false;
   bool _nearExitDoor = false;
-
-  // Public supaya PairyGame bisa akses untuk activateLever()
   LeverComponent? nearLever;
-
   _HorizontalInput _input = _HorizontalInput.none;
 
   @override
@@ -40,7 +37,6 @@ class PlayerComponent extends PositionComponent
   void moveRight()  => _input = _HorizontalInput.right;
   void stopMoving() => _input = _HorizontalInput.none;
 
-  // ↑ = lompat atau selesaikan level (lever pakai tombol HUD sendiri)
   void jump() {
     if (_nearExitDoor) { game.completeLevel(); return; }
     if (isOnGround) { velocity.y = jumpVelocity; isOnGround = false; }
@@ -62,14 +58,14 @@ class PlayerComponent extends PositionComponent
     _prevPosition.setFrom(position);
     position   += velocity * safeDt;
 
+    // Ground tiles
     for (final ground in game.groundComponents) {
       _resolveAgainst(ground);
     }
+    // Gate saja — lever TIDAK solid (tembus)
     if (parent != null) {
       for (final child in parent!.children) {
         if (child is GateComponent && !child.isOpenState) {
-          _resolveAgainst(child);
-        } else if (child is LeverComponent) {
           _resolveAgainst(child);
         }
       }
@@ -82,18 +78,10 @@ class PlayerComponent extends PositionComponent
     final ow = other.size.x;
     final oh = other.size.y;
 
-    // Lever pakai anchor bottomCenter — sesuaikan posisi
-    final resolvedOx = (other.anchor == Anchor.bottomCenter)
-        ? ox - ow / 2
-        : ox;
-    final resolvedOy = (other.anchor == Anchor.bottomCenter)
-        ? oy - oh
-        : oy;
-
-    final overlapR = (position.x + size.x) - resolvedOx;
-    final overlapL = (resolvedOx + ow) - position.x;
-    final overlapB = (position.y + size.y) - resolvedOy;
-    final overlapT = (resolvedOy + oh) - position.y;
+    final overlapR = (position.x + size.x) - ox;
+    final overlapL = (ox + ow) - position.x;
+    final overlapB = (position.y + size.y) - oy;
+    final overlapT = (oy + oh) - position.y;
 
     if (overlapR <= 0 || overlapL <= 0 || overlapB <= 0 || overlapT <= 0) return;
 
@@ -102,48 +90,40 @@ class PlayerComponent extends PositionComponent
     final prevRight  = _prevPosition.x + size.x;
     final prevLeft   = _prevPosition.x;
 
-    if (prevBottom <= resolvedOy) {
-      position.y = resolvedOy - size.y;
+    if (prevBottom <= oy) {
+      position.y = oy - size.y;
       if (velocity.y > 0) { velocity.y = 0; isOnGround = true; }
-    } else if (prevTop >= resolvedOy + oh) {
-      position.y = resolvedOy + oh;
+    } else if (prevTop >= oy + oh) {
+      position.y = oy + oh;
       if (velocity.y < 0) velocity.y = 0;
-    } else if (prevRight <= resolvedOx) {
-      position.x = resolvedOx - size.x;
-      velocity.x = 0;
-    } else if (prevLeft >= resolvedOx + ow) {
-      position.x = resolvedOx + ow;
-      velocity.x = 0;
+    } else if (prevRight <= ox) {
+      position.x = ox - size.x; velocity.x = 0;
+    } else if (prevLeft >= ox + ow) {
+      position.x = ox + ow; velocity.x = 0;
     } else {
       final minX = min(overlapR, overlapL);
       final minY = min(overlapB, overlapT);
       if (minY <= minX) {
         if (velocity.y >= 0) {
-          position.y = resolvedOy - size.y;
-          velocity.y = 0; isOnGround = true;
+          position.y = oy - size.y; velocity.y = 0; isOnGround = true;
         } else {
-          position.y = resolvedOy + oh;
-          velocity.y = 0;
+          position.y = oy + oh; velocity.y = 0;
         }
       } else {
-        position.x = overlapR <= overlapL
-            ? resolvedOx - size.x
-            : resolvedOx + ow;
+        position.x = overlapR <= overlapL ? ox - size.x : ox + ow;
         velocity.x = 0;
       }
     }
   }
 
   @override
-  void onCollisionStart(
-    Set<Vector2> intersectionPoints,
-    PositionComponent other,
-  ) {
-    super.onCollisionStart(intersectionPoints, other);
+  void onCollisionStart(Set<Vector2> pts, PositionComponent other) {
+    super.onCollisionStart(pts, other);
     if (other is ExitDoorComponent) _nearExitDoor = true;
     if (other is LeverComponent) {
       nearLever = other;
-      game.overlays.add('LeverButton'); // tampilkan tombol lever di HUD
+      game.leverState.value = other.isOn; // sync state awal
+      game.overlays.add('LeverButton');
     }
   }
 
@@ -153,7 +133,7 @@ class PlayerComponent extends PositionComponent
     if (other is ExitDoorComponent) _nearExitDoor = false;
     if (other is LeverComponent && nearLever == other) {
       nearLever = null;
-      game.overlays.remove('LeverButton'); // sembunyikan tombol lever
+      game.overlays.remove('LeverButton');
     }
   }
 

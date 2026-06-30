@@ -12,7 +12,6 @@ class PairyGame extends FlameGame with HasCollisionDetection {
 
   static const double gameWidth  = 648;
   static const double gameHeight = 360;
-
   static const List<String> _levelNames = ['level-01'];
   int _currentLevelIndex = 0;
 
@@ -22,17 +21,16 @@ class PairyGame extends FlameGame with HasCollisionDetection {
   late Level _level;
   late CameraComponent cam;
 
+  /// State lever aktif saat ini — dipakai HUD untuk sync ikon
+  final ValueNotifier<bool> leverState = ValueNotifier(false);
+
   @override
-  Future<void> onLoad() async {
-    await _loadLevel();
-  }
+  Future<void> onLoad() async => _loadLevel();
 
   Future<void> _loadLevel() async {
     _level = Level(levelName: _levelNames[_currentLevelIndex]);
     cam = CameraComponent.withFixedResolution(
-      width: gameWidth,
-      height: gameHeight,
-      world: _level,
+      width: gameWidth, height: gameHeight, world: _level,
     );
     await addAll([cam, _level]);
   }
@@ -43,9 +41,13 @@ class PairyGame extends FlameGame with HasCollisionDetection {
   List<GroundComponent> get groundComponents => _level.groundComponents;
 
   // ── Lever ────────────────────────────────────────────────────────
-  void activateLever() => player?.nearLever?.activate();
+  void activateLever() {
+    player?.nearLever?.activate();
+    // Update notifier → HUD rebuild otomatis
+    leverState.value = player?.nearLever?.isOn ?? false;
+  }
 
-  // ── Level complete ───────────────────────────────────────────────
+  // ── Level ────────────────────────────────────────────────────────
   void completeLevel() {
     pauseEngine();
     overlays.add('LevelComplete');
@@ -53,9 +55,7 @@ class PairyGame extends FlameGame with HasCollisionDetection {
 
   Future<void> loadNextLevel() async {
     overlays.remove('LevelComplete');
-    if (_currentLevelIndex < _levelNames.length - 1) {
-      _currentLevelIndex++;
-    }
+    if (_currentLevelIndex < _levelNames.length - 1) _currentLevelIndex++;
     removeAll(children.toList());
     player = null;
     await Future.delayed(const Duration(milliseconds: 300));
