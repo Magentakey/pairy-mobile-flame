@@ -21,8 +21,9 @@ class PairyGame extends FlameGame with HasCollisionDetection {
   late Level _level;
   late CameraComponent cam;
 
-  /// State lever aktif saat ini — dipakai HUD untuk sync ikon
   final ValueNotifier<bool> leverState = ValueNotifier(false);
+  // true saat player berada di dekat exit door — dipakai untuk warna tombol ↑
+  final ValueNotifier<bool> nearExitDoor = ValueNotifier(false);
 
   @override
   Future<void> onLoad() async => _loadLevel();
@@ -40,14 +41,11 @@ class PairyGame extends FlameGame with HasCollisionDetection {
 
   List<GroundComponent> get groundComponents => _level.groundComponents;
 
-  // ── Lever ────────────────────────────────────────────────────────
   void activateLever() {
     player?.nearLever?.activate();
-    // Update notifier → HUD rebuild otomatis
     leverState.value = player?.nearLever?.isOn ?? false;
   }
 
-  // ── Level ────────────────────────────────────────────────────────
   void completeLevel() {
     pauseEngine();
     overlays.add('LevelComplete');
@@ -73,7 +71,6 @@ class PairyGame extends FlameGame with HasCollisionDetection {
     resumeEngine();
   }
 
-  // ── Player pass-throughs ─────────────────────────────────────────
   void pressLeft()         => player?.moveLeft();
   void pressRight()        => player?.moveRight();
   void releaseHorizontal() => player?.stopMoving();

@@ -31,13 +31,20 @@ class HudControlsOverlay extends StatelessWidget {
             ],
           ),
         ),
+        // Tombol ↑ — warna hijau saat dekat exit door
         Positioned(
           right: 16,
           bottom: 16,
-          child: _HudButton(
-            icon: Icons.arrow_upward,
-            onDown: game.pressJump,
-            onUp: () {},
+          child: ValueListenableBuilder<bool>(
+            valueListenable: game.nearExitDoor,
+            builder: (context, isNearDoor, _) {
+              return _HudButton(
+                icon: Icons.arrow_upward,
+                onDown: game.pressJump,
+                onUp: () {},
+                activeColor: isNearDoor ? const Color(0xFF34C77B) : null,
+              );
+            },
           ),
         ),
       ],
@@ -50,11 +57,13 @@ class _HudButton extends StatelessWidget {
     required this.icon,
     required this.onDown,
     required this.onUp,
+    this.activeColor,
   });
 
   final IconData icon;
   final VoidCallback onDown;
   final VoidCallback onUp;
+  final Color? activeColor;
 
   @override
   Widget build(BuildContext context) {
@@ -66,12 +75,13 @@ class _HudButton extends StatelessWidget {
         width: 52,
         height: 52,
         decoration: BoxDecoration(
-          color: AppColors.surfaceMuted.withValues(alpha: 0.75),
+          color: (activeColor ?? AppColors.surfaceMuted)
+              .withValues(alpha: 0.85),
           borderRadius: BorderRadius.circular(12),
         ),
         child: Icon(
           icon,
-          color: Colors.white.withValues(alpha: 0.85),
+          color: Colors.white.withValues(alpha: 0.9),
           size: 28,
         ),
       ),

@@ -58,11 +58,9 @@ class PlayerComponent extends PositionComponent
     _prevPosition.setFrom(position);
     position   += velocity * safeDt;
 
-    // Ground tiles
     for (final ground in game.groundComponents) {
       _resolveAgainst(ground);
     }
-    // Gate saja — lever TIDAK solid (tembus)
     if (parent != null) {
       for (final child in parent!.children) {
         if (child is GateComponent && !child.isOpenState) {
@@ -119,10 +117,13 @@ class PlayerComponent extends PositionComponent
   @override
   void onCollisionStart(Set<Vector2> pts, PositionComponent other) {
     super.onCollisionStart(pts, other);
-    if (other is ExitDoorComponent) _nearExitDoor = true;
+    if (other is ExitDoorComponent) {
+      _nearExitDoor = true;
+      game.nearExitDoor.value = true;
+    }
     if (other is LeverComponent) {
       nearLever = other;
-      game.leverState.value = other.isOn; // sync state awal
+      game.leverState.value = other.isOn;
       game.overlays.add('LeverButton');
     }
   }
@@ -130,7 +131,10 @@ class PlayerComponent extends PositionComponent
   @override
   void onCollisionEnd(PositionComponent other) {
     super.onCollisionEnd(other);
-    if (other is ExitDoorComponent) _nearExitDoor = false;
+    if (other is ExitDoorComponent) {
+      _nearExitDoor = false;
+      game.nearExitDoor.value = false;
+    }
     if (other is LeverComponent && nearLever == other) {
       nearLever = null;
       game.overlays.remove('LeverButton');
