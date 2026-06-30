@@ -124,7 +124,7 @@ class PlayerComponent extends PositionComponent
 
   @override
   void onCollisionStart(Set<Vector2> intersectionPoints, PositionComponent other) {
-    super.onCollisionStart(pts, other);
+    super.onCollisionStart(intersectionPoints, other);
     if (other is ExitDoorComponent) {
       _nearExitDoor = true;
       game.nearExitDoor.value = true;

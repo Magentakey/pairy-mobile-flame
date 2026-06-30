@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../core/app_colors.dart';
 import '../core/routes.dart';
-import '../models/level_info.dart';
+
 import '../widgets/pairy_button.dart';
 
 /// Map / level-select screen (PRD 7.2).

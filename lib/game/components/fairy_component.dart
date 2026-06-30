@@ -131,7 +131,7 @@ class FairyComponent extends PositionComponent
 
   @override
   void onCollisionStart(Set<Vector2> intersectionPoints, PositionComponent other) {
-    super.onCollisionStart(pts, other);
+    super.onCollisionStart(intersectionPoints, other);
     if (other is FountainComponent) _overlappingFountains.add(other);
   }
 

@@ -45,7 +45,7 @@ class Level extends World with HasGameReference<PairyGame> {
     final data = groundLayer.data;
     if (data == null || data.isEmpty) return;
 
-    final mapWidth = groundLayer.width ?? 36;
+    final mapWidth = groundLayer.width;
     for (int i = 0; i < data.length; i++) {
       if (data[i] != 0) {
         final x = i % mapWidth;
