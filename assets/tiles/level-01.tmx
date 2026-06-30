@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.10" tiledversion="1.12.2" orientation="orthogonal" renderorder="right-down" width="36" height="20" tilewidth="18" tileheight="18" infinite="0" nextlayerid="3" nextobjectid="9">
+<map version="1.10" tiledversion="1.12.2" orientation="orthogonal" renderorder="right-down" width="36" height="20" tilewidth="18" tileheight="18" infinite="0" nextlayerid="3" nextobjectid="12">
  <tileset firstgid="1" source="tileset-tiles.tsx"/>
  <layer id="1" name="Ground" width="36" height="20">
   <data encoding="csv">
@@ -29,6 +29,12 @@
   <object id="5" type="Player" x="45.5217" y="342.333" width="10" height="10"/>
   <object id="6" type="ExitDoor" x="569.75" y="36.75" width="10" height="10"/>
   <object id="7" name="gate1" type="Gate" x="87" y="153.667" width="109" height="139"/>
-  <object id="8" name="lever1" type="Lever" x="254.818" y="343.633" width="10" height="10"/>
+  <object id="8" name="lever1" type="Lever" x="243.318" y="341.633" width="10" height="10"/>
+  <object id="9" name="fountain1 " type="Fountain" x="162" y="342" width="24" height="30"/>
+  <object id="11" type="Fairy" x="24" y="284" width="20" height="20">
+   <properties>
+    <property name="color" value="yellow "/>
+   </properties>
+  </object>
  </objectgroup>
 </map>

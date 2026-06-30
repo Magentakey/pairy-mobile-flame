@@ -4,11 +4,14 @@ import 'package:flame/game.dart';
 import 'package:flame_tiled/flame_tiled.dart';
 
 import 'components/exit_door_component.dart';
+import 'components/fairy_component.dart';
+import 'components/fountain_component.dart';
 import 'components/gate_component.dart';
 import 'components/ground_component.dart';
 import 'components/lever_component.dart';
 import 'components/player_component.dart';
 import 'pairy_game.dart';
+import '../models/fairy_color.dart';
 
 class Level extends World with HasGameReference<PairyGame> {
   Level({required this.levelName});
@@ -64,14 +67,10 @@ class Level extends World with HasGameReference<PairyGame> {
 
     final objects = spawnLayer.objects;
 
-    // ── Pass 1: buat semua Gate, simpan di Map pakai key dari Name ──
-    // Konvensi Name: "gate1", "gate2", "gateA", dll.
-    // Key = bagian setelah "gate" → "1", "2", "A"
+    // ── Pass 1: Gate, lalu pairing key dari Name ────────────────────
     final gateMap = <String, GateComponent>{};
-
     for (final sp in objects) {
       if (sp.class_ != 'Gate') continue;
-
       final gate = GateComponent(
         position: Vector2(sp.x, sp.y),
         size: Vector2(
@@ -80,13 +79,11 @@ class Level extends World with HasGameReference<PairyGame> {
         ),
       );
       add(gate);
-
-      // Ambil pairing key dari nama, misal "gate1" → key "1"
       final key = _pairingKey(sp.name, 'gate');
       if (key != null) gateMap[key] = gate;
     }
 
-    // ── Pass 2: spawn semua objek lainnya ────────────────────────────
+    // ── Pass 2: sisanya — Player, ExitDoor, Lever, Fountain, Fairy ──
     for (final sp in objects) {
       switch (sp.class_) {
         case 'Player':
@@ -104,13 +101,35 @@ class Level extends World with HasGameReference<PairyGame> {
           break; // sudah dibuat di pass 1
 
         case 'Lever':
-          // Ambil pairing key, misal "lever1" → key "1" → cocokkan ke gateMap
           final key = _pairingKey(sp.name, 'lever');
           final targetGate = key != null ? gateMap[key] : null;
-
           add(LeverComponent(
             position: Vector2(sp.x, sp.y),
             onToggle: targetGate?.toggle,
+          ));
+
+        case 'Fountain':
+          // Custom property "color" di Tiled: blue/red/green/yellow
+          final colorStr =
+              sp.properties.getValue<String>('color') ?? 'blue';
+          final fountainColor = _parseFairyColor(colorStr);
+          final fountain = FountainComponent(
+            position: Vector2(sp.x, sp.y),
+            requiredColor: fountainColor,
+            onActivated: () {
+              final key = _pairingKey(sp.name, 'fountain');
+              final targetGate = key != null ? gateMap[key] : null;
+              targetGate?.open();
+            },
+          );
+          add(fountain);
+
+        case 'Fairy':
+          final colorStr =
+              sp.properties.getValue<String>('color') ?? 'blue';
+          add(FairyComponent(
+            position: Vector2(sp.x, sp.y),
+            color: _parseFairyColor(colorStr),
           ));
 
         default:
@@ -119,8 +138,15 @@ class Level extends World with HasGameReference<PairyGame> {
     }
   }
 
-  /// Ambil suffix dari name: "gate1" → "1", "lever_A" → "_A".
-  /// Return null jika name kosong atau tidak mengandung prefix.
+  static FairyColor _parseFairyColor(String value) {
+    switch (value.toLowerCase()) {
+      case 'red':    return FairyColor.red;
+      case 'green':  return FairyColor.green;
+      case 'yellow': return FairyColor.yellow;
+      default:       return FairyColor.blue;
+    }
+  }
+
   static String? _pairingKey(String name, String prefix) {
     final lower = name.toLowerCase();
     if (lower.isEmpty || !lower.startsWith(prefix.toLowerCase())) return null;
