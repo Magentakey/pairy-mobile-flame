@@ -7,7 +7,6 @@ import 'package:flutter/material.dart';
 import '../pairy_game.dart';
 import 'exit_door_component.dart';
 import 'gate_component.dart';
-
 import 'lever_component.dart';
 
 enum _HorizontalInput { none, left, right }
@@ -58,11 +57,9 @@ class PlayerComponent extends PositionComponent
     _prevPosition.setFrom(position);
     position   += velocity * safeDt;
 
-    // Ground tiles
     for (final ground in game.groundComponents) {
       _resolveAgainst(ground);
     }
-    // Gate tertutup — lever sengaja TIDAK dicek (tetap tembus untuk player)
     if (parent != null) {
       for (final child in parent!.children) {
         if (child is GateComponent && !child.isOpenState) {
@@ -70,17 +67,57 @@ class PlayerComponent extends PositionComponent
         }
       }
     }
+
+    // Lever: cek proximity manual setiap frame — lebih reliable
+    // dari Flame collision callback saat hitbox fully contained.
+    _updateLeverProximity();
   }
 
-  /// Resolusi AABB berbasis prevPosition, anchor-aware (mendukung
-  /// component dengan anchor topLeft maupun bottomCenter, dll).
+  /// Cek apakah player tumpang tindih dengan LeverComponent terdekat.
+  /// Gunakan AABB langsung, bukan Flame callback, supaya tidak glitch
+  /// saat player berdiri tepat di tengah lever.
+  void _updateLeverProximity() {
+    if (parent == null) return;
+
+    LeverComponent? found;
+    for (final child in parent!.children) {
+      if (child is LeverComponent && _aabbOverlap(child, buffer: 4)) {
+        found = child;
+        break;
+      }
+    }
+
+    if (found != null && nearLever != found) {
+      // Baru masuk area lever
+      nearLever = found;
+      game.leverState.value = found.isOn;
+      if (!game.overlays.isActive('LeverButton')) {
+        game.overlays.add('LeverButton');
+      }
+    } else if (found == null && nearLever != null) {
+      // Keluar dari area lever
+      nearLever = null;
+      if (game.overlays.isActive('LeverButton')) {
+        game.overlays.remove('LeverButton');
+      }
+    }
+  }
+
+  /// AABB overlap antara player dan component lain (anchor-aware).
+  bool _aabbOverlap(PositionComponent other, {double buffer = 0}) {
+    final tl = other.position -
+        Vector2(other.size.x * other.anchor.x, other.size.y * other.anchor.y);
+    return position.x + size.x > tl.x - buffer &&
+        position.x < tl.x + other.size.x + buffer &&
+        position.y + size.y > tl.y - buffer &&
+        position.y < tl.y + other.size.y + buffer;
+  }
+
   void _resolveAgainst(PositionComponent other) {
-    final topLeft = other.position - Vector2(
-      other.size.x * other.anchor.x,
-      other.size.y * other.anchor.y,
-    );
-    final ox = topLeft.x;
-    final oy = topLeft.y;
+    final tl = other.position -
+        Vector2(other.size.x * other.anchor.x, other.size.y * other.anchor.y);
+    final ox = tl.x;
+    final oy = tl.y;
     final ow = other.size.x;
     final oh = other.size.y;
 
@@ -122,17 +159,16 @@ class PlayerComponent extends PositionComponent
     }
   }
 
+  // ExitDoor tetap pakai Flame callback (bekerja dengan baik)
   @override
-  void onCollisionStart(Set<Vector2> intersectionPoints, PositionComponent other) {
+  void onCollisionStart(
+    Set<Vector2> intersectionPoints,
+    PositionComponent other,
+  ) {
     super.onCollisionStart(intersectionPoints, other);
     if (other is ExitDoorComponent) {
       _nearExitDoor = true;
       game.nearExitDoor.value = true;
-    }
-    if (other is LeverComponent) {
-      nearLever = other;
-      game.leverState.value = other.isOn;
-      game.overlays.add('LeverButton');
     }
   }
 
@@ -142,10 +178,6 @@ class PlayerComponent extends PositionComponent
     if (other is ExitDoorComponent) {
       _nearExitDoor = false;
       game.nearExitDoor.value = false;
-    }
-    if (other is LeverComponent && nearLever == other) {
-      nearLever = null;
-      game.overlays.remove('LeverButton');
     }
   }
 

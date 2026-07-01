@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 
 import 'components/ground_component.dart';
 import 'components/player_component.dart';
-import 'level.dart';
+import 'level/level.dart';
 
 class PairyGame extends FlameGame with HasCollisionDetection {
   PairyGame({this.onLevelComplete});
