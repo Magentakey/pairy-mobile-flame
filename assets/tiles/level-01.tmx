@@ -30,7 +30,7 @@
   <object id="6" type="ExitDoor" x="569.75" y="36.75" width="10" height="10"/>
   <object id="7" name="gatefairy1" type="Gate" x="87" y="153.667" width="109" height="139"/>
   <object id="8" name="lever1" type="Lever" x="243.318" y="341.633" width="10" height="10"/>
-  <object id="9" name="fairy1 " type="Fountain" x="162" y="342" width="24" height="30">
+  <object id="9" name="fairy1" type="Fountain" x="162" y="342" width="24" height="30">
    <properties>
     <property name="color" value="blue"/>
    </properties>

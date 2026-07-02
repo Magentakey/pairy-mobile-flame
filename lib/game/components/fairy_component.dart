@@ -6,33 +6,29 @@ import 'package:flame/events.dart';
 import 'package:flutter/material.dart';
 
 import '../../models/fairy_color.dart';
-import 'fountain_component.dart';
 import 'gate_component.dart';
 import 'ground_component.dart';
 
-/// Fairy bisa di-drag langsung pakai jari (PRD 6.6).
+/// Fairy bisa di-drag langsung dengan jari.
 ///
-/// Desain drag:
-/// - Posisi langsung mengikuti jari (_fingerWorldPos), TANPA lerp,
-///   supaya tidak ada lag dan tidak teleport.
-/// - Collision mendorong posisi keluar dari solid, tapi TIDAK mengubah
-///   _fingerWorldPos — frame berikutnya fairy mencoba balik ke jari lagi,
-///   hasilnya terasa "terblokir tembok" secara natural.
-/// - Saat dilepas: lerp halus kembali ke posisi awal (home).
+/// Behavior:
+/// - Drag → fairy ikut jari secara instan (tidak lag, tidak lerp).
+/// - Lepas → fairy TETAP di posisi terakhir drag (tidak snap ke home).
+/// - Collision: menembus Player dan Fountain (trigger), tapi SOLID
+///   terhadap GroundComponent, GateComponent (tertutup), dan FairyComponent lain.
+/// - Aktivasi fountain: ditangani oleh FountainComponent via Flame collision
+///   callback (bukan dari FairyComponent) → fairy tidak perlu menghilang.
 class FairyComponent extends PositionComponent
     with DragCallbacks, CollisionCallbacks {
   FairyComponent({required super.position, required this.color})
       : super(size: Vector2.all(20), anchor: Anchor.center);
 
   final FairyColor color;
-  late final Vector2 _homePosition = position.clone();
 
-  // Posisi jari di world space — tidak pernah direset oleh collision
+  // Posisi jari di world space — hanya diupdate onDragUpdate,
+  // TIDAK pernah direset oleh collision sehingga fairy selalu menuju jari.
   Vector2 _fingerWorldPos = Vector2.zero();
   bool _isDragging = false;
-  bool _activated = false;
-
-  final Set<FountainComponent> _overlappingFountains = {};
 
   @override
   Future<void> onLoad() async {
@@ -43,7 +39,6 @@ class FairyComponent extends PositionComponent
   @override
   void onDragStart(DragStartEvent event) {
     super.onDragStart(event);
-    if (_activated) return;
     _isDragging = true;
     _fingerWorldPos.setFrom(position);
   }
@@ -59,51 +54,25 @@ class FairyComponent extends PositionComponent
   void onDragEnd(DragEndEvent event) {
     super.onDragEnd(event);
     _isDragging = false;
-
-    // Cek fountain via callback set
-    FountainComponent? target =
-        _overlappingFountains.isNotEmpty ? _overlappingFountains.first : null;
-
-    // Fallback: direct check jika callback belum fire di frame ini
-    if (target == null && parent != null) {
-      for (final child in parent!.children) {
-        if (child is FountainComponent && _isOverlappingFountain(child)) {
-          target = child;
-          break;
-        }
-      }
-    }
-
-    if (target != null) {
-      target.receiveFairy(color);
-      if (target.isActivated) {
-        _activated = true;
-        removeFromParent();
-      }
-    }
+    // Fairy tetap di posisi sekarang — tidak kembali ke home.
+    // Fountain mendeteksi overlap via onCollisionStart/End sendiri.
   }
 
   @override
   void update(double dt) {
     super.update(dt);
-    if (_activated) return;
 
     if (_isDragging) {
-      // Langsung ikut jari — tidak ada lerp supaya tidak lag/teleport
+      // Langsung ikut jari, tidak ada lerp
       position.setFrom(_fingerWorldPos);
-      // Push keluar dari solid; _fingerWorldPos TIDAK diubah
-      _resolveSolids();
-    } else {
-      // Kembali ke home dengan lerp halus
-      final diff = _homePosition - position;
-      if (diff.length < 0.5) {
-        position.setFrom(_homePosition);
-      } else {
-        position += diff * (10.0 * dt).clamp(0.0, 1.0);
-      }
     }
+    // Selalu resolve solids — baik saat drag maupun diam
+    // (misalnya gate menutup saat fairy ada di dalam gate)
+    _resolveSolids();
   }
 
+  /// Dorong fairy keluar dari solid. Fountain dan Player sengaja tidak ada
+  /// di sini — fairy bisa menembus keduanya.
   void _resolveSolids() {
     if (parent == null) return;
     for (final child in parent!.children) {
@@ -118,14 +87,14 @@ class FairyComponent extends PositionComponent
   }
 
   void _pushOutOf(PositionComponent other) {
-    final topLeft = other.position -
+    final tl = other.position -
         Vector2(other.size.x * other.anchor.x, other.size.y * other.anchor.y);
     final r = size.x / 2;
 
-    final overlapR = (position.x + r) - topLeft.x;
-    final overlapL = (topLeft.x + other.size.x) - (position.x - r);
-    final overlapB = (position.y + r) - topLeft.y;
-    final overlapT = (topLeft.y + other.size.y) - (position.y - r);
+    final overlapR = (position.x + r) - tl.x;
+    final overlapL = (tl.x + other.size.x) - (position.x - r);
+    final overlapB = (position.y + r) - tl.y;
+    final overlapT = (tl.y + other.size.y) - (position.y - r);
 
     if (overlapR <= 0 || overlapL <= 0 || overlapB <= 0 || overlapT <= 0) return;
 
@@ -137,6 +106,8 @@ class FairyComponent extends PositionComponent
     } else {
       position.y += overlapB < overlapT ? -overlapB : overlapT;
     }
+    // _fingerWorldPos TIDAK diupdate → fairy terus mencoba
+    // kembali ke jari, menciptakan efek "terblokir tembok" yang natural.
   }
 
   void _pushAwayFrom(FairyComponent other) {
@@ -147,34 +118,8 @@ class FairyComponent extends PositionComponent
     position += (delta / dist) * ((minDist - dist) / 2);
   }
 
-  bool _isOverlappingFountain(FountainComponent f) {
-    final tl = f.position -
-        Vector2(f.size.x * f.anchor.x, f.size.y * f.anchor.y);
-    final r = size.x / 2;
-    return position.x + r > tl.x &&
-        position.x - r < tl.x + f.size.x &&
-        position.y + r > tl.y &&
-        position.y - r < tl.y + f.size.y;
-  }
-
-  @override
-  void onCollisionStart(
-    Set<Vector2> intersectionPoints,
-    PositionComponent other,
-  ) {
-    super.onCollisionStart(intersectionPoints, other);
-    if (other is FountainComponent) _overlappingFountains.add(other);
-  }
-
-  @override
-  void onCollisionEnd(PositionComponent other) {
-    super.onCollisionEnd(other);
-    if (other is FountainComponent) _overlappingFountains.remove(other);
-  }
-
   @override
   void render(Canvas canvas) {
-    if (_activated) return;
     final radius = size.x / 2;
     final center = Offset(radius, radius);
 

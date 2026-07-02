@@ -3,39 +3,67 @@ import 'package:flame/components.dart';
 import 'package:flutter/material.dart';
 
 import '../../models/fairy_color.dart';
+import 'fairy_component.dart';
 
-/// Fountain menyala saat menerima fairy berwarna sama (PRD 6.7),
-/// lalu memanggil [onActivated] sekali — biasanya untuk membuka gate.
+/// Fountain aktif saat fairy berwarna sama berada di atasnya.
+/// Ketika fairy masuk → onActivate (gate buka).
+/// Ketika fairy keluar → onDeactivate (gate tutup).
+/// Bisa on/off berkali-kali.
 class FountainComponent extends PositionComponent with CollisionCallbacks {
   FountainComponent({
     required super.position,
     required this.requiredColor,
-    this.onActivated,
+    this.onActivate,
+    this.onDeactivate,
   }) : super(size: Vector2(24, 30), anchor: Anchor.bottomCenter);
 
   final FairyColor requiredColor;
-  final VoidCallback? onActivated;
+  final VoidCallback? onActivate;
+  final VoidCallback? onDeactivate;
   bool isActivated = false;
+
+  // Hitung berapa fairy warna cocok yang sedang overlap
+  // (antisipasi > 1 fairy warna sama di level)
+  int _matchingCount = 0;
 
   @override
   Future<void> onLoad() async {
-    // Passive — tidak solid, hanya area deteksi untuk fairy
     add(RectangleHitbox(collisionType: CollisionType.passive));
   }
 
-  void receiveFairy(FairyColor color) {
-    if (isActivated || color != requiredColor) return;
-    isActivated = true;
-    onActivated?.call();
+  @override
+  void onCollisionStart(
+    Set<Vector2> intersectionPoints,
+    PositionComponent other,
+  ) {
+    super.onCollisionStart(intersectionPoints, other);
+    if (other is FairyComponent && other.color == requiredColor) {
+      _matchingCount++;
+      if (!isActivated) {
+        isActivated = true;
+        onActivate?.call();
+      }
+    }
+  }
+
+  @override
+  void onCollisionEnd(PositionComponent other) {
+    super.onCollisionEnd(other);
+    if (other is FairyComponent && other.color == requiredColor) {
+      _matchingCount = (_matchingCount - 1).clamp(0, 99);
+      if (_matchingCount == 0 && isActivated) {
+        isActivated = false;
+        onDeactivate?.call();
+      }
+    }
   }
 
   @override
   void render(Canvas canvas) {
     final rect = size.toRect();
-    final fillColor =
-        isActivated ? requiredColor.displayColor : const Color(0xFF6B6B7A);
+    final baseColor = requiredColor.displayColor;
 
-    // Basin fountain (mangkuk)
+    // Badan fountain
     canvas.drawRRect(
       RRect.fromRectAndCorners(
         rect,
@@ -45,22 +73,19 @@ class FountainComponent extends PositionComponent with CollisionCallbacks {
       Paint()..color = const Color(0xFF44445C),
     );
 
-    // Air/isi fountain — warna sesuai requiredColor, terang jika aktif
-    final waterRect = Rect.fromLTWH(
-      3, size.y * 0.25, size.x - 6, size.y * 0.65,
-    );
+    // Air — warna target selalu kelihatan (guide untuk player)
+    final waterRect = Rect.fromLTWH(3, size.y * 0.25, size.x - 6, size.y * 0.65);
     canvas.drawRRect(
       RRect.fromRectAndRadius(waterRect, const Radius.circular(3)),
-      Paint()..color = fillColor.withValues(alpha: isActivated ? 1.0 : 0.4),
+      Paint()..color = baseColor.withValues(alpha: isActivated ? 1.0 : 0.25),
     );
-
-    // Border outline warna target — selalu kelihatan walau belum aktif
+    // Border warna target — selalu tampil sebagai hint
     canvas.drawRRect(
       RRect.fromRectAndRadius(waterRect, const Radius.circular(3)),
       Paint()
-        ..color = requiredColor.displayColor
+        ..color = baseColor
         ..style = PaintingStyle.stroke
-        ..strokeWidth = 1.5,
+        ..strokeWidth = 2,
     );
   }
 }

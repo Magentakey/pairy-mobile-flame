@@ -111,7 +111,7 @@ class Level extends World with HasGameReference<PairyGame> {
           add(FountainComponent(
             position: Vector2(sp.x, sp.y),
             requiredColor: _parseFairyColor(fc),
-            onActivated: () => targetGate?.open(),
+            onActivate: () => targetGate?.open(), onDeactivate: () => targetGate?.close(),
           ));
 
         case 'Fairy':
