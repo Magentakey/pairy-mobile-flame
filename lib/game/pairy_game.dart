@@ -1,4 +1,3 @@
-
 import 'package:flame/components.dart';
 import 'package:flame/game.dart';
 import 'package:flutter/material.dart';
@@ -21,9 +20,12 @@ class PairyGame extends FlameGame with HasCollisionDetection {
   late Level _level;
   late CameraComponent cam;
 
-  final ValueNotifier<bool> leverState = ValueNotifier(false);
-  // true saat player berada di dekat exit door — dipakai untuk warna tombol ↑
+  final ValueNotifier<bool> leverState   = ValueNotifier(false);
   final ValueNotifier<bool> nearExitDoor = ValueNotifier(false);
+
+  // Death
+  String _deathCause = '';
+  String get deathCause => _deathCause;
 
   @override
   Future<void> onLoad() async => _loadLevel();
@@ -41,11 +43,20 @@ class PairyGame extends FlameGame with HasCollisionDetection {
 
   List<GroundComponent> get groundComponents => _level.groundComponents;
 
+  // ── Lever ────────────────────────────────────────────────────────
   void activateLever() {
     player?.nearLever?.activate();
     leverState.value = player?.nearLever?.isOn ?? false;
   }
 
+  // ── Death ────────────────────────────────────────────────────────
+  void playerDied(String cause) {
+    _deathCause = cause;
+    pauseEngine();
+    overlays.add('PlayerDied');
+  }
+
+  // ── Level complete ────────────────────────────────────────────────
   void completeLevel() {
     pauseEngine();
     overlays.add('LevelComplete');
@@ -54,15 +65,18 @@ class PairyGame extends FlameGame with HasCollisionDetection {
   Future<void> loadNextLevel() async {
     overlays.remove('LevelComplete');
     if (_currentLevelIndex < _levelNames.length - 1) _currentLevelIndex++;
-    removeAll(children.toList());
-    player = null;
-    await Future.delayed(const Duration(milliseconds: 300));
-    await _loadLevel();
-    resumeEngine();
+    await _resetGame();
   }
 
   Future<void> restartLevel() async {
     overlays.remove('LevelComplete');
+    overlays.remove('PlayerDied');
+    nearExitDoor.value = false;
+    leverState.value   = false;
+    await _resetGame();
+  }
+
+  Future<void> _resetGame() async {
     player = null;
     _level.groundComponents.clear();
     removeAll(children.toList());
@@ -71,6 +85,7 @@ class PairyGame extends FlameGame with HasCollisionDetection {
     resumeEngine();
   }
 
+  // ── Player pass-throughs ─────────────────────────────────────────
   void pressLeft()         => player?.moveLeft();
   void pressRight()        => player?.moveRight();
   void releaseHorizontal() => player?.stopMoving();

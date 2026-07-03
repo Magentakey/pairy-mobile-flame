@@ -9,15 +9,6 @@ import '../../models/fairy_color.dart';
 import 'gate_component.dart';
 import 'ground_component.dart';
 
-/// Fairy bisa di-drag langsung dengan jari.
-///
-/// Behavior:
-/// - Drag → fairy ikut jari secara instan (tidak lag, tidak lerp).
-/// - Lepas → fairy TETAP di posisi terakhir drag (tidak snap ke home).
-/// - Collision: menembus Player dan Fountain (trigger), tapi SOLID
-///   terhadap GroundComponent, GateComponent (tertutup), dan FairyComponent lain.
-/// - Aktivasi fountain: ditangani oleh FountainComponent via Flame collision
-///   callback (bukan dari FairyComponent) → fairy tidak perlu menghilang.
 class FairyComponent extends PositionComponent
     with DragCallbacks, CollisionCallbacks {
   FairyComponent({required super.position, required this.color})
@@ -25,10 +16,12 @@ class FairyComponent extends PositionComponent
 
   final FairyColor color;
 
-  // Posisi jari di world space — hanya diupdate onDragUpdate,
-  // TIDAK pernah direset oleh collision sehingga fairy selalu menuju jari.
   Vector2 _fingerWorldPos = Vector2.zero();
   bool _isDragging = false;
+
+  // Batas map — sesuaikan jika ukuran map berubah
+  static const double _mapW = 648.0;
+  static const double _mapH = 360.0;
 
   @override
   Future<void> onLoad() async {
@@ -48,14 +41,15 @@ class FairyComponent extends PositionComponent
     super.onDragUpdate(event);
     if (!_isDragging) return;
     _fingerWorldPos += event.localDelta;
+    // Clamp jari ke batas map — cegah fairy drift off-screen
+    _fingerWorldPos.x = _fingerWorldPos.x.clamp(0, _mapW);
+    _fingerWorldPos.y = _fingerWorldPos.y.clamp(0, _mapH);
   }
 
   @override
   void onDragEnd(DragEndEvent event) {
     super.onDragEnd(event);
     _isDragging = false;
-    // Fairy tetap di posisi sekarang — tidak kembali ke home.
-    // Fountain mendeteksi overlap via onCollisionStart/End sendiri.
   }
 
   @override
@@ -63,16 +57,30 @@ class FairyComponent extends PositionComponent
     super.update(dt);
 
     if (_isDragging) {
-      // Langsung ikut jari, tidak ada lerp
-      position.setFrom(_fingerWorldPos);
+      // Gerak menuju jari dengan kecepatan maksimum + sub-step collision
+      // → tidak bisa teleport menembus dinding/tile
+      const maxSpeed = 600.0; // px/s
+      const stepSize = 8.0;   // lebih kecil dari tile (18px) → anti-tunneling
+
+      final diff = _fingerWorldPos - position;
+      final dist = diff.length;
+
+      if (dist > 0.5) {
+        var remaining = (maxSpeed * dt).clamp(0.0, dist);
+        final dir = diff / dist;
+
+        while (remaining > 0) {
+          final step = remaining.clamp(0.0, stepSize);
+          position += dir * step;
+          _resolveSolids();
+          remaining -= step;
+        }
+      }
+    } else {
+      _resolveSolids();
     }
-    // Selalu resolve solids — baik saat drag maupun diam
-    // (misalnya gate menutup saat fairy ada di dalam gate)
-    _resolveSolids();
   }
 
-  /// Dorong fairy keluar dari solid. Fountain dan Player sengaja tidak ada
-  /// di sini — fairy bisa menembus keduanya.
   void _resolveSolids() {
     if (parent == null) return;
     for (final child in parent!.children) {
@@ -106,8 +114,8 @@ class FairyComponent extends PositionComponent
     } else {
       position.y += overlapB < overlapT ? -overlapB : overlapT;
     }
-    // _fingerWorldPos TIDAK diupdate → fairy terus mencoba
-    // kembali ke jari, menciptakan efek "terblokir tembok" yang natural.
+    // _fingerWorldPos tidak diupdate → jika tembok di jalan,
+    // fairy berhenti di tepi tembok dan terus mengarah ke jari.
   }
 
   void _pushAwayFrom(FairyComponent other) {
@@ -122,21 +130,17 @@ class FairyComponent extends PositionComponent
   void render(Canvas canvas) {
     final radius = size.x / 2;
     final center = Offset(radius, radius);
-
     if (_isDragging) {
       canvas.drawCircle(
-        center,
-        radius + 4,
+        center, radius + 4,
         Paint()..color = color.displayColor.withValues(alpha: 0.3),
       );
     }
     canvas.drawCircle(center, radius, Paint()..color = color.displayColor);
-    canvas.drawCircle(
-      center, radius,
-      Paint()
-        ..color = Colors.white.withValues(alpha: 0.6)
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = 1.5,
-    );
+    canvas.drawCircle(center, radius,
+        Paint()
+          ..color = Colors.white.withValues(alpha: 0.6)
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 1.5);
   }
 }
