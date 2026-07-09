@@ -12,6 +12,7 @@ class HudControlsOverlay extends StatelessWidget {
   Widget build(BuildContext context) {
     return Stack(
       children: [
+        // ── Left / Right ────────────────────────────────────────────
         Positioned(
           left: 12,
           bottom: 16,
@@ -31,20 +32,43 @@ class HudControlsOverlay extends StatelessWidget {
             ],
           ),
         ),
-        // Tombol ↑ — warna hijau saat dekat exit door
+
+        // ── Jump / Exit ─────────────────────────────────────────────
         Positioned(
           right: 16,
           bottom: 16,
           child: ValueListenableBuilder<bool>(
             valueListenable: game.nearExitDoor,
-            builder: (context, isNearDoor, _) {
-              return _HudButton(
-                icon: Icons.arrow_upward,
-                onDown: game.pressJump,
-                onUp: () {},
-                activeColor: isNearDoor ? const Color(0xFF34C77B) : null,
-              );
-            },
+            builder: (context, isNearDoor, _) => _HudButton(
+              icon: Icons.arrow_upward,
+              onDown: game.pressJump,
+              onUp: () {},
+              activeColor: isNearDoor ? const Color(0xFF34C77B) : null,
+            ),
+          ),
+        ),
+
+        // ── Pause button — top right ─────────────────────────────────
+        Positioned(
+          right: 12,
+          top: 12,
+          child: SafeArea(
+            child: GestureDetector(
+              onTap: game.togglePause,
+              child: Container(
+                width: 44,
+                height: 44,
+                decoration: BoxDecoration(
+                  color: Colors.black.withValues(alpha: 0.45),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: const Icon(
+                  Icons.pause_rounded,
+                  color: Colors.white,
+                  size: 22,
+                ),
+              ),
+            ),
           ),
         ),
       ],
@@ -75,15 +99,10 @@ class _HudButton extends StatelessWidget {
         width: 52,
         height: 52,
         decoration: BoxDecoration(
-          color: (activeColor ?? AppColors.surfaceMuted)
-              .withValues(alpha: 0.85),
+          color: (activeColor ?? AppColors.surfaceMuted).withValues(alpha: 0.85),
           borderRadius: BorderRadius.circular(12),
         ),
-        child: Icon(
-          icon,
-          color: Colors.white.withValues(alpha: 0.9),
-          size: 28,
-        ),
+        child: Icon(icon, color: Colors.white.withValues(alpha: 0.9), size: 28),
       ),
     );
   }

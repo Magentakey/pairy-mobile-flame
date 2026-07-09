@@ -3,6 +3,8 @@ import 'dart:math' show min;
 import 'package:flame/collisions.dart';
 import 'package:flame/components.dart';
 import 'package:flutter/material.dart';
+import 'package:flame/sprite.dart';
+
 
 import '../pairy_game.dart';
 import 'exit_door_component.dart';
@@ -22,6 +24,9 @@ class PlayerComponent extends PositionComponent
 
   final Vector2 velocity      = Vector2.zero();
   final Vector2 _prevPosition = Vector2.zero();
+  late final SpriteAnimationComponent _animComponent;
+  late final SpriteAnimation _idleAnim;
+  late final SpriteAnimation _walkAnim;
   bool isOnGround    = false;
   bool _nearExitDoor = false;
   bool _isDead       = false;
@@ -31,9 +36,31 @@ class PlayerComponent extends PositionComponent
   // Tracking state gate di frame sebelumnya untuk deteksi crush
   final Map<GateComponent, bool> _gateWasOpen = {};
 
-  @override
+@override
   Future<void> onLoad() async {
     add(RectangleHitbox(collisionType: CollisionType.active));
+
+    final walkImage = await game.images.load('player/walk/player_walk.png');
+    _walkAnim = SpriteAnimation.fromFrameData(
+      walkImage,
+      SpriteAnimationData.sequenced(
+        amount: 4,
+        stepTime: 0.15,
+        textureSize: Vector2(96, 128),
+      ),
+    );
+
+    // Idle sementara pakai frame pertama walk (belum ada asset idle terpisah)
+    _idleAnim = SpriteAnimation.spriteList([
+      _walkAnim.frames.first.sprite,
+    ], stepTime: 1);
+
+    _animComponent = SpriteAnimationComponent(
+      animation: _idleAnim,
+      size: size,
+      anchor: Anchor.topLeft,
+    );
+    add(_animComponent);
   }
 
   void moveLeft()   => _input = _HorizontalInput.left;
@@ -53,9 +80,19 @@ class PlayerComponent extends PositionComponent
     final safeDt = dt.clamp(0.0, maxDt);
 
     switch (_input) {
-      case _HorizontalInput.left:  velocity.x = -moveSpeed;
-      case _HorizontalInput.right: velocity.x =  moveSpeed;
-      case _HorizontalInput.none:  velocity.x = 0;
+      case _HorizontalInput.left:  
+        velocity.x = -moveSpeed;
+        _animComponent.animation = _walkAnim;
+        _animComponent.scale.x = -1;
+        _animComponent.position.x = size.x;
+      case _HorizontalInput.right:
+        velocity.x = moveSpeed;
+        _animComponent.animation = _walkAnim;
+        _animComponent.scale.x = 1;
+        _animComponent.position.x = 0;
+      case _HorizontalInput.none:
+        velocity.x = 0;
+        _animComponent.animation = _idleAnim;
     }
 
     velocity.y += gravity * safeDt;
@@ -76,7 +113,7 @@ class PlayerComponent extends PositionComponent
           if (!child.isOpenState) {
             if (wasOpen && _aabbOverlap(child)) {
               // Gate baru tutup + player di dalam → mati tertimpa
-              _die('Tertimpa Gate');
+              _die('Crushed by Gate');
               _gateWasOpen[child] = false;
               return;
             }
@@ -94,6 +131,7 @@ class PlayerComponent extends PositionComponent
   void _die(String cause) {
     _isDead = true;
     velocity.setZero();
+    _animComponent.animation = _idleAnim; // freeze
     game.playerDied(cause);
   }
 
@@ -194,11 +232,5 @@ class PlayerComponent extends PositionComponent
       _nearExitDoor = false;
       game.nearExitDoor.value = false;
     }
-  }
-
-  @override
-  void render(Canvas canvas) {
-    if (_isDead) return;
-    canvas.drawRect(size.toRect(), Paint()..color = const Color(0xFF2ECC71));
   }
 }

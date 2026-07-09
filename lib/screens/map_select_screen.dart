@@ -1,87 +1,306 @@
 import 'package:flutter/material.dart';
 
 import '../core/app_colors.dart';
-import '../core/routes.dart';
+import '../game/pairy_game.dart';
+import '../services/progress_service.dart';
 
-import '../widgets/pairy_button.dart';
-
-/// Map / level-select screen (PRD 7.2).
-///
-/// Wireframe shows a header "select map" and a grid of numbered circles.
-/// Tapping an unlocked level navigates to [GameplayScreen] passing the
-/// level id as a route argument.
-///
-/// [_unlockedUpTo] is a hard-coded constant for the MVP; swap for a value
-/// read from SharedPreferences once save-progress (PRD 6.9) is wired in.
-class MapSelectScreen extends StatelessWidget {
+class MapSelectScreen extends StatefulWidget {
   const MapSelectScreen({super.key});
 
-  /// Total level slots shown in the grid (pad to a round number).
-  static const int _totalSlots = 16;
+  @override
+  State<MapSelectScreen> createState() => _MapSelectScreenState();
+}
 
-  /// How many levels are unlocked in this prototype (Level 1 only).
-  static const int _unlockedUpTo = 1;
+class _MapSelectScreenState extends State<MapSelectScreen> {
+  static const int cols = 4;
+  static const int rows = 3;
+  static const int displaySlots = cols * rows; // 12
+
+  // Warna khusus untuk level yang sedang aktif tapi belum di-clear.
+  // Didefinisikan lokal di sini supaya tidak perlu ubah app_colors.dart.
+  static const Color _currentLevelColor = Color(0xFFF2B94D);
+
+  int _unlockedCount = 1;
+  bool _loading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadProgress();
+  }
+
+  Future<void> _loadProgress() async {
+    final unlocked = await ProgressService.getUnlockedLevel();
+    if (mounted)
+      setState(() {
+        _unlockedCount = unlocked;
+        _loading = false;
+      });
+  }
+
+  Future<void> _confirmDelete() async {
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (_) => AlertDialog(
+        backgroundColor: const Color(0xFF1E1E2E),
+        title: const Text(
+          'Delete Progress',
+          style: TextStyle(
+            color: Colors.white,
+            decoration: TextDecoration.none,
+          ),
+        ),
+        content: const Text(
+          'All progress will be lost. Only Level 1 will be available.',
+          style: TextStyle(
+            color: Colors.white70,
+            decoration: TextDecoration.none,
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text(
+              'Cancel',
+              style: TextStyle(color: Colors.white54),
+            ),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text(
+              'Delete',
+              style: TextStyle(color: Color(0xFFE85C4A)),
+            ),
+          ),
+        ],
+      ),
+    );
+    if (confirm == true) {
+      await ProgressService.deleteProgress();
+      _loadProgress();
+    }
+  }
+
+  /// Menentukan warna level nomor [n].
+  /// - n < _unlockedCount  → sudah di-clear (hijau)
+  /// - n == _unlockedCount → level aktif, belum di-clear (kuning/oranye)
+  /// - n > _unlockedCount  → masih terkunci (abu-abu)
+  Color _colorFor(int n) {
+    final total = PairyGame.levelNames.length;
+    if (n > total)
+      return AppColors.levelLocked; // map belum dibuat, selalu locked
+    if (n < _unlockedCount) return AppColors.primaryGreen;
+    if (n == _unlockedCount) return _currentLevelColor;
+    return AppColors.levelLocked;
+  }
+
+  bool _isPlayable(int n) {
+    final total = PairyGame.levelNames.length;
+    return n <= _unlockedCount && n <= total;
+  }
 
   @override
   Widget build(BuildContext context) {
+    final total = PairyGame.levelNames.length;
+    final slots = displaySlots > total ? displaySlots : total;
+
     return Scaffold(
       backgroundColor: AppColors.background,
       body: SafeArea(
         child: Column(
           children: [
-            // ── Header ────────────────────────────────────────────────
-            Padding(
-              padding: const EdgeInsets.symmetric(vertical: 24),
-              child: Text(
-                'Select Map',
-                style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                      fontWeight: FontWeight.bold,
-                      color: Colors.black87,
-                    ),
-              ),
-            ),
-
-            // ── Level grid ───────────────────────────────────────────
-            Expanded(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 24),
-                child: GridView.builder(
-                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: 8,
-                    crossAxisSpacing: 10,
-                    mainAxisSpacing: 10,
+            // ── Header ──────────────────────────────────────────────
+            const Padding(
+              padding: EdgeInsets.fromLTRB(16, 20, 16, 8),
+              child: Center(
+                child: Text(
+                  'Select Level',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 24,
+                    fontWeight: FontWeight.w800,
+                    letterSpacing: 1,
+                    decoration: TextDecoration.none,
                   ),
-                  itemCount: _totalSlots,
-                  itemBuilder: (context, index) {
-                    final levelNumber = index + 1;
-                    final isUnlocked = levelNumber <= _unlockedUpTo;
-                    return _LevelSlot(
-                      number: levelNumber,
-                      isUnlocked: isUnlocked,
-                      onTap: isUnlocked
-                          ? () => Navigator.pushNamed(
-                                context,
-                                AppRoutes.gameplay,
-                                arguments: levelNumber,
-                              )
-                          : null,
-                    );
-                  },
                 ),
               ),
             ),
 
-            // ── Back button ──────────────────────────────────────────
+            // ── Legend ──────────────────────────────────────────────
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 4),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  _LegendDot(color: AppColors.primaryGreen, label: 'Cleared'),
+                  const SizedBox(width: 16),
+                  const _LegendDot(color: _currentLevelColor, label: 'Current'),
+                  const SizedBox(width: 16),
+                  _LegendDot(color: AppColors.levelLocked, label: 'Locked'),
+                ],
+              ),
+            ),
+
+            // ── Level grid: manual Column+Row, dijamin pas 4 kolom x 3 baris tanpa scroll ──
+            Expanded(
+              child: _loading
+                  ? const Center(child: CircularProgressIndicator())
+                  : Padding(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 32,
+                        vertical: 8,
+                      ),
+                      child: LayoutBuilder(
+                        builder: (context, constraints) {
+                          const spacing = 12.0;
+
+                          // Ukuran circle dihitung dari sisi yang lebih membatasi
+                          // (lebar per kolom vs tinggi per baris), lalu dipakai
+                          // untuk KEDUA dimensi supaya circle selalu proporsional
+                          // dan grid selalu pas mengisi area tanpa overflow.
+                          final cellW =
+                              (constraints.maxWidth - spacing * (cols - 1)) /
+                              cols;
+                          final cellH =
+                              (constraints.maxHeight - spacing * (rows - 1)) /
+                              rows;
+                          final cellSize = cellW < cellH ? cellW : cellH;
+                          final circleSize = cellSize.clamp(0.0, 64.0);
+
+                          return Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: List.generate(rows, (r) {
+                              return Padding(
+                                padding: EdgeInsets.only(
+                                  bottom: r == rows - 1 ? 0 : spacing,
+                                ),
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: List.generate(cols, (c) {
+                                    final i = r * cols + c;
+                                    if (i >= slots) {
+                                      return SizedBox(width: cellW);
+                                    }
+                                    final n = i + 1;
+                                    final ok = _isPlayable(n);
+                                    return Padding(
+                                      padding: EdgeInsets.only(
+                                        right: c == cols - 1 ? 0 : spacing,
+                                      ),
+                                      child: SizedBox(
+                                        width: cellW,
+                                        child: Center(
+                                          child: GestureDetector(
+                                            onTap: ok
+                                                ? () async {
+                                                    await Navigator.pushNamed(
+                                                      context,
+                                                      '/gameplay',
+                                                      arguments: i,
+                                                    );
+                                                    // Reload progress setelah kembali dari gameplay
+                                                    _loadProgress();
+                                                  }
+                                                : null,
+                                            child: Container(
+                                              width: circleSize,
+                                              height: circleSize,
+                                              decoration: BoxDecoration(
+                                                color: _colorFor(n),
+                                                shape: BoxShape.circle,
+                                              ),
+                                              child: Center(
+                                                child: ok
+                                                    ? Text(
+                                                        '$n',
+                                                        style: TextStyle(
+                                                          color: Colors.white,
+                                                          fontWeight:
+                                                              FontWeight.bold,
+                                                          fontSize:
+                                                              circleSize * 0.32,
+                                                          decoration:
+                                                              TextDecoration
+                                                                  .none,
+                                                        ),
+                                                      )
+                                                    : Icon(
+                                                        Icons.lock,
+                                                        color: Colors.white
+                                                            .withValues(
+                                                              alpha: 0.4,
+                                                            ),
+                                                        size: circleSize * 0.36,
+                                                      ),
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    );
+                                  }),
+                                ),
+                              );
+                            }),
+                          );
+                        },
+                      ),
+                    ),
+            ),
+
+            // ── Back & Delete Save ──────────────────────────────────
             Padding(
               padding: const EdgeInsets.all(24),
-              child: Align(
-                alignment: Alignment.bottomLeft,
-                child: PairyButton(
-                  label: '< Back',
-                  color: AppColors.primaryGreen,
-                  width: 120,
-                  onTap: () => Navigator.pop(context),
-                ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  GestureDetector(
+                    onTap: () => Navigator.pushNamedAndRemoveUntil(
+                      context,
+                      '/',
+                      (route) => false,
+                    ),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 20,
+                        vertical: 10,
+                      ),
+                      decoration: BoxDecoration(
+                        color: AppColors.primaryGreen,
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: const Text(
+                        '< Back',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.w700,
+                          decoration: TextDecoration.none,
+                        ),
+                      ),
+                    ),
+                  ),
+                  GestureDetector(
+                    onTap: _confirmDelete,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 20,
+                        vertical: 10,
+                      ),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFE85C4A),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: const Text(
+                        'Delete Save',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.w700,
+                          decoration: TextDecoration.none,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ),
           ],
@@ -91,39 +310,33 @@ class MapSelectScreen extends StatelessWidget {
   }
 }
 
-class _LevelSlot extends StatelessWidget {
-  const _LevelSlot({
-    required this.number,
-    required this.isUnlocked,
-    this.onTap,
-  });
+/// Widget kecil untuk legend warna di bawah judul.
+class _LegendDot extends StatelessWidget {
+  const _LegendDot({required this.color, required this.label});
 
-  final int number;
-  final bool isUnlocked;
-  final VoidCallback? onTap;
+  final Color color;
+  final String label;
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        decoration: BoxDecoration(
-          color: isUnlocked ? AppColors.primaryGreen : AppColors.levelLocked,
-          shape: BoxShape.circle,
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Container(
+          width: 10,
+          height: 10,
+          decoration: BoxDecoration(color: color, shape: BoxShape.circle),
         ),
-        child: Center(
-          child: isUnlocked
-              ? Text(
-                  '$number',
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 14,
-                  ),
-                )
-              : const Icon(Icons.lock, color: Colors.white54, size: 16),
+        const SizedBox(width: 6),
+        Text(
+          label,
+          style: TextStyle(
+            color: Colors.white.withValues(alpha: 0.7),
+            fontSize: 12,
+            decoration: TextDecoration.none,
+          ),
         ),
-      ),
+      ],
     );
   }
 }

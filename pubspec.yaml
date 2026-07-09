@@ -13,6 +13,7 @@ dependencies:
   cupertino_icons: ^1.0.8
   flame: ^1.18.0
   flame_tiled: any
+  shared_preferences: ^2.2.0
 
 dev_dependencies:
   flutter_test:
@@ -26,9 +27,11 @@ flutter:
 
   assets:
     - assets/images/player/
+    - assets/images/player/walk/
     - assets/images/fairy/
     - assets/images/ui/
     - assets/images/environment/
+    - assets/images/exit_gate/
     - assets/tiles/
     - assets/maps/
     - assets/audio/sfx/
