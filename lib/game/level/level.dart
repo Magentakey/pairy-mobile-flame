@@ -92,10 +92,17 @@ class Level extends World with HasGameReference<PairyGame> {
 
     final objects = spawnLayer.objects;
 
-    // Pass 1: Gate & MovingPlatform — simpan ke map dengan pairing key,
-    // supaya Lever/Fountain di Pass 2 bisa lookup targetnya.
-    final gateMap = <String, GateComponent>{};
-    final platformMap = <String, MovingPlatformComponent>{};
+    // Semua Gate/Platform yang share nama yang sama dengan semua
+    // Lever/Fountain yang share nama yang sama itu masuk satu _TriggerGroup.
+    // Relasinya many-to-many: 1 nama bisa punya banyak target & banyak
+    // trigger sekaligus, dan logikanya AND — target baru berubah state
+    // kalau SEMUA trigger dengan nama itu dalam kondisi "on".
+    final groups = <String, _TriggerGroup>{};
+    _TriggerGroup groupFor(String key) =>
+        groups.putIfAbsent(key, _TriggerGroup.new);
+
+    // Pass 1: Gate & MovingPlatform — dibuat & di-add duluan supaya
+    // Lever/Fountain di Pass 2 sudah bisa daftar sebagai trigger grupnya.
     for (final sp in objects) {
       if (sp.class_ == 'Gate') {
         final w = sp.width > 0 ? sp.width.toDouble() : 14.0;
@@ -107,8 +114,8 @@ class Level extends World with HasGameReference<PairyGame> {
           initialOpen: initialOpen,
         );
         add(gate);
-        final key = _stripPrefix(sp.name, 'gate');
-        if (key != null) gateMap[key] = gate;
+        final key = _keyOf(sp);
+        if (key != null) groupFor(key).gates.add(gate);
       } else if (sp.class_ == 'MovingPlatform') {
         final dirStr = sp.properties.getValue<String>('direction') ?? 'right';
         final dist = sp.properties.getValue<int>('distanceTiles') ?? 2;
@@ -128,8 +135,8 @@ class Level extends World with HasGameReference<PairyGame> {
           initialMoving: initialMoving,
         );
         add(platform);
-        final key = _stripPrefix(sp.name, 'platform');
-        if (key != null) platformMap[key] = platform;
+        final key = _keyOf(sp);
+        if (key != null) groupFor(key).platforms.add(platform);
       }
     }
 
@@ -161,36 +168,34 @@ class Level extends World with HasGameReference<PairyGame> {
           break;
 
         case 'Lever':
-          final targetGate = gateMap[sp.name];
-          final targetPlatform = platformMap[sp.name];
+          final key = _keyOf(sp);
           final leverW = sp.width > 0 ? sp.width : 20.0;
           final leverH = sp.height > 0 ? sp.height : 24.0;
-          add(
-            LeverComponent(
-              position: Vector2(sp.x + leverW / 2, sp.y + leverH),
-              onToggle: (targetGate == null && targetPlatform == null)
-                  ? null
-                  : () {
-                      targetGate?.toggleState();
-                      targetPlatform?.toggleState();
-                    },
-            ),
+          late final LeverComponent lever;
+          lever = LeverComponent(
+            position: Vector2(sp.x + leverW / 2, sp.y + leverH),
+            onToggle: key == null ? null : () => groupFor(key).recompute(),
           );
+          if (key != null) groupFor(key).triggers.add(() => lever.isOn);
+          add(lever);
 
         case 'Fountain':
           final fc = _getColor(sp);
-          final targetGate = gateMap[sp.name];
-          final targetPlatform = platformMap[sp.name];
+          final key = _keyOf(sp);
           final founW = sp.width > 0 ? sp.width : 24.0;
           final founH = sp.height > 0 ? sp.height : 30.0;
-          add(
-            FountainComponent(
-              position: Vector2(sp.x + founW / 2, sp.y + founH),
-              requiredColor: _parseFairyColor(fc),
-              targetGate: targetGate,
-              targetPlatform: targetPlatform,
-            ),
+          late final FountainComponent fountain;
+          fountain = FountainComponent(
+            position: Vector2(sp.x + founW / 2, sp.y + founH),
+            requiredColor: _parseFairyColor(fc),
+            onActivationChanged: key == null
+                ? null
+                : () => groupFor(key).recompute(),
           );
+          if (key != null) {
+            groupFor(key).triggers.add(() => fountain.isActivated);
+          }
+          add(fountain);
 
         case 'Fairy':
           final fc = _getColor(sp);
@@ -207,6 +212,15 @@ class Level extends World with HasGameReference<PairyGame> {
           break;
       }
     }
+  }
+
+  // Key pairing sekarang langsung pakai `name` object di Tiled apa adanya
+  // (tanpa prefix "gate"/"platform" lagi) — bebas mau diisi "1", "a",
+  // "iamunique", dst. Nama kosong = objek berdiri sendiri (tidak ikut
+  // grup manapun, murni pakai initialOpen/initialMoving-nya sendiri).
+  static String? _keyOf(TiledObject sp) {
+    final name = sp.name.trim();
+    return name.isEmpty ? null : name;
   }
 
   static String _getColor(TiledObject sp) {
@@ -254,17 +268,48 @@ class Level extends World with HasGameReference<PairyGame> {
     }
   }
 
-  static String? _stripPrefix(String name, String prefix) {
-    final lower = name.toLowerCase();
-    if (lower.isEmpty || !lower.startsWith(prefix.toLowerCase())) return null;
-    final key = name.substring(prefix.length);
-    return key.isEmpty ? null : key;
-  }
-
   Future<void> reload() async {
     groundComponents.clear();
     removeAll(children.toList());
     game.player = null;
     await onLoad();
+  }
+}
+
+/// Kumpulan Gate/MovingPlatform (target) dan Lever/Fountain (trigger)
+/// yang share nama object yang sama di Tiled. Relasinya many-to-many:
+/// 1 grup bisa punya banyak target dan banyak trigger sekaligus.
+///
+/// Logikanya AND: target baru dianggap "aktif" kalau SEMUA trigger
+/// dalam grup itu dalam kondisi on (lever nyala / fountain ada fairy
+/// warna cocoknya). Kalau ada satu saja yang off, target tetap di
+/// state awalnya (belum berubah).
+///
+/// State target dihitung deterministik tiap [recompute] dipanggil:
+///   state = initialState XOR AND(semua trigger)
+/// — bukan flip/toggle biasa, supaya hasilnya konsisten walau
+/// triggernya banyak dan berubah gantian.
+class _TriggerGroup {
+  final List<GateComponent> gates = [];
+  final List<MovingPlatformComponent> platforms = [];
+
+  /// Getter boolean per trigger (lever.isOn / fountain.isActivated).
+  /// Pakai getter (bukan snapshot value) supaya selalu baca state
+  /// ter-update saat recompute dipanggil.
+  final List<bool Function()> triggers = [];
+
+  void recompute() {
+    final allOn =
+        triggers.isNotEmpty && triggers.every((getState) => getState());
+
+    for (final gate in gates) {
+      final shouldBeOpen = gate.initialOpen ^ allOn;
+      shouldBeOpen ? gate.open() : gate.close();
+    }
+
+    for (final platform in platforms) {
+      final shouldMove = platform.initialMoving ^ allOn;
+      shouldMove ? platform.start() : platform.stop();
+    }
   }
 }

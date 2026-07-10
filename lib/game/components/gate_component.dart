@@ -6,9 +6,13 @@ class GateComponent extends PositionComponent with CollisionCallbacks {
   GateComponent({
     required super.position,
     required super.size,
-    bool initialOpen = false,
+    this.initialOpen = false,
   }) : isOpenState = initialOpen,
        super(anchor: Anchor.bottomCenter);
+
+  /// Snapshot state awal, dipakai grup trigger untuk hitung
+  /// `initialOpen XOR AND(semua trigger)`.
+  final bool initialOpen;
 
   bool isOpenState;
   // true selama SATU frame saat gate baru saja menutup

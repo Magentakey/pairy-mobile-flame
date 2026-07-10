@@ -17,7 +17,7 @@ class MovingPlatformComponent extends PositionComponent
     required this.distanceTiles,
     this.tileSize = 18,
     this.speed = 40, // px/detik
-    bool initialMoving = true,
+    this.initialMoving = true,
   }) : isMoving = initialMoving,
        super(anchor: Anchor.topLeft);
 
@@ -25,6 +25,10 @@ class MovingPlatformComponent extends PositionComponent
   final int distanceTiles;
   final double tileSize;
   final double speed;
+
+  /// Snapshot state awal, dipakai grup trigger untuk hitung
+  /// `initialMoving XOR AND(semua trigger)`.
+  final bool initialMoving;
 
   /// State gerak platform saat ini. true = bergerak (default), false = diam
   /// (freeze di posisi terakhir, bukan kembali ke _start).

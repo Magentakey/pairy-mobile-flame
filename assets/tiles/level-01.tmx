@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.10" tiledversion="1.12.2" orientation="orthogonal" renderorder="right-down" width="100" height="50" tilewidth="18" tileheight="18" infinite="0" nextlayerid="5" nextobjectid="25">
+<map version="1.10" tiledversion="1.12.2" orientation="orthogonal" renderorder="right-down" width="100" height="50" tilewidth="18" tileheight="18" infinite="0" nextlayerid="5" nextobjectid="31">
  <tileset firstgid="1" source="tileset-tiles.tsx"/>
  <tileset firstgid="181" source="background.tsx"/>
  <tileset firstgid="221" source="t3.tsx"/>
@@ -168,15 +168,15 @@
  <objectgroup id="2" name="Spawnpoints">
   <object id="5" type="Player" x="666.977" y="602.878" width="10" height="10"/>
   <object id="6" type="ExitDoor" x="1182.25" y="297" width="10" height="10"/>
-  <object id="7" name="gatefairy1" type="Gate" x="699" y="423.667" width="109" height="139"/>
-  <object id="15" name="gatefairy2" type="Gate" x="613.5" y="495.667" width="84.5" height="37.5"/>
-  <object id="8" name="lever1" type="Lever" x="855.318" y="611.633" width="10" height="10"/>
-  <object id="9" name="fairy1" type="Fountain" x="775.417" y="600.083" width="14" height="13.3333">
+  <object id="7" name="1" type="Gate" x="699" y="423.667" width="109" height="139"/>
+  <object id="15" name="2" type="Gate" x="613.5" y="495.667" width="84.5" height="37.5"/>
+  <object id="8" name="1" type="Lever" x="855.318" y="611.633" width="10" height="10"/>
+  <object id="9" name="1" type="Fountain" x="775.417" y="600.083" width="14" height="13.3333">
    <properties>
     <property name="color" value="blue"/>
    </properties>
   </object>
-  <object id="14" name="fairy2" type="Fountain" x="723.333" y="600" width="12" height="14.6667">
+  <object id="14" name="2" type="Fountain" x="723.333" y="600" width="12" height="14.6667">
    <properties>
     <property name="color" value="red"/>
    </properties>
@@ -191,7 +191,7 @@
     <property name="color" value="red"/>
    </properties>
   </object>
-  <object id="12" name="gatelever1" type="Gate" x="900.5" y="473" width="109" height="139">
+  <object id="12" name="1" type="Gate" x="900.5" y="473" width="109" height="139">
    <properties>
     <property name="initialOpen" type="bool" value="true"/>
    </properties>
@@ -210,35 +210,57 @@
     <property name="speed" type="float" value="121"/>
    </properties>
   </object>
-  <object id="18" name="platformleverA" type="MovingPlatform" x="1026.03" y="527.909" width="72" height="18">
+  <object id="18" name="a" type="MovingPlatform" x="1026.03" y="527.909" width="72" height="18">
    <properties>
     <property name="direction" value="right"/>
     <property name="distanceTiles" type="int" value="8"/>
+    <property name="initialMoving" type="bool" value="true"/>
     <property name="speed" type="float" value="121"/>
    </properties>
   </object>
-  <object id="19" name="platformfairyB" type="MovingPlatform" x="1026.37" y="556.575" width="72" height="18">
+  <object id="19" name="b" type="MovingPlatform" x="1026.37" y="556.575" width="72" height="18">
    <properties>
     <property name="direction" value="right"/>
     <property name="distanceTiles" type="int" value="8"/>
+    <property name="initialMoving" type="bool" value="true"/>
     <property name="speed" type="float" value="121"/>
    </properties>
   </object>
-  <object id="20" name="leverA" type="Lever" x="1099.95" y="602.775" width="10" height="10"/>
-  <object id="21" name="fairyB" type="Fountain" x="1031.72" y="599.225" width="14" height="13.3333">
+  <object id="30" name="c" type="MovingPlatform" x="1026.03" y="624.909" width="72" height="18">
+   <properties>
+    <property name="direction" value="right"/>
+    <property name="distanceTiles" type="int" value="8"/>
+    <property name="initialMoving" type="bool" value="true"/>
+    <property name="speed" type="float" value="121"/>
+   </properties>
+  </object>
+  <object id="20" name="a" type="Lever" x="1099.95" y="602.775" width="10" height="10"/>
+  <object id="26" name="c" type="Lever" x="1133.28" y="602.442" width="10" height="10"/>
+  <object id="27" name="c" type="Lever" x="1146.62" y="602.442" width="10" height="10"/>
+  <object id="28" name="c" type="Lever" x="1160.28" y="602.775" width="10" height="10"/>
+  <object id="29" name="c" type="Lever" x="1173.62" y="603.108" width="10" height="10"/>
+  <object id="21" name="b" type="Fountain" x="1031.72" y="599.225" width="14" height="13.3333">
    <properties>
     <property name="color" value="blue"/>
    </properties>
   </object>
-  <object id="22" name="gate4" type="Gate" x="725.5" y="622.5" width="109" height="139">
+  <object id="22" name="3" type="Gate" x="725.5" y="622.5" width="109" height="139">
    <properties>
     <property name="initialOpen" type="bool" value="false"/>
    </properties>
   </object>
-  <object id="23" name="lever4" type="Lever" x="623.95" y="604.442" width="10" height="10"/>
-  <object id="24" name="fairy4" type="Fountain" x="606.049" y="600.225" width="14" height="13.3333">
+  <object id="23" name="3" type="Lever" x="623.95" y="604.442" width="10" height="10"/>
+  <object id="24" name="3" type="Fountain" x="606.049" y="600.225" width="14" height="13.3333">
    <properties>
     <property name="color" value="blue"/>
+   </properties>
+  </object>
+  <object id="25" name="b" type="MovingPlatform" x="1169" y="557.333" width="72" height="18">
+   <properties>
+    <property name="direction" value="left"/>
+    <property name="distanceTiles" type="int" value="8"/>
+    <property name="initialMoving" type="bool" value="false"/>
+    <property name="speed" type="float" value="121"/>
    </properties>
   </object>
  </objectgroup>

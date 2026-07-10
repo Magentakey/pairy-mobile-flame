@@ -3,16 +3,13 @@ import 'package:flutter/material.dart';
 
 import '../../models/fairy_color.dart';
 import 'fairy_component.dart';
-import 'gate_component.dart';
-import 'moving_platform_component.dart';
 
 /// Fountain aktif saat fairy berwarna sama berada di atasnya.
-/// Beda dengan lever, fountain TIDAK memaksa gate ke state tertentu:
-/// - Fairy pertama masuk → gate di-toggle (flip apa adanya).
-/// - Fairy terakhir keluar → gate di-restore ke state SEBELUM
-///   toggle tadi (snapshot), bukan sekadar toggle lagi. Ini penting
-///   untuk kasus > 1 fairy warna sama overlap gantian di fountain
-///   yang sama (lihat _matchingCount).
+/// Fountain tidak lagi memegang referensi langsung ke gate/platform —
+/// ia cuma melaporkan perubahan [isActivated] lewat [onActivationChanged].
+/// Target sebenarnya (gate/platform) dan logika AND-nya dikelola oleh
+/// grup trigger di level.dart (lihat _TriggerGroup), supaya fountain
+/// bisa jadi salah satu dari banyak trigger yang share nama yang sama.
 ///
 /// NOTE: Overlap detection dilakukan MANUAL (AABB clamp) di [update],
 /// bukan lewat Flame CollisionCallbacks. Ini disengaja: kombinasi
@@ -26,18 +23,18 @@ class FountainComponent extends PositionComponent {
   FountainComponent({
     required super.position,
     required this.requiredColor,
-    this.targetGate,
-    this.targetPlatform,
+    this.onActivationChanged,
   }) : super(size: Vector2(24, 30), anchor: Anchor.bottomCenter);
 
   final FairyColor requiredColor;
-  final GateComponent? targetGate;
-  final MovingPlatformComponent? targetPlatform;
+
+  /// Dipanggil setiap [isActivated] berubah (baik jadi true maupun
+  /// kembali false) — dipakai grup trigger untuk recompute AND.
+  final VoidCallback? onActivationChanged;
+
   bool isActivated = false;
 
   int _matchingCount = 0;
-  bool? _gateStateBeforeActivate;
-  bool? _platformStateBeforeActivate;
   final Set<FairyComponent> _overlapping = {};
 
   @override
@@ -89,10 +86,7 @@ class FountainComponent extends PositionComponent {
     _matchingCount++;
     if (!isActivated) {
       isActivated = true;
-      _gateStateBeforeActivate = targetGate?.isOpenState;
-      targetGate?.toggleState();
-      _platformStateBeforeActivate = targetPlatform?.isMoving;
-      targetPlatform?.toggleState();
+      onActivationChanged?.call();
     }
   }
 
@@ -101,17 +95,7 @@ class FountainComponent extends PositionComponent {
     _matchingCount = (_matchingCount - 1).clamp(0, 99);
     if (_matchingCount == 0 && isActivated) {
       isActivated = false;
-      final beforeGate = _gateStateBeforeActivate;
-      if (beforeGate != null && targetGate != null) {
-        beforeGate ? targetGate!.open() : targetGate!.close();
-      }
-      _gateStateBeforeActivate = null;
-
-      final beforePlatform = _platformStateBeforeActivate;
-      if (beforePlatform != null && targetPlatform != null) {
-        beforePlatform ? targetPlatform!.start() : targetPlatform!.stop();
-      }
-      _platformStateBeforeActivate = null;
+      onActivationChanged?.call();
     }
   }
 
