@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.10" tiledversion="1.12.2" orientation="orthogonal" renderorder="right-down" width="116" height="50" tilewidth="18" tileheight="18" infinite="0" nextlayerid="5" nextobjectid="24">
+<map version="1.10" tiledversion="1.12.2" orientation="orthogonal" renderorder="right-down" width="116" height="50" tilewidth="18" tileheight="18" infinite="0" nextlayerid="5" nextobjectid="26">
  <tileset firstgid="1" source="background.tsx"/>
  <tileset firstgid="41" source="tileset-tiles.tsx"/>
  <layer id="1" name="background" width="116" height="50">
@@ -202,6 +202,8 @@
     <property name="initialOpen" type="bool" value="true"/>
    </properties>
   </object>
+  <object id="24" type="Gate" x="842.167" y="502.917" width="33.25" height="22.4167"/>
+  <object id="25" type="Gate" x="808.5" y="480.25" width="34.9167" height="45.0833"/>
   <object id="7" name="2" type="Gate" x="521.5" y="506.167" width="46.3333" height="26.6667"/>
   <object id="14" name="b" type="MovingPlatform" x="901.5" y="556.5" width="72" height="18">
    <properties>

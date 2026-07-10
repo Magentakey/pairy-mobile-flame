@@ -1,4 +1,4 @@
-import 'dart:math' show min;
+import 'dart:math' show min, max;
 
 import 'package:flame/collisions.dart';
 import 'package:flame/components.dart';
@@ -159,7 +159,78 @@ class PlayerComponent extends PositionComponent
       }
     }
 
+    _checkPlatformCrush();
+    if (_isDead) return;
+
     _updateLeverProximity();
+  }
+
+  /// Crush threshold (px): seberapa dalam overlap AABB dianggap "kejepit
+  /// beneran", bukan cuma sentuhan wajar sesaat (mis. numpuk tipis di
+  /// pojok tile). Player size 26x34, tile 18px — 6px kira-kira 1/3 tile,
+  /// cukup buat menyaring noise resolve normal tapi tetap sensitif buat
+  /// kasus kejepit sungguhan.
+  static const double _crushOverlapThreshold = 6.0;
+
+  /// Deteksi crush oleh moving platform. BEDA dengan gate (event diskrit
+  /// buka/tutup), platform crush sifatnya kontinu: kalau player masih
+  /// overlap DALAM dengan sesuatu (ground/gate/platform lain) setelah
+  /// semua resolve collision frame ini selesai, PADAHAL ada moving
+  /// platform yang lagi napel di player frame ini — itu artinya push-out
+  /// tadi "sukses" secara lokal (player berhasil didorong keluar dari
+  /// platform-nya sendiri, makanya overlap vs platform ~0) tapi dorongan
+  /// itu malah nge-push player ke solid lain yang nggak ikut di-resolve
+  /// ulang (ground di-resolve di AWAL frame, sebelum platform gerak).
+  ///
+  /// Makanya cek overlap dalamnya JANGAN cuma ke platform yang nyentuh —
+  /// harus ke ground/gate/platform lain juga, baru bug platform-vs-ground
+  /// (overlap sama platform sukses jadi ~0, tapi overlap sama ground
+  /// masih dalam & gak kedetect) bisa ketangkep.
+  void _checkPlatformCrush() {
+    if (parent == null) return;
+
+    // Trigger check-nya cuma kalau ada moving platform yang lagi napel
+    // player frame ini (buffer kecil biar "baru aja disentuh" ikut
+    // dihitung walau resolve udah bikin overlap-nya nyaris 0).
+    final touchingMovingPlatform = parent!.children.any(
+      (c) =>
+          c is MovingPlatformComponent &&
+          c.isMoving &&
+          _aabbOverlap(c, buffer: 2),
+    );
+    if (!touchingMovingPlatform) return;
+
+    for (final ground in game.groundComponents) {
+      if (_deepOverlap(ground)) {
+        _die('Crushed by Platform');
+        return;
+      }
+    }
+
+    for (final child in parent!.children) {
+      if (child is GateComponent && !child.isOpenState && _deepOverlap(child)) {
+        _die('Crushed by Platform');
+        return;
+      }
+      if (child is MovingPlatformComponent && _deepOverlap(child)) {
+        _die('Crushed by Platform');
+        return;
+      }
+    }
+  }
+
+  bool _deepOverlap(PositionComponent other) {
+    final tl =
+        other.position -
+        Vector2(other.size.x * other.anchor.x, other.size.y * other.anchor.y);
+
+    final overlapX =
+        min(position.x + size.x, tl.x + other.size.x) - max(position.x, tl.x);
+    final overlapY =
+        min(position.y + size.y, tl.y + other.size.y) - max(position.y, tl.y);
+
+    return overlapX > _crushOverlapThreshold &&
+        overlapY > _crushOverlapThreshold;
   }
 
   void _die(String cause) {
