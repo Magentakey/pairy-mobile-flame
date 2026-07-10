@@ -86,41 +86,56 @@ class Level extends World with HasGameReference<PairyGame> {
     for (final sp in objects) {
       switch (sp.class_) {
         case 'Player':
+          final playerH = sp.height > 0 ? sp.height : 0.0;
           final player = PlayerComponent(
-            position: Vector2(sp.x, sp.y - 34),
+            position: Vector2(sp.x, sp.y + playerH - 30),
           );
           game.player = player;
           add(player);
           game.cam.follow(player);
 
         case 'ExitDoor':
-          add(ExitDoorComponent(position: Vector2(sp.x, sp.y)));
+          final exitW = sp.width > 0 ? sp.width : 26.0;
+          final exitH = sp.height > 0 ? sp.height : 40.0;
+          add(
+            ExitDoorComponent(
+              position: Vector2(sp.x + exitW / 2, sp.y + exitH),
+            ),
+          );
 
         case 'Gate':
           break;
 
         case 'Lever':
           final targetGate = gateMap[sp.name];
+          final leverW = sp.width  > 0 ? sp.width  : 20.0;
+          final leverH = sp.height > 0 ? sp.height : 24.0;
           add(LeverComponent(
-            position: Vector2(sp.x, sp.y),
+            position: Vector2(sp.x + leverW / 2, sp.y + leverH),
             onToggle: targetGate?.toggle,
-          ));
+        ));
 
         case 'Fountain':
           final fc = _getColor(sp);
           final targetGate = gateMap[sp.name];
+          final founW = sp.width  > 0 ? sp.width  : 24.0;
+          final founH = sp.height > 0 ? sp.height : 30.0;
           add(FountainComponent(
-            position: Vector2(sp.x, sp.y),
+            position: Vector2(sp.x + founW / 2, sp.y + founH),
             requiredColor: _parseFairyColor(fc),
             onActivate: () => targetGate?.open(), onDeactivate: () => targetGate?.close(),
-          ));
+        ));
 
         case 'Fairy':
           final fc = _getColor(sp);
-          add(FairyComponent(
-            position: Vector2(sp.x, sp.y),
-            color: _parseFairyColor(fc),
-          ));
+          final fairyW = sp.width > 0 ? sp.width : 20.0;
+          final fairyH = sp.height > 0 ? sp.height : 20.0;
+          add(
+            FairyComponent(
+              position: Vector2(sp.x + fairyW / 2, sp.y + fairyH / 2),
+              color: _parseFairyColor(fc),
+            ),
+          );
 
         default:
           break;

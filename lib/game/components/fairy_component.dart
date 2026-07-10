@@ -13,15 +13,12 @@ import 'ground_component.dart';
 class FairyComponent extends PositionComponent
     with DragCallbacks, CollisionCallbacks, HasGameReference<PairyGame> {
   FairyComponent({required super.position, required this.color})
-      : super(size: Vector2.all(20), anchor: Anchor.center);
+    : super(size: Vector2.all(20), anchor: Anchor.center);
 
   final FairyColor color;
 
   Vector2 _fingerWorldPos = Vector2.zero();
   bool _isDragging = false;
-
-  static const double _mapW = 648.0;
-  static const double _mapH = 360.0;
 
   // Track gate state tiap frame untuk deteksi crush
   final Map<GateComponent, bool> _gateWasOpen = {};
@@ -44,8 +41,8 @@ class FairyComponent extends PositionComponent
     super.onDragUpdate(event);
     if (!_isDragging) return;
     _fingerWorldPos += event.localDelta;
-    _fingerWorldPos.x = _fingerWorldPos.x.clamp(0, _mapW);
-    _fingerWorldPos.y = _fingerWorldPos.y.clamp(0, _mapH);
+    // Batas map sekarang ditangani oleh blok collision fisik (GroundComponent),
+    // jadi tidak perlu clamp manual ke ukuran map di sini lagi.
   }
 
   @override
@@ -96,10 +93,13 @@ class FairyComponent extends PositionComponent
   }
 
   bool _isInsideGate(GateComponent gate) {
-    final tl = gate.position -
+    final tl =
+        gate.position -
         Vector2(gate.size.x * gate.anchor.x, gate.size.y * gate.anchor.y);
-    return position.x > tl.x && position.x < tl.x + gate.size.x &&
-           position.y > tl.y && position.y < tl.y + gate.size.y;
+    return position.x > tl.x &&
+        position.x < tl.x + gate.size.x &&
+        position.y > tl.y &&
+        position.y < tl.y + gate.size.y;
   }
 
   void _resolveSolids() {
@@ -116,7 +116,8 @@ class FairyComponent extends PositionComponent
   }
 
   void _pushOutOf(PositionComponent other) {
-    final tl = other.position -
+    final tl =
+        other.position -
         Vector2(other.size.x * other.anchor.x, other.size.y * other.anchor.y);
     final r = size.x / 2;
 
@@ -125,7 +126,8 @@ class FairyComponent extends PositionComponent
     final overlapB = (position.y + r) - tl.y;
     final overlapT = (tl.y + other.size.y) - (position.y - r);
 
-    if (overlapR <= 0 || overlapL <= 0 || overlapB <= 0 || overlapT <= 0) return;
+    if (overlapR <= 0 || overlapL <= 0 || overlapB <= 0 || overlapT <= 0)
+      return;
 
     final minX = min(overlapR, overlapL);
     final minY = min(overlapB, overlapT);
@@ -145,7 +147,7 @@ class FairyComponent extends PositionComponent
     position += (delta / dist) * ((minDist - dist) / 2);
   }
 
-@override
+  @override
   void render(Canvas canvas) {
     final radius = size.x / 2;
     final center = Offset(radius, radius);
