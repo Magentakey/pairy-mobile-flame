@@ -1,4 +1,3 @@
-import 'package:flame/collisions.dart';
 import 'package:flame/components.dart';
 import 'package:flutter/material.dart';
 
@@ -13,7 +12,16 @@ import 'gate_component.dart';
 ///   toggle tadi (snapshot), bukan sekadar toggle lagi. Ini penting
 ///   untuk kasus > 1 fairy warna sama overlap gantian di fountain
 ///   yang sama (lihat _matchingCount).
-class FountainComponent extends PositionComponent with CollisionCallbacks {
+///
+/// NOTE: Overlap detection dilakukan MANUAL (AABB clamp) di [update],
+/// bukan lewat Flame CollisionCallbacks. Ini disengaja: kombinasi
+/// CircleHitbox (fairy) vs RectangleHitbox (fountain) punya edge case
+/// di engine Flame — kalau titik pusat fairy persis segaris dengan
+/// sumbu simetri fountain (misal fairy pas di tengah horizontal),
+/// proyeksi SAT jadi degenerate dan onCollisionStart bisa gagal
+/// terpanggil sama sekali. Manual AABB check di bawah ini tidak
+/// punya masalah tsb karena tidak bergantung pada arah normal.
+class FountainComponent extends PositionComponent {
   FountainComponent({
     required super.position,
     required this.requiredColor,
@@ -24,48 +32,74 @@ class FountainComponent extends PositionComponent with CollisionCallbacks {
   final GateComponent? targetGate;
   bool isActivated = false;
 
-  // Hitung berapa fairy warna cocok yang sedang overlap
-  // (antisipasi > 1 fairy warna sama di level)
   int _matchingCount = 0;
-
-  // Snapshot state gate SEBELUM toggle pertama, dipakai untuk restore
-  // saat semua fairy yang match sudah keluar dari fountain.
   bool? _gateStateBeforeActivate;
+  final Set<FairyComponent> _overlapping = {};
 
   @override
-  Future<void> onLoad() async {
-    add(RectangleHitbox(collisionType: CollisionType.passive));
+  void update(double dt) {
+    super.update(dt);
+    if (parent == null) return;
+
+    final stillOverlapping = <FairyComponent>{};
+
+    for (final child in parent!.children) {
+      if (child is FairyComponent && _circleOverlapsRect(child)) {
+        stillOverlapping.add(child);
+      }
+    }
+
+    for (final fairy in stillOverlapping) {
+      if (!_overlapping.contains(fairy)) {
+        _onFairyEnter(fairy);
+      }
+    }
+
+    for (final fairy in _overlapping) {
+      if (!stillOverlapping.contains(fairy)) {
+        _onFairyExit(fairy);
+      }
+    }
+
+    _overlapping
+      ..clear()
+      ..addAll(stillOverlapping);
   }
 
-  @override
-  void onCollisionStart(
-    Set<Vector2> intersectionPoints,
-    PositionComponent other,
-  ) {
-    super.onCollisionStart(intersectionPoints, other);
-    if (other is FairyComponent && other.color == requiredColor) {
-      _matchingCount++;
-      if (!isActivated) {
-        isActivated = true;
-        _gateStateBeforeActivate = targetGate?.isOpenState;
-        targetGate?.toggleState();
-      }
+  bool _circleOverlapsRect(FairyComponent fairy) {
+    final tl = position - Vector2(size.x * anchor.x, size.y * anchor.y);
+    final br = tl + size;
+
+    final closestX = fairy.position.x.clamp(tl.x, br.x);
+    final closestY = fairy.position.y.clamp(tl.y, br.y);
+
+    final dx = fairy.position.x - closestX;
+    final dy = fairy.position.y - closestY;
+    final r = fairy.size.x / 2;
+
+    return (dx * dx + dy * dy) <= (r * r);
+  }
+
+  void _onFairyEnter(FairyComponent fairy) {
+    if (fairy.color != requiredColor) return;
+    _matchingCount++;
+    if (!isActivated) {
+      isActivated = true;
+      _gateStateBeforeActivate = targetGate?.isOpenState;
+      targetGate?.toggleState();
     }
   }
 
-  @override
-  void onCollisionEnd(PositionComponent other) {
-    super.onCollisionEnd(other);
-    if (other is FairyComponent && other.color == requiredColor) {
-      _matchingCount = (_matchingCount - 1).clamp(0, 99);
-      if (_matchingCount == 0 && isActivated) {
-        isActivated = false;
-        final before = _gateStateBeforeActivate;
-        if (before != null && targetGate != null) {
-          before ? targetGate!.open() : targetGate!.close();
-        }
-        _gateStateBeforeActivate = null;
+  void _onFairyExit(FairyComponent fairy) {
+    if (fairy.color != requiredColor) return;
+    _matchingCount = (_matchingCount - 1).clamp(0, 99);
+    if (_matchingCount == 0 && isActivated) {
+      isActivated = false;
+      final before = _gateStateBeforeActivate;
+      if (before != null && targetGate != null) {
+        before ? targetGate!.open() : targetGate!.close();
       }
+      _gateStateBeforeActivate = null;
     }
   }
 
@@ -74,7 +108,6 @@ class FountainComponent extends PositionComponent with CollisionCallbacks {
     final rect = size.toRect();
     final baseColor = requiredColor.displayColor;
 
-    // Badan fountain
     canvas.drawRRect(
       RRect.fromRectAndCorners(
         rect,
@@ -84,7 +117,6 @@ class FountainComponent extends PositionComponent with CollisionCallbacks {
       Paint()..color = const Color(0xFF44445C),
     );
 
-    // Air — warna target selalu kelihatan (guide untuk player)
     final waterRect = Rect.fromLTWH(
       3,
       size.y * 0.25,
@@ -95,7 +127,6 @@ class FountainComponent extends PositionComponent with CollisionCallbacks {
       RRect.fromRectAndRadius(waterRect, const Radius.circular(3)),
       Paint()..color = baseColor.withValues(alpha: isActivated ? 1.0 : 0.25),
     );
-    // Border warna target — selalu tampil sebagai hint
     canvas.drawRRect(
       RRect.fromRectAndRadius(waterRect, const Radius.circular(3)),
       Paint()
