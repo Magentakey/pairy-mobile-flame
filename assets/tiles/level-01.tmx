@@ -191,7 +191,11 @@
     <property name="color" value="red"/>
    </properties>
   </object>
-  <object id="12" name="gatelever1" type="Gate" x="900.5" y="473" width="109" height="139"/>
+  <object id="12" name="gatelever1" type="Gate" x="900.5" y="473" width="109" height="139">
+   <properties>
+    <property name="initialOpen" type="bool" value="true"/>
+   </properties>
+  </object>
   <object id="16" type="MovingPlatform" x="1026.7" y="468.242" width="72" height="18">
    <properties>
     <property name="direction" value="right"/>

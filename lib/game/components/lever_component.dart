@@ -5,12 +5,10 @@ import 'package:flutter/material.dart';
 /// Tuas yang diaktifkan dengan menekan tombol HUD saat player berada
 /// di dekatnya. Anchor.bottomCenter — titik spawn di Tiled = kaki lever.
 class LeverComponent extends PositionComponent with CollisionCallbacks {
-  LeverComponent({
-    required super.position,
-    this.onToggle,
-  }) : super(size: Vector2(20, 24), anchor: Anchor.bottomCenter);
+  LeverComponent({required super.position, this.onToggle})
+    : super(size: Vector2(20, 24), anchor: Anchor.bottomCenter);
 
-  final void Function(bool isOn)? onToggle;
+  final VoidCallback? onToggle;
   bool isOn = false;
 
   @override
@@ -20,7 +18,7 @@ class LeverComponent extends PositionComponent with CollisionCallbacks {
 
   void activate() {
     isOn = !isOn;
-    onToggle?.call(isOn);
+    onToggle?.call();
   }
 
   @override
@@ -40,10 +38,11 @@ class LeverComponent extends PositionComponent with CollisionCallbacks {
     // Gagang — condong kiri (off) atau kanan (on)
     final baseX = size.x / 2;
     final baseY = size.y * 0.55;
-    final topY  = size.y * 0.1;
+    final topY = size.y * 0.1;
     final handleX = isOn ? size.x * 0.65 : size.x * 0.35;
-    final handleColor =
-        isOn ? const Color(0xFF34C77B) : const Color(0xFFE85C4A);
+    final handleColor = isOn
+        ? const Color(0xFF34C77B)
+        : const Color(0xFFE85C4A);
 
     canvas.drawLine(
       Offset(baseX, baseY),

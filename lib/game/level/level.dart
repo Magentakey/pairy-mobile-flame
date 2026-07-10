@@ -98,9 +98,11 @@ class Level extends World with HasGameReference<PairyGame> {
       if (sp.class_ != 'Gate') continue;
       final w = sp.width > 0 ? sp.width.toDouble() : 14.0;
       final h = sp.height > 0 ? sp.height.toDouble() : 72.0;
+      final initialOpen = _getInitialOpen(sp);
       final gate = GateComponent(
         position: Vector2(sp.x + w / 2, sp.y + h),
         size: Vector2(w, h),
+        initialOpen: initialOpen,
       );
       add(gate);
       final key = _stripPrefix(sp.name, 'gate');
@@ -157,7 +159,7 @@ class Level extends World with HasGameReference<PairyGame> {
           add(
             LeverComponent(
               position: Vector2(sp.x + leverW / 2, sp.y + leverH),
-              onToggle: targetGate?.toggle,
+              onToggle: targetGate?.toggleState,
             ),
           );
 
@@ -170,8 +172,7 @@ class Level extends World with HasGameReference<PairyGame> {
             FountainComponent(
               position: Vector2(sp.x + founW / 2, sp.y + founH),
               requiredColor: _parseFairyColor(fc),
-              onActivate: () => targetGate?.open(),
-              onDeactivate: () => targetGate?.close(),
+              targetGate: targetGate,
             ),
           );
 
@@ -197,6 +198,18 @@ class Level extends World with HasGameReference<PairyGame> {
       return sp.properties.getValue<String>('color') ?? 'blue';
     } catch (_) {
       return 'blue';
+    }
+  }
+
+  // Custom property boolean di Tiled buat object Gate, misal:
+  // Custom Properties → name: initialOpen, type: bool, default: false
+  // Kalau tidak diisi, default-nya false (gate tertutup di awal),
+  // sama seperti behavior lama.
+  static bool _getInitialOpen(TiledObject sp) {
+    try {
+      return sp.properties.getValue<bool>('initialOpen') ?? false;
+    } catch (_) {
+      return false;
     }
   }
 

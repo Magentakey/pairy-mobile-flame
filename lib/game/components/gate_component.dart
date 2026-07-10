@@ -3,10 +3,14 @@ import 'package:flame/components.dart';
 import 'package:flutter/material.dart';
 
 class GateComponent extends PositionComponent with CollisionCallbacks {
-  GateComponent({required super.position, required super.size})
-      : super(anchor: Anchor.bottomCenter);
+  GateComponent({
+    required super.position,
+    required super.size,
+    bool initialOpen = false,
+  }) : isOpenState = initialOpen,
+       super(anchor: Anchor.bottomCenter);
 
-  bool isOpenState = false;
+  bool isOpenState;
   // true selama SATU frame saat gate baru saja menutup
   // → PlayerComponent menggunakan ini untuk deteksi crush
   bool justClosed = false;
@@ -23,6 +27,11 @@ class GateComponent extends PositionComponent with CollisionCallbacks {
 
   void toggle(bool isOn) => isOn ? open() : close();
 
+  /// Flip state apa adanya, tidak peduli parameter true/false dari
+  /// lever/fountain — dipakai supaya lever/fountain murni "toggle"
+  /// dan tidak memaksa gate ke state tertentu.
+  void toggleState() => isOpenState ? close() : open();
+
   @override
   Future<void> onLoad() async {
     add(RectangleHitbox(collisionType: CollisionType.passive));
@@ -34,19 +43,24 @@ class GateComponent extends PositionComponent with CollisionCallbacks {
 
     final rect = size.toRect();
     canvas.drawRect(rect, Paint()..color = const Color(0xFF6A3FA0));
-    canvas.drawRect(rect,
-        Paint()
-          ..color = const Color(0xFF9B6FD4)
-          ..style = PaintingStyle.stroke
-          ..strokeWidth = 2);
+    canvas.drawRect(
+      rect,
+      Paint()
+        ..color = const Color(0xFF9B6FD4)
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 2,
+    );
 
     final stripeCount = (size.y / 10).floor();
     for (int i = 1; i < stripeCount; i++) {
       final y = i * 10.0;
-      canvas.drawLine(Offset(2, y), Offset(size.x - 2, y),
-          Paint()
-            ..color = const Color(0xFF9B6FD4).withValues(alpha: 0.5)
-            ..strokeWidth = 1);
+      canvas.drawLine(
+        Offset(2, y),
+        Offset(size.x - 2, y),
+        Paint()
+          ..color = const Color(0xFF9B6FD4).withValues(alpha: 0.5)
+          ..strokeWidth = 1,
+      );
     }
   }
 }

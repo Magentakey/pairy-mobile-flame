@@ -4,27 +4,33 @@ import 'package:flutter/material.dart';
 
 import '../../models/fairy_color.dart';
 import 'fairy_component.dart';
+import 'gate_component.dart';
 
 /// Fountain aktif saat fairy berwarna sama berada di atasnya.
-/// Ketika fairy masuk → onActivate (gate buka).
-/// Ketika fairy keluar → onDeactivate (gate tutup).
-/// Bisa on/off berkali-kali.
+/// Beda dengan lever, fountain TIDAK memaksa gate ke state tertentu:
+/// - Fairy pertama masuk → gate di-toggle (flip apa adanya).
+/// - Fairy terakhir keluar → gate di-restore ke state SEBELUM
+///   toggle tadi (snapshot), bukan sekadar toggle lagi. Ini penting
+///   untuk kasus > 1 fairy warna sama overlap gantian di fountain
+///   yang sama (lihat _matchingCount).
 class FountainComponent extends PositionComponent with CollisionCallbacks {
   FountainComponent({
     required super.position,
     required this.requiredColor,
-    this.onActivate,
-    this.onDeactivate,
+    this.targetGate,
   }) : super(size: Vector2(24, 30), anchor: Anchor.bottomCenter);
 
   final FairyColor requiredColor;
-  final VoidCallback? onActivate;
-  final VoidCallback? onDeactivate;
+  final GateComponent? targetGate;
   bool isActivated = false;
 
   // Hitung berapa fairy warna cocok yang sedang overlap
   // (antisipasi > 1 fairy warna sama di level)
   int _matchingCount = 0;
+
+  // Snapshot state gate SEBELUM toggle pertama, dipakai untuk restore
+  // saat semua fairy yang match sudah keluar dari fountain.
+  bool? _gateStateBeforeActivate;
 
   @override
   Future<void> onLoad() async {
@@ -41,7 +47,8 @@ class FountainComponent extends PositionComponent with CollisionCallbacks {
       _matchingCount++;
       if (!isActivated) {
         isActivated = true;
-        onActivate?.call();
+        _gateStateBeforeActivate = targetGate?.isOpenState;
+        targetGate?.toggleState();
       }
     }
   }
@@ -53,7 +60,11 @@ class FountainComponent extends PositionComponent with CollisionCallbacks {
       _matchingCount = (_matchingCount - 1).clamp(0, 99);
       if (_matchingCount == 0 && isActivated) {
         isActivated = false;
-        onDeactivate?.call();
+        final before = _gateStateBeforeActivate;
+        if (before != null && targetGate != null) {
+          before ? targetGate!.open() : targetGate!.close();
+        }
+        _gateStateBeforeActivate = null;
       }
     }
   }
@@ -74,7 +85,12 @@ class FountainComponent extends PositionComponent with CollisionCallbacks {
     );
 
     // Air — warna target selalu kelihatan (guide untuk player)
-    final waterRect = Rect.fromLTWH(3, size.y * 0.25, size.x - 6, size.y * 0.65);
+    final waterRect = Rect.fromLTWH(
+      3,
+      size.y * 0.25,
+      size.x - 6,
+      size.y * 0.65,
+    );
     canvas.drawRRect(
       RRect.fromRectAndRadius(waterRect, const Radius.circular(3)),
       Paint()..color = baseColor.withValues(alpha: isActivated ? 1.0 : 0.25),

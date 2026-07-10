@@ -167,7 +167,7 @@
         "level-02.tmx"
     ],
     "project": "untitled.tiled-project",
-    "property.type": "float",
+    "property.type": "bool",
     "recentFiles": [
         "tileset-tiles.tsx",
         "level-02.tmx",
