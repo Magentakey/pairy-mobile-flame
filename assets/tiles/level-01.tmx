@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.10" tiledversion="1.12.2" orientation="orthogonal" renderorder="right-down" width="100" height="50" tilewidth="18" tileheight="18" infinite="0" nextlayerid="5" nextobjectid="18">
+<map version="1.10" tiledversion="1.12.2" orientation="orthogonal" renderorder="right-down" width="100" height="50" tilewidth="18" tileheight="18" infinite="0" nextlayerid="5" nextobjectid="25">
  <tileset firstgid="1" source="tileset-tiles.tsx"/>
  <tileset firstgid="181" source="background.tsx"/>
  <tileset firstgid="221" source="t3.tsx"/>
@@ -208,6 +208,37 @@
     <property name="direction" value="right"/>
     <property name="distanceTiles" type="int" value="8"/>
     <property name="speed" type="float" value="121"/>
+   </properties>
+  </object>
+  <object id="18" name="platformleverA" type="MovingPlatform" x="1026.03" y="527.909" width="72" height="18">
+   <properties>
+    <property name="direction" value="right"/>
+    <property name="distanceTiles" type="int" value="8"/>
+    <property name="speed" type="float" value="121"/>
+   </properties>
+  </object>
+  <object id="19" name="platformfairyB" type="MovingPlatform" x="1026.37" y="556.575" width="72" height="18">
+   <properties>
+    <property name="direction" value="right"/>
+    <property name="distanceTiles" type="int" value="8"/>
+    <property name="speed" type="float" value="121"/>
+   </properties>
+  </object>
+  <object id="20" name="leverA" type="Lever" x="1099.95" y="602.775" width="10" height="10"/>
+  <object id="21" name="fairyB" type="Fountain" x="1031.72" y="599.225" width="14" height="13.3333">
+   <properties>
+    <property name="color" value="blue"/>
+   </properties>
+  </object>
+  <object id="22" name="gate4" type="Gate" x="725.5" y="622.5" width="109" height="139">
+   <properties>
+    <property name="initialOpen" type="bool" value="false"/>
+   </properties>
+  </object>
+  <object id="23" name="lever4" type="Lever" x="623.95" y="604.442" width="10" height="10"/>
+  <object id="24" name="fairy4" type="Fountain" x="606.049" y="600.225" width="14" height="13.3333">
+   <properties>
+    <property name="color" value="blue"/>
    </properties>
   </object>
  </objectgroup>

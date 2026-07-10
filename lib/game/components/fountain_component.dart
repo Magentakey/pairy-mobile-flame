@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import '../../models/fairy_color.dart';
 import 'fairy_component.dart';
 import 'gate_component.dart';
+import 'moving_platform_component.dart';
 
 /// Fountain aktif saat fairy berwarna sama berada di atasnya.
 /// Beda dengan lever, fountain TIDAK memaksa gate ke state tertentu:
@@ -26,14 +27,17 @@ class FountainComponent extends PositionComponent {
     required super.position,
     required this.requiredColor,
     this.targetGate,
+    this.targetPlatform,
   }) : super(size: Vector2(24, 30), anchor: Anchor.bottomCenter);
 
   final FairyColor requiredColor;
   final GateComponent? targetGate;
+  final MovingPlatformComponent? targetPlatform;
   bool isActivated = false;
 
   int _matchingCount = 0;
   bool? _gateStateBeforeActivate;
+  bool? _platformStateBeforeActivate;
   final Set<FairyComponent> _overlapping = {};
 
   @override
@@ -87,6 +91,8 @@ class FountainComponent extends PositionComponent {
       isActivated = true;
       _gateStateBeforeActivate = targetGate?.isOpenState;
       targetGate?.toggleState();
+      _platformStateBeforeActivate = targetPlatform?.isMoving;
+      targetPlatform?.toggleState();
     }
   }
 
@@ -95,11 +101,17 @@ class FountainComponent extends PositionComponent {
     _matchingCount = (_matchingCount - 1).clamp(0, 99);
     if (_matchingCount == 0 && isActivated) {
       isActivated = false;
-      final before = _gateStateBeforeActivate;
-      if (before != null && targetGate != null) {
-        before ? targetGate!.open() : targetGate!.close();
+      final beforeGate = _gateStateBeforeActivate;
+      if (beforeGate != null && targetGate != null) {
+        beforeGate ? targetGate!.open() : targetGate!.close();
       }
       _gateStateBeforeActivate = null;
+
+      final beforePlatform = _platformStateBeforeActivate;
+      if (beforePlatform != null && targetPlatform != null) {
+        beforePlatform ? targetPlatform!.start() : targetPlatform!.stop();
+      }
+      _platformStateBeforeActivate = null;
     }
   }
 

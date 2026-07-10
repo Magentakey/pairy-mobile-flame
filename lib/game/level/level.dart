@@ -92,21 +92,45 @@ class Level extends World with HasGameReference<PairyGame> {
 
     final objects = spawnLayer.objects;
 
-    // Pass 1: Gate — simpan ke map dengan pairing key
+    // Pass 1: Gate & MovingPlatform — simpan ke map dengan pairing key,
+    // supaya Lever/Fountain di Pass 2 bisa lookup targetnya.
     final gateMap = <String, GateComponent>{};
+    final platformMap = <String, MovingPlatformComponent>{};
     for (final sp in objects) {
-      if (sp.class_ != 'Gate') continue;
-      final w = sp.width > 0 ? sp.width.toDouble() : 14.0;
-      final h = sp.height > 0 ? sp.height.toDouble() : 72.0;
-      final initialOpen = _getInitialOpen(sp);
-      final gate = GateComponent(
-        position: Vector2(sp.x + w / 2, sp.y + h),
-        size: Vector2(w, h),
-        initialOpen: initialOpen,
-      );
-      add(gate);
-      final key = _stripPrefix(sp.name, 'gate');
-      if (key != null) gateMap[key] = gate;
+      if (sp.class_ == 'Gate') {
+        final w = sp.width > 0 ? sp.width.toDouble() : 14.0;
+        final h = sp.height > 0 ? sp.height.toDouble() : 72.0;
+        final initialOpen = _getInitialOpen(sp);
+        final gate = GateComponent(
+          position: Vector2(sp.x + w / 2, sp.y + h),
+          size: Vector2(w, h),
+          initialOpen: initialOpen,
+        );
+        add(gate);
+        final key = _stripPrefix(sp.name, 'gate');
+        if (key != null) gateMap[key] = gate;
+      } else if (sp.class_ == 'MovingPlatform') {
+        final dirStr = sp.properties.getValue<String>('direction') ?? 'right';
+        final dist = sp.properties.getValue<int>('distanceTiles') ?? 2;
+        final spd = sp.properties.getValue<double>('speed') ?? 40.0;
+        final initialMoving = _getInitialMoving(sp);
+        final w = sp.width > 0 ? sp.width : 54.0;
+        final h = sp.height > 0 ? sp.height : 18.0;
+        final platform = MovingPlatformComponent(
+          position: Vector2(sp.x, sp.y),
+          size: Vector2(w, h),
+          direction: PlatformDirection.values.firstWhere(
+            (d) => d.name == dirStr,
+            orElse: () => PlatformDirection.right,
+          ),
+          distanceTiles: dist,
+          speed: spd,
+          initialMoving: initialMoving,
+        );
+        add(platform);
+        final key = _stripPrefix(sp.name, 'platform');
+        if (key != null) platformMap[key] = platform;
+      }
     }
 
     // Pass 2: sisanya
@@ -134,38 +158,29 @@ class Level extends World with HasGameReference<PairyGame> {
           break;
 
         case 'MovingPlatform':
-          final dirStr = sp.properties.getValue<String>('direction') ?? 'right';
-          final dist = sp.properties.getValue<int>('distanceTiles') ?? 2;
-          final spd = sp.properties.getValue<double>('speed') ?? 40.0;
-          final w = sp.width > 0 ? sp.width : 54.0;
-          final h = sp.height > 0 ? sp.height : 18.0;
-          add(
-            MovingPlatformComponent(
-              position: Vector2(sp.x, sp.y),
-              size: Vector2(w, h),
-              direction: PlatformDirection.values.firstWhere(
-                (d) => d.name == dirStr,
-                orElse: () => PlatformDirection.right,
-              ),
-              distanceTiles: dist,
-              speed: spd,
-            ),
-          );
+          break;
 
         case 'Lever':
           final targetGate = gateMap[sp.name];
+          final targetPlatform = platformMap[sp.name];
           final leverW = sp.width > 0 ? sp.width : 20.0;
           final leverH = sp.height > 0 ? sp.height : 24.0;
           add(
             LeverComponent(
               position: Vector2(sp.x + leverW / 2, sp.y + leverH),
-              onToggle: targetGate?.toggleState,
+              onToggle: (targetGate == null && targetPlatform == null)
+                  ? null
+                  : () {
+                      targetGate?.toggleState();
+                      targetPlatform?.toggleState();
+                    },
             ),
           );
 
         case 'Fountain':
           final fc = _getColor(sp);
           final targetGate = gateMap[sp.name];
+          final targetPlatform = platformMap[sp.name];
           final founW = sp.width > 0 ? sp.width : 24.0;
           final founH = sp.height > 0 ? sp.height : 30.0;
           add(
@@ -173,6 +188,7 @@ class Level extends World with HasGameReference<PairyGame> {
               position: Vector2(sp.x + founW / 2, sp.y + founH),
               requiredColor: _parseFairyColor(fc),
               targetGate: targetGate,
+              targetPlatform: targetPlatform,
             ),
           );
 
@@ -210,6 +226,18 @@ class Level extends World with HasGameReference<PairyGame> {
       return sp.properties.getValue<bool>('initialOpen') ?? false;
     } catch (_) {
       return false;
+    }
+  }
+
+  // Custom property boolean di Tiled buat object MovingPlatform, misal:
+  // Custom Properties → name: initialMoving, type: bool, default: true
+  // Kalau tidak diisi, default-nya true (platform bergerak di awal),
+  // dan tetap true walau tidak punya pasangan lever/fountain sama sekali.
+  static bool _getInitialMoving(TiledObject sp) {
+    try {
+      return sp.properties.getValue<bool>('initialMoving') ?? true;
+    } catch (_) {
+      return true;
     }
   }
 

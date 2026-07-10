@@ -17,11 +17,11 @@
             "expandedObjectLayers": [
                 2
             ],
-            "scale": 5.5,
-            "selectedLayer": 2,
+            "scale": 1,
+            "selectedLayer": 3,
             "viewCenter": {
-                "x": 925.8181818181818,
-                "y": 464.81818181818187
+                "x": 1042,
+                "y": 531.5
             }
         },
         "level-02.tmx": {
@@ -124,11 +124,11 @@
             }
         },
         "t2.tsx": {
-            "scaleInDock": 1,
+            "scaleInDock": 2,
             "scaleInEditor": 1
         },
         "t3.tsx": {
-            "scaleInDock": 3,
+            "scaleInDock": 2,
             "scaleInEditor": 5.5
         },
         "tileset-2.tsx": {

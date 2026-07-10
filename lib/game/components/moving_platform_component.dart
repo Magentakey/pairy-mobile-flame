@@ -17,12 +17,27 @@ class MovingPlatformComponent extends PositionComponent
     required this.distanceTiles,
     this.tileSize = 18,
     this.speed = 40, // px/detik
-  }) : super(anchor: Anchor.topLeft);
+    bool initialMoving = true,
+  }) : isMoving = initialMoving,
+       super(anchor: Anchor.topLeft);
 
   final PlatformDirection direction;
   final int distanceTiles;
   final double tileSize;
   final double speed;
+
+  /// State gerak platform saat ini. true = bergerak (default), false = diam
+  /// (freeze di posisi terakhir, bukan kembali ke _start).
+  /// Dikontrol lewat lever/fountain seperti halnya gate.
+  bool isMoving;
+
+  void start() => isMoving = true;
+  void stop() => isMoving = false;
+
+  /// Flip state apa adanya — dipakai supaya lever/fountain murni "toggle"
+  /// dan tidak memaksa platform ke state tertentu (konsisten dengan
+  /// GateComponent.toggleState()).
+  void toggleState() => isMoving = !isMoving;
 
   // Koordinat 3-slice conveyor di tileset t3 (tilemap_packed_industrilla
   // expansion.png), row 6: kolom 4 = kiri, 5 = tengah, 6 = kanan.
@@ -73,6 +88,13 @@ class MovingPlatformComponent extends PositionComponent
   @override
   void update(double dt) {
     super.update(dt);
+
+    if (!isMoving) {
+      // Freeze di posisi saat ini — bukan kembali ke _start.
+      frameDelta.setZero();
+      return;
+    }
+
     final target = _forward ? _end : _start;
     final diff = target - position;
     final dist = diff.length;
