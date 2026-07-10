@@ -111,7 +111,10 @@ class PlayerComponent extends PositionComponent
     if (parent != null) {
       for (final child in parent!.children) {
         if (child is MovingPlatformComponent) {
-          final landedOnThis = _resolveAgainst(child);
+          final landedOnThis = _resolveAgainst(
+            child,
+            otherDelta: child.frameDelta,
+          );
           if (landedOnThis) {
             position += child.frameDelta;
           }
@@ -183,8 +186,16 @@ class PlayerComponent extends PositionComponent
 
   /// Return true kalau resolve ini SPESIFIK bikin player landing di atas
   /// [other] pada frame ini (dipakai buat carry di moving platform).
-  bool _resolveAgainst(PositionComponent other) {
-    final tl = other.position -
+  ///
+  /// [otherDelta] = pergerakan [other] pada frame ini (default diam/nol).
+  /// Wajib diisi untuk object yang bergerak (mis. MovingPlatformComponent)
+  /// supaya perbandingan "posisi player frame lalu" tetap relatif terhadap
+  /// posisi [other] di frame lalu juga — bukan posisi [other] sekarang.
+  bool _resolveAgainst(PositionComponent other, {Vector2? otherDelta}) {
+    final delta = otherDelta ?? Vector2.zero();
+
+    final tl =
+        other.position -
         Vector2(other.size.x * other.anchor.x, other.size.y * other.anchor.y);
     final ox = tl.x;
     final oy = tl.y;
@@ -200,12 +211,17 @@ class PlayerComponent extends PositionComponent
       return false;
     }
 
-    final prevBottom = _prevPosition.y + size.y;
-    final prevTop    = _prevPosition.y;
-    final prevRight  = _prevPosition.x + size.x;
-    final prevLeft   = _prevPosition.x;
+    // Posisi 'other' pada frame SEBELUMNYA, biar perbandingan arah datang
+    // player tetap akurat walau 'other' ikut gerak.
+    final prevOx = ox - delta.x;
+    final prevOy = oy - delta.y;
 
-    if (prevBottom <= oy) {
+    final prevBottom = _prevPosition.y + size.y;
+    final prevTop = _prevPosition.y;
+    final prevRight = _prevPosition.x + size.x;
+    final prevLeft = _prevPosition.x;
+
+    if (prevBottom <= prevOy) {
       position.y = oy - size.y;
       if (velocity.y > 0) {
         velocity.y = 0;
@@ -213,22 +229,27 @@ class PlayerComponent extends PositionComponent
         return true;
       }
       return false;
-    } else if (prevTop >= oy + oh) {
+    } else if (prevTop >= prevOy + oh) {
       position.y = oy + oh;
       if (velocity.y < 0) velocity.y = 0;
-    } else if (prevRight <= ox) {
-      position.x = ox - size.x; velocity.x = 0;
-    } else if (prevLeft >= ox + ow) {
-      position.x = ox + ow; velocity.x = 0;
+    } else if (prevRight <= prevOx) {
+      position.x = ox - size.x;
+      velocity.x = 0;
+    } else if (prevLeft >= prevOx + ow) {
+      position.x = ox + ow;
+      velocity.x = 0;
     } else {
       final minX = min(overlapR, overlapL);
       final minY = min(overlapB, overlapT);
       if (minY <= minX) {
         if (velocity.y >= 0) {
-          position.y = oy - size.y; velocity.y = 0; isOnGround = true;
+          position.y = oy - size.y;
+          velocity.y = 0;
+          isOnGround = true;
           return true;
         } else {
-          position.y = oy + oh; velocity.y = 0;
+          position.y = oy + oh;
+          velocity.y = 0;
         }
       } else {
         position.x = overlapR <= overlapL ? ox - size.x : ox + ow;

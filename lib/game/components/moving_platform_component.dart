@@ -24,9 +24,12 @@ class MovingPlatformComponent extends PositionComponent
   final double tileSize;
   final double speed;
 
-  // tileset manual -_-
-  static const int _tileCol = 9;
-  static const int _tileRow = 2;
+  // Koordinat 3-slice conveyor di tileset t3 (tilemap_packed_industrilla
+  // expansion.png), row 6: kolom 4 = kiri, 5 = tengah, 6 = kanan.
+  static const int _tileRow = 0;
+  static const int _colLeft = 4;
+  static const int _colMid = 5;
+  static const int _colRight = 6;
 
   late final Vector2 _start;
   late final Vector2 _end;
@@ -36,7 +39,9 @@ class MovingPlatformComponent extends PositionComponent
   /// "menumpang" (carry) saat berdiri di atasnya.
   final Vector2 frameDelta = Vector2.zero();
 
-  Sprite? _tileSprite;
+  Sprite? _leftSprite;
+  Sprite? _midSprite;
+  Sprite? _rightSprite;
 
   @override
   Future<void> onLoad() async {
@@ -52,12 +57,17 @@ class MovingPlatformComponent extends PositionComponent
     _end = _start + offset;
 
     final images = Images(prefix: 'assets/tiles/');
-    final image = await images.load('tilemap_packed.png');
-    _tileSprite = Sprite(
+    final image = await images.load('tilemap_packed_industrilla expansion.png');
+
+    Sprite tileAt(int col) => Sprite(
       image,
-      srcPosition: Vector2(_tileCol * tileSize, _tileRow * tileSize),
+      srcPosition: Vector2(col * tileSize, _tileRow * tileSize),
       srcSize: Vector2.all(tileSize),
     );
+
+    _leftSprite = tileAt(_colLeft);
+    _midSprite = tileAt(_colMid);
+    _rightSprite = tileAt(_colRight);
   }
 
   @override
@@ -81,18 +91,30 @@ class MovingPlatformComponent extends PositionComponent
 
   @override
   void render(Canvas canvas) {
-    final sprite = _tileSprite;
-    if (sprite == null) return;
-    final cols = (size.x / tileSize).ceil();
-    final rows = (size.y / tileSize).ceil();
-    for (int r = 0; r < rows; r++) {
-      for (int c = 0; c < cols; c++) {
-        sprite.render(
-          canvas,
-          position: Vector2(c * tileSize, r * tileSize),
-          size: Vector2.all(tileSize),
-        );
-      }
+    final left = _leftSprite;
+    final mid = _midSprite;
+    final right = _rightSprite;
+    if (left == null || mid == null || right == null) return;
+
+    final cols = (size.x / tileSize).round().clamp(1, 1 << 30);
+
+    if (cols == 1) {
+      // Cuma cukup 1 tile lebar → pakai tile tengah aja biar polos.
+      mid.render(canvas, position: Vector2.zero(), size: Vector2.all(tileSize));
+      return;
+    }
+
+    for (int c = 0; c < cols; c++) {
+      final sprite = c == 0
+          ? left
+          : c == cols - 1
+          ? right
+          : mid;
+      sprite.render(
+        canvas,
+        position: Vector2(c * tileSize, 0),
+        size: Vector2.all(tileSize),
+      );
     }
   }
 }
