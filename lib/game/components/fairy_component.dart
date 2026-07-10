@@ -13,7 +13,17 @@ import 'ground_component.dart';
 class FairyComponent extends PositionComponent
     with DragCallbacks, CollisionCallbacks, HasGameReference<PairyGame> {
   FairyComponent({required super.position, required this.color})
-    : super(size: Vector2.all(20), anchor: Anchor.center);
+    : super(
+        size: Vector2.all(20),
+        anchor: Anchor.center,
+        // Priority tinggi eksplisit — supaya fairy SELALU render paling
+        // atas dibanding komponen level lain (fountain, gate, platform,
+        // ground, dst), apa pun urutan object id-nya di Tiled. Tanpa ini,
+        // urutan render cuma ngikutin urutan add() (= urutan object di
+        // layer Spawnpoints), jadi kalau id Fountain < id Fairy, Fountain
+        // ke-add duluan dan bisa nutupin fairy pas overlap.
+        priority: 100,
+      );
 
   final FairyColor color;
 

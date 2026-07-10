@@ -176,8 +176,8 @@
     <property name="color" value="red"/>
    </properties>
   </object>
-  <object id="4" name="1" type="Lever" x="559.951" y="601.442" width="10" height="10"/>
-  <object id="9" name="3" type="Lever" x="673.201" y="601.442" width="10" height="10"/>
+  <object id="4" name="1" type="Lever" x="559.951" y="602.442" width="10" height="10"/>
+  <object id="9" name="3" type="Lever" x="673.201" y="602.442" width="10" height="10"/>
   <object id="11" name="3" type="Lever" x="726.45" y="601.942" width="10" height="10">
    <properties>
     <property name="actived" type="bool" value="false"/>
@@ -185,7 +185,7 @@
   </object>
   <object id="20" name="b" type="Lever" x="965.45" y="601.942" width="10" height="10"/>
   <object id="21" name="a" type="Lever" x="931.117" y="601.942" width="10" height="10"/>
-  <object id="5" name="2" type="Fountain" x="522.716" y="597.892" width="14" height="13.3333">
+  <object id="5" name="2" type="Fountain" x="522.716" y="598.892" width="14" height="13.3333">
    <properties>
     <property name="color" value="blue"/>
    </properties>
