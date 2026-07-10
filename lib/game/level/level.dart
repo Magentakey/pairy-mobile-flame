@@ -46,14 +46,33 @@ class Level extends World with HasGameReference<PairyGame> {
     final data = groundLayer.data;
     if (data == null || data.isEmpty) return;
 
+    const tileSize = 18.0;
     final mapWidth = groundLayer.width;
-    for (int i = 0; i < data.length; i++) {
-      if (data[i] != 0) {
-        final x = i % mapWidth;
-        final y = i ~/ mapWidth;
+    final mapHeight = groundLayer.height;
+
+    // Greedy row-merge: gabungkan tile solid yang bersebelahan secara
+    // horizontal dalam satu baris jadi SATU GroundComponent lebar,
+    // bukan 1 component per tile. Blok tanah lebar → jauh lebih sedikit
+    // hitbox & jauh lebih ringan di loop collision player tiap frame.
+    for (int y = 0; y < mapHeight; y++) {
+      int x = 0;
+      while (x < mapWidth) {
+        final index = y * mapWidth + x;
+        if (data[index] == 0) {
+          x++;
+          continue;
+        }
+
+        // Cari berapa tile berturut-turut yang solid ke kanan.
+        final runStart = x;
+        while (x < mapWidth && data[y * mapWidth + x] != 0) {
+          x++;
+        }
+        final runLength = x - runStart;
+
         final ground = GroundComponent(
-          position: Vector2(x * 18.0, y * 18.0),
-          size: Vector2.all(18),
+          position: Vector2(runStart * tileSize, y * tileSize),
+          size: Vector2(runLength * tileSize, tileSize),
         );
         groundComponents.add(ground);
         add(ground);
