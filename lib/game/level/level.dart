@@ -21,6 +21,11 @@ class Level extends World with HasGameReference<PairyGame> {
   late TiledComponent levelMap;
   final List<GroundComponent> groundComponents = [];
 
+  /// Tinggi total map dalam pixel, dipakai buat deteksi player jatuh
+  /// keluar map (fall-death). Di-set ulang tiap kali level di-load,
+  /// jadi otomatis ngikutin ukuran map masing-masing level meski beda-beda.
+  double heightPx = 0;
+
   @override
   Future<void> onLoad() async {
     final images = Images(prefix: 'assets/tiles/');
@@ -49,6 +54,7 @@ class Level extends World with HasGameReference<PairyGame> {
     const tileSize = 18.0;
     final mapWidth = groundLayer.width;
     final mapHeight = groundLayer.height;
+    heightPx = mapHeight * tileSize;
 
     // Greedy row-merge: gabungkan tile solid yang bersebelahan secara
     // horizontal dalam satu baris jadi SATU GroundComponent lebar,
@@ -81,8 +87,7 @@ class Level extends World with HasGameReference<PairyGame> {
   }
 
   void _spawnObjects() {
-    final spawnLayer =
-        levelMap.tileMap.getLayer<ObjectGroup>('Spawnpoints');
+    final spawnLayer = levelMap.tileMap.getLayer<ObjectGroup>('Spawnpoints');
     if (spawnLayer == null) return;
 
     final objects = spawnLayer.objects;
@@ -91,7 +96,7 @@ class Level extends World with HasGameReference<PairyGame> {
     final gateMap = <String, GateComponent>{};
     for (final sp in objects) {
       if (sp.class_ != 'Gate') continue;
-      final w = sp.width  > 0 ? sp.width.toDouble()  : 14.0;
+      final w = sp.width > 0 ? sp.width.toDouble() : 14.0;
       final h = sp.height > 0 ? sp.height.toDouble() : 72.0;
       final gate = GateComponent(
         position: Vector2(sp.x + w / 2, sp.y + h),
@@ -147,23 +152,28 @@ class Level extends World with HasGameReference<PairyGame> {
 
         case 'Lever':
           final targetGate = gateMap[sp.name];
-          final leverW = sp.width  > 0 ? sp.width  : 20.0;
+          final leverW = sp.width > 0 ? sp.width : 20.0;
           final leverH = sp.height > 0 ? sp.height : 24.0;
-          add(LeverComponent(
-            position: Vector2(sp.x + leverW / 2, sp.y + leverH),
-            onToggle: targetGate?.toggle,
-        ));
+          add(
+            LeverComponent(
+              position: Vector2(sp.x + leverW / 2, sp.y + leverH),
+              onToggle: targetGate?.toggle,
+            ),
+          );
 
         case 'Fountain':
           final fc = _getColor(sp);
           final targetGate = gateMap[sp.name];
-          final founW = sp.width  > 0 ? sp.width  : 24.0;
+          final founW = sp.width > 0 ? sp.width : 24.0;
           final founH = sp.height > 0 ? sp.height : 30.0;
-          add(FountainComponent(
-            position: Vector2(sp.x + founW / 2, sp.y + founH),
-            requiredColor: _parseFairyColor(fc),
-            onActivate: () => targetGate?.open(), onDeactivate: () => targetGate?.close(),
-        ));
+          add(
+            FountainComponent(
+              position: Vector2(sp.x + founW / 2, sp.y + founH),
+              requiredColor: _parseFairyColor(fc),
+              onActivate: () => targetGate?.open(),
+              onDeactivate: () => targetGate?.close(),
+            ),
+          );
 
         case 'Fairy':
           final fc = _getColor(sp);
@@ -192,10 +202,14 @@ class Level extends World with HasGameReference<PairyGame> {
 
   static FairyColor _parseFairyColor(String value) {
     switch (value.toLowerCase()) {
-      case 'red':    return FairyColor.red;
-      case 'green':  return FairyColor.green;
-      case 'yellow': return FairyColor.yellow;
-      default:       return FairyColor.blue;
+      case 'red':
+        return FairyColor.red;
+      case 'green':
+        return FairyColor.green;
+      case 'yellow':
+        return FairyColor.yellow;
+      default:
+        return FairyColor.blue;
     }
   }
 

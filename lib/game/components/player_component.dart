@@ -5,7 +5,6 @@ import 'package:flame/components.dart';
 import 'package:flutter/material.dart';
 import 'package:flame/sprite.dart';
 
-
 import '../pairy_game.dart';
 import 'exit_door_component.dart';
 import 'gate_component.dart';
@@ -18,26 +17,31 @@ class PlayerComponent extends PositionComponent
     with CollisionCallbacks, HasGameReference<PairyGame> {
   PlayerComponent({required super.position}) : super(size: Vector2(26, 34));
 
-  static const double moveSpeed    = 130;
-  static const double gravity      = 700;
+  static const double moveSpeed = 130;
+  static const double gravity = 700;
   static const double jumpVelocity = -300;
-  static const double maxDt        = 1 / 30;
+  static const double maxDt = 1 / 30;
 
-  final Vector2 velocity      = Vector2.zero();
+  /// Jarak (px) di bawah batas map sebelum player dianggap "jatuh"
+  /// dan mati. Dikasih buffer biar ada jeda visual jatuh dulu,
+  /// bukan langsung mati pas nyentuh Y = tinggi map.
+  static const double fallDeathBuffer = 80;
+
+  final Vector2 velocity = Vector2.zero();
   final Vector2 _prevPosition = Vector2.zero();
   late final SpriteAnimationComponent _animComponent;
   late final SpriteAnimation _idleAnim;
   late final SpriteAnimation _walkAnim;
-  bool isOnGround    = false;
+  bool isOnGround = false;
   bool _nearExitDoor = false;
-  bool _isDead       = false;
+  bool _isDead = false;
   LeverComponent? nearLever;
   _HorizontalInput _input = _HorizontalInput.none;
 
   // Tracking state gate di frame sebelumnya untuk deteksi crush
   final Map<GateComponent, bool> _gateWasOpen = {};
 
-@override
+  @override
   Future<void> onLoad() async {
     add(RectangleHitbox(collisionType: CollisionType.active));
 
@@ -64,14 +68,20 @@ class PlayerComponent extends PositionComponent
     add(_animComponent);
   }
 
-  void moveLeft()   => _input = _HorizontalInput.left;
-  void moveRight()  => _input = _HorizontalInput.right;
+  void moveLeft() => _input = _HorizontalInput.left;
+  void moveRight() => _input = _HorizontalInput.right;
   void stopMoving() => _input = _HorizontalInput.none;
 
   void jump() {
     if (_isDead) return;
-    if (_nearExitDoor) { game.completeLevel(); return; }
-    if (isOnGround) { velocity.y = jumpVelocity; isOnGround = false; }
+    if (_nearExitDoor) {
+      game.completeLevel();
+      return;
+    }
+    if (isOnGround) {
+      velocity.y = jumpVelocity;
+      isOnGround = false;
+    }
   }
 
   @override
@@ -81,7 +91,7 @@ class PlayerComponent extends PositionComponent
     final safeDt = dt.clamp(0.0, maxDt);
 
     switch (_input) {
-      case _HorizontalInput.left:  
+      case _HorizontalInput.left:
         velocity.x = -moveSpeed;
         _animComponent.animation = _walkAnim;
         _animComponent.scale.x = -1;
@@ -97,9 +107,16 @@ class PlayerComponent extends PositionComponent
     }
 
     velocity.y += gravity * safeDt;
-    isOnGround  = false;
+    isOnGround = false;
     _prevPosition.setFrom(position);
-    position   += velocity * safeDt;
+    position += velocity * safeDt;
+
+    // Fall-death: player jatuh keluar bawah map (border sudah dihapus,
+    // jadi ini pengganti border collision buat batas bawah).
+    if (position.y > game.levelHeightPx + fallDeathBuffer) {
+      _die('Fell off the map');
+      return;
+    }
 
     // Ground tiles
     for (final ground in game.groundComponents) {
@@ -153,7 +170,8 @@ class PlayerComponent extends PositionComponent
   }
 
   bool _aabbOverlap(PositionComponent other, {double buffer = 0}) {
-    final tl = other.position -
+    final tl =
+        other.position -
         Vector2(other.size.x * other.anchor.x, other.size.y * other.anchor.y);
     return position.x + size.x > tl.x - buffer &&
         position.x < tl.x + other.size.x + buffer &&
