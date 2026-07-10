@@ -9,6 +9,7 @@ import '../components/fountain_component.dart';
 import '../components/gate_component.dart';
 import '../components/ground_component.dart';
 import '../components/lever_component.dart';
+import '../components/moving_platform_component.dart';
 import '../components/player_component.dart';
 import '../pairy_game.dart';
 import '../../models/fairy_color.dart';
@@ -105,6 +106,25 @@ class Level extends World with HasGameReference<PairyGame> {
 
         case 'Gate':
           break;
+
+        case 'MovingPlatform':
+          final dirStr = sp.properties.getValue<String>('direction') ?? 'right';
+          final dist = sp.properties.getValue<int>('distanceTiles') ?? 2;
+          final spd = sp.properties.getValue<double>('speed') ?? 40.0;
+          final w = sp.width > 0 ? sp.width : 54.0;
+          final h = sp.height > 0 ? sp.height : 18.0;
+          add(
+            MovingPlatformComponent(
+              position: Vector2(sp.x, sp.y),
+              size: Vector2(w, h),
+              direction: PlatformDirection.values.firstWhere(
+                (d) => d.name == dirStr,
+                orElse: () => PlatformDirection.right,
+              ),
+              distanceTiles: dist,
+              speed: spd,
+            ),
+          );
 
         case 'Lever':
           final targetGate = gateMap[sp.name];

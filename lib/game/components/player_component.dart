@@ -10,6 +10,7 @@ import '../pairy_game.dart';
 import 'exit_door_component.dart';
 import 'gate_component.dart';
 import 'lever_component.dart';
+import 'moving_platform_component.dart';
 
 enum _HorizontalInput { none, left, right }
 
@@ -105,6 +106,19 @@ class PlayerComponent extends PositionComponent
       _resolveAgainst(ground);
     }
 
+    // Moving platform: solid + bawa player ikut gerak, HANYA kalau player
+    // benar-benar landing di atas platform itu spesifik frame ini.
+    if (parent != null) {
+      for (final child in parent!.children) {
+        if (child is MovingPlatformComponent) {
+          final landedOnThis = _resolveAgainst(child);
+          if (landedOnThis) {
+            position += child.frameDelta;
+          }
+        }
+      }
+    }
+
     // Gate: cek crush SEBELUM resolve normal
     if (parent != null) {
       for (final child in parent!.children) {
@@ -167,7 +181,9 @@ class PlayerComponent extends PositionComponent
     }
   }
 
-  void _resolveAgainst(PositionComponent other) {
+  /// Return true kalau resolve ini SPESIFIK bikin player landing di atas
+  /// [other] pada frame ini (dipakai buat carry di moving platform).
+  bool _resolveAgainst(PositionComponent other) {
     final tl = other.position -
         Vector2(other.size.x * other.anchor.x, other.size.y * other.anchor.y);
     final ox = tl.x;
@@ -180,7 +196,9 @@ class PlayerComponent extends PositionComponent
     final overlapB = (position.y + size.y) - oy;
     final overlapT = (oy + oh) - position.y;
 
-    if (overlapR <= 0 || overlapL <= 0 || overlapB <= 0 || overlapT <= 0) return;
+    if (overlapR <= 0 || overlapL <= 0 || overlapB <= 0 || overlapT <= 0) {
+      return false;
+    }
 
     final prevBottom = _prevPosition.y + size.y;
     final prevTop    = _prevPosition.y;
@@ -189,7 +207,12 @@ class PlayerComponent extends PositionComponent
 
     if (prevBottom <= oy) {
       position.y = oy - size.y;
-      if (velocity.y > 0) { velocity.y = 0; isOnGround = true; }
+      if (velocity.y > 0) {
+        velocity.y = 0;
+        isOnGround = true;
+        return true;
+      }
+      return false;
     } else if (prevTop >= oy + oh) {
       position.y = oy + oh;
       if (velocity.y < 0) velocity.y = 0;
@@ -203,6 +226,7 @@ class PlayerComponent extends PositionComponent
       if (minY <= minX) {
         if (velocity.y >= 0) {
           position.y = oy - size.y; velocity.y = 0; isOnGround = true;
+          return true;
         } else {
           position.y = oy + oh; velocity.y = 0;
         }
@@ -211,6 +235,7 @@ class PlayerComponent extends PositionComponent
         velocity.x = 0;
       }
     }
+    return false;
   }
 
   @override
