@@ -86,7 +86,7 @@ class _MapSelectScreenState extends State<MapSelectScreen> {
   /// - n == _unlockedCount → level aktif, belum di-clear (kuning/oranye)
   /// - n > _unlockedCount  → masih terkunci (abu-abu)
   Color _colorFor(int n) {
-    final total = PairyGame.levelNames.length;
+    final total = PairyGame.levelNames.length - 1; // -1: exclude tutorial
     if (n > total)
       return AppColors.levelLocked; // map belum dibuat, selalu locked
     if (n < _unlockedCount) return AppColors.primaryGreen;
@@ -95,13 +95,13 @@ class _MapSelectScreenState extends State<MapSelectScreen> {
   }
 
   bool _isPlayable(int n) {
-    final total = PairyGame.levelNames.length;
+    final total = PairyGame.levelNames.length - 1; // -1: exclude tutorial
     return n <= _unlockedCount && n <= total;
   }
 
   @override
   Widget build(BuildContext context) {
-    final total = PairyGame.levelNames.length;
+    final total = PairyGame.levelNames.length - 1; // -1: exclude tutorial
     final slots = displaySlots > total ? displaySlots : total;
 
     return Scaffold(
@@ -138,6 +138,44 @@ class _MapSelectScreenState extends State<MapSelectScreen> {
                   const SizedBox(width: 16),
                   _LegendDot(color: AppColors.levelLocked, label: 'Locked'),
                 ],
+              ),
+            ),
+
+            // ── Tutorial: "first map", selalu playable, tidak ikut
+            // penomoran grid ────────────────────────────────────────
+            Padding(
+              padding: const EdgeInsets.only(top: 4, bottom: 4),
+              child: Center(
+                child: GestureDetector(
+                  onTap: () async {
+                    await Navigator.pushNamed(
+                      context,
+                      '/gameplay',
+                      arguments: 0, // levelNames[0] = 'tutorial'
+                    );
+                    _loadProgress();
+                  },
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 18,
+                      vertical: 9,
+                    ),
+                    decoration: BoxDecoration(
+                      color: AppColors.primaryGreen,
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: const Text(
+                      'Tutorial',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.w700,
+                        fontSize: 14,
+                        letterSpacing: 0.5,
+                        decoration: TextDecoration.none,
+                      ),
+                    ),
+                  ),
+                ),
               ),
             ),
 
@@ -196,7 +234,7 @@ class _MapSelectScreenState extends State<MapSelectScreen> {
                                                     await Navigator.pushNamed(
                                                       context,
                                                       '/gameplay',
-                                                      arguments: i,
+                                                      arguments: n,
                                                     );
                                                     // Reload progress setelah kembali dari gameplay
                                                     _loadProgress();

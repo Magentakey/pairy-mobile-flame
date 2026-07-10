@@ -176,7 +176,14 @@ class Level extends World with HasGameReference<PairyGame> {
             position: Vector2(sp.x + leverW / 2, sp.y + leverH),
             onToggle: key == null ? null : () => groupFor(key).recompute(),
           );
-          if (key != null) groupFor(key).triggers.add(() => lever.isOn);
+          if (key != null) {
+            groupFor(key).triggers.add(
+              _TriggerRef(
+                getState: () => lever.isOn,
+                expected: _getActived(sp),
+              ),
+            );
+          }
           add(lever);
 
         case 'Fountain':
@@ -193,7 +200,12 @@ class Level extends World with HasGameReference<PairyGame> {
                 : () => groupFor(key).recompute(),
           );
           if (key != null) {
-            groupFor(key).triggers.add(() => fountain.isActivated);
+            groupFor(key).triggers.add(
+              _TriggerRef(
+                getState: () => fountain.isActivated,
+                expected: _getActived(sp),
+              ),
+            );
           }
           add(fountain);
 
@@ -255,6 +267,22 @@ class Level extends World with HasGameReference<PairyGame> {
     }
   }
 
+  // Custom property boolean di Lever/Fountain, misal:
+  // Custom Properties → name: actived, type: bool, default: true
+  // Ini bukan "apakah trigger sedang on/off", tapi ekspektasi yang harus
+  // dicapai supaya trigger ini dianggap memenuhi syarat AND grup:
+  // - actived=true (default): trigger ini harus dalam kondisi ON
+  //   (lever nyala / ada fairy warna cocok di fountain) baru "memenuhi syarat".
+  // - actived=false: kebalikannya — trigger ini justru harus OFF baru
+  //   "memenuhi syarat" (dipakai buat bikin kondisi semacam NOT).
+  static bool _getActived(TiledObject sp) {
+    try {
+      return sp.properties.getValue<bool>('actived') ?? true;
+    } catch (_) {
+      return true;
+    }
+  }
+
   static FairyColor _parseFairyColor(String value) {
     switch (value.toLowerCase()) {
       case 'red':
@@ -281,35 +309,49 @@ class Level extends World with HasGameReference<PairyGame> {
 /// 1 grup bisa punya banyak target dan banyak trigger sekaligus.
 ///
 /// Logikanya AND: target baru dianggap "aktif" kalau SEMUA trigger
-/// dalam grup itu dalam kondisi on (lever nyala / fountain ada fairy
-/// warna cocoknya). Kalau ada satu saja yang off, target tetap di
-/// state awalnya (belum berubah).
+/// dalam grup itu match dengan ekspektasi masing-masing (lihat
+/// [_TriggerRef.expected], dari custom property `actived` di Tiled,
+/// default true). Kalau satu saja tidak match, target tetap di state
+/// awalnya (belum berubah).
+///
+/// Contoh: 2 lever nama "a" — lever1 `actived=true` (default), lever2
+/// `actived=false`. AND baru terpenuhi kalau lever1 ON dan lever2 OFF.
 ///
 /// State target dihitung deterministik tiap [recompute] dipanggil:
-///   state = initialState XOR AND(semua trigger)
+///   state = initialState XOR AND(semua trigger match ekspektasinya)
 /// — bukan flip/toggle biasa, supaya hasilnya konsisten walau
 /// triggernya banyak dan berubah gantian.
 class _TriggerGroup {
   final List<GateComponent> gates = [];
   final List<MovingPlatformComponent> platforms = [];
 
-  /// Getter boolean per trigger (lever.isOn / fountain.isActivated).
-  /// Pakai getter (bukan snapshot value) supaya selalu baca state
-  /// ter-update saat recompute dipanggil.
-  final List<bool Function()> triggers = [];
+  final List<_TriggerRef> triggers = [];
 
   void recompute() {
-    final allOn =
-        triggers.isNotEmpty && triggers.every((getState) => getState());
+    final allMatch =
+        triggers.isNotEmpty &&
+        triggers.every((t) => t.getState() == t.expected);
 
     for (final gate in gates) {
-      final shouldBeOpen = gate.initialOpen ^ allOn;
+      final shouldBeOpen = gate.initialOpen ^ allMatch;
       shouldBeOpen ? gate.open() : gate.close();
     }
 
     for (final platform in platforms) {
-      final shouldMove = platform.initialMoving ^ allOn;
+      final shouldMove = platform.initialMoving ^ allMatch;
       shouldMove ? platform.start() : platform.stop();
     }
   }
+}
+
+/// Satu trigger (Lever/Fountain) dalam grup.
+/// [getState] baca state real-time-nya (lever.isOn / fountain.isActivated).
+/// [expected] adalah nilai yang harus dicapai supaya trigger ini dianggap
+/// "memenuhi syarat" AND — datang dari custom property `actived` di Tiled
+/// pada object Lever/Fountain tsb (default true).
+class _TriggerRef {
+  _TriggerRef({required this.getState, required this.expected});
+
+  final bool Function() getState;
+  final bool expected;
 }

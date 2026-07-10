@@ -17,11 +17,11 @@
             "expandedObjectLayers": [
                 2
             ],
-            "scale": 1,
+            "scale": 3,
             "selectedLayer": 3,
             "viewCenter": {
-                "x": 1042,
-                "y": 531.5
+                "x": 1124.3333333333333,
+                "y": 346.16666666666663
             }
         },
         "level-02.tmx": {
@@ -39,8 +39,8 @@
             "scale": 0.75,
             "selectedLayer": 0,
             "viewCenter": {
-                "x": 323.33333333333337,
-                "y": 179.99999999999994
+                "x": 324,
+                "y": 179.33333333333326
             }
         },
         "level-03tmx.tmx": {
@@ -55,24 +55,24 @@
             "scale": 0.75,
             "selectedLayer": 0,
             "viewCenter": {
-                "x": 323.33333333333337,
-                "y": 179.99999999999994
+                "x": 324,
+                "y": 179.33333333333326
             }
         },
         "level-05.tmx": {
             "scale": 0.75,
             "selectedLayer": 0,
             "viewCenter": {
-                "x": 323.33333333333337,
-                "y": 179.99999999999994
+                "x": 324,
+                "y": 179.33333333333326
             }
         },
         "level-06.tmx": {
             "scale": 0.75,
             "selectedLayer": 0,
             "viewCenter": {
-                "x": 323.33333333333337,
-                "y": 179.99999999999994
+                "x": 324,
+                "y": 179.33333333333326
             }
         },
         "level-07.tmx": {
@@ -142,6 +142,17 @@
         "tileset-tiles.tsx": {
             "scaleInDock": 1.5,
             "scaleInEditor": 3
+        },
+        "tutorial.tmx": {
+            "expandedObjectLayers": [
+                4
+            ],
+            "scale": 1,
+            "selectedLayer": 3,
+            "viewCenter": {
+                "x": 501,
+                "y": 650.5
+            }
         }
     },
     "last.imagePath": "D:/ramdan/kuliah/semester 4/project_flutter/flame/real pairy/pairy/assets/tiles",

@@ -222,7 +222,6 @@
    <properties>
     <property name="direction" value="right"/>
     <property name="distanceTiles" type="int" value="8"/>
-    <property name="initialMoving" type="bool" value="true"/>
     <property name="speed" type="float" value="121"/>
    </properties>
   </object>
@@ -237,7 +236,11 @@
   <object id="20" name="a" type="Lever" x="1099.95" y="602.775" width="10" height="10"/>
   <object id="26" name="c" type="Lever" x="1133.28" y="602.442" width="10" height="10"/>
   <object id="27" name="c" type="Lever" x="1146.62" y="602.442" width="10" height="10"/>
-  <object id="28" name="c" type="Lever" x="1160.28" y="602.775" width="10" height="10"/>
+  <object id="28" name="c" type="Lever" x="1160.28" y="602.775" width="10" height="10">
+   <properties>
+    <property name="actived" type="bool" value="false"/>
+   </properties>
+  </object>
   <object id="29" name="c" type="Lever" x="1173.62" y="603.108" width="10" height="10"/>
   <object id="21" name="b" type="Fountain" x="1031.72" y="599.225" width="14" height="13.3333">
    <properties>

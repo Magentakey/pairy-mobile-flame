@@ -14,6 +14,7 @@ class PairyGame extends FlameGame with HasCollisionDetection {
   static const double gameWidth = 648;
   static const double gameHeight = 360;
   static const List<String> levelNames = [
+    'tutorial',
     'level-01',
     'level-02',
     'level-03',
