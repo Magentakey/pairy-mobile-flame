@@ -129,6 +129,8 @@ class Level extends World with HasGameReference<PairyGame> {
           position: Vector2(sp.x + w / 2, sp.y + h),
           size: Vector2(w, h),
           initialOpen: initialOpen,
+          tilesetImage: _getStringProp(sp, 'tilesetImage'),
+          tileGrid: _getStringProp(sp, 'tileGrid'),
         )..priority = interactivePriority;
         add(gate);
         final key = _keyOf(sp);
@@ -150,6 +152,10 @@ class Level extends World with HasGameReference<PairyGame> {
           distanceTiles: dist,
           speed: spd,
           initialMoving: initialMoving,
+          tilesetImage:
+              _getStringProp(sp, 'tilesetImage') ??
+              'tilemap_packed_industrilla expansion.png',
+          tileGrid: _getStringProp(sp, 'tileGrid') ?? '4,5,6',
         )..priority = interactivePriority;
         add(platform);
         final key = _keyOf(sp);
@@ -381,6 +387,20 @@ class Level extends World with HasGameReference<PairyGame> {
       return sp.properties.getValue<bool>('initialMoving') ?? true;
     } catch (_) {
       return true;
+    }
+  }
+
+  // Custom property string generik di Tiled, dipakai buat `tilesetImage`
+  // & `tileGrid` baik di object Gate maupun MovingPlatform. null kalau
+  // property tidak diisi / kosong — caller yang menentukan fallback
+  // default masing-masing (Gate: null → placeholder lama; MovingPlatform
+  // → fallback ke tileset & grid conveyor lama).
+  static String? _getStringProp(TiledObject sp, String propName) {
+    try {
+      final value = sp.properties.getValue<String>(propName)?.trim();
+      return (value == null || value.isEmpty) ? null : value;
+    } catch (_) {
+      return null;
     }
   }
 

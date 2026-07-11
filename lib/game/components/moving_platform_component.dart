@@ -4,6 +4,8 @@ import 'package:flame/collisions.dart';
 import 'package:flame/components.dart';
 import 'package:flame/cache.dart';
 
+import '../tile_grid.dart';
+
 enum PlatformDirection { left, right, up, down }
 
 /// Platform solid yang bergerak bolak-balik (ping-pong) di antara titik
@@ -18,6 +20,20 @@ class MovingPlatformComponent extends PositionComponent
     this.tileSize = 18,
     this.speed = 40, // px/detik
     this.initialMoving = true,
+    // ── Asset per-instance ───────────────────────────────────────────
+    // Semua punya default yang SAMA PERSIS dengan behavior lama (tileset
+    // "tilemap_packed_industrilla expansion.png", kolom 4/5/6 di baris
+    // 0 → ID 4/5/6), jadi object Tiled lama yang belum punya custom
+    // property ini tetap render identik seperti sebelumnya. Untuk pakai
+    // asset lain, isi custom property di object Tiled (lihat
+    // Level._spawnObjects):
+    //   tilesetImage (string) — nama file, relatif ke assets/tiles/
+    //   tileGrid     (string) — daftar tile ID (lihat format ID di
+    //     lib/game/tile_grid.dart — sama seperti field "ID" di panel
+    //     Properties Tiled saat klik satu tile), contoh 1 baris x 3
+    //     kolom (kiri/tengah-repeat/kanan): "4,5,6"
+    this.tilesetImage = 'tilemap_packed_industrilla expansion.png',
+    this.tileGrid = '4,5,6',
   }) : isMoving = initialMoving,
        super(anchor: Anchor.topLeft);
 
@@ -25,6 +41,16 @@ class MovingPlatformComponent extends PositionComponent
   final int distanceTiles;
   final double tileSize;
   final double speed;
+
+  /// Nama file gambar tileset (di dalam assets/tiles/) yang dipakai
+  /// platform INI secara spesifik — bisa beda-beda antar instance,
+  /// tidak lagi satu tileset untuk semua moving platform.
+  final String tilesetImage;
+
+  /// Susunan tile (lihat lib/game/tile_grid.dart untuk format). Untuk
+  /// moving platform biasanya cukup 1 baris x 3 kolom (kiri/tengah/kanan),
+  /// tapi bisa juga 1x1 (semua slot sama) kalau assetnya seragam.
+  final String tileGrid;
 
   /// Snapshot state awal, dipakai grup trigger untuk hitung
   /// `initialMoving XOR AND(semua trigger)`.
@@ -43,13 +69,6 @@ class MovingPlatformComponent extends PositionComponent
   /// GateComponent.toggleState()).
   void toggleState() => isMoving = !isMoving;
 
-  // Koordinat 3-slice conveyor di tileset t3 (tilemap_packed_industrilla
-  // expansion.png), row 6: kolom 4 = kiri, 5 = tengah, 6 = kanan.
-  static const int _tileRow = 0;
-  static const int _colLeft = 4;
-  static const int _colMid = 5;
-  static const int _colRight = 6;
-
   late final Vector2 _start;
   late final Vector2 _end;
   bool _forward = true;
@@ -58,9 +77,8 @@ class MovingPlatformComponent extends PositionComponent
   /// "menumpang" (carry) saat berdiri di atasnya.
   final Vector2 frameDelta = Vector2.zero();
 
-  Sprite? _leftSprite;
-  Sprite? _midSprite;
-  Sprite? _rightSprite;
+  Image? _image;
+  late final TileGrid _parsedGrid;
 
   @override
   Future<void> onLoad() async {
@@ -75,18 +93,13 @@ class MovingPlatformComponent extends PositionComponent
     };
     _end = _start + offset;
 
+    // Images() pakai cache internal keyed by filename, jadi walau ada
+    // banyak MovingPlatformComponent yang share tilesetImage yang sama,
+    // file gambarnya cuma di-decode sekali (aman dipanggil berkali-kali
+    // dari banyak instance berbeda, termasuk yang assetnya beda-beda).
     final images = Images(prefix: 'assets/tiles/');
-    final image = await images.load('tilemap_packed_industrilla expansion.png');
-
-    Sprite tileAt(int col) => Sprite(
-      image,
-      srcPosition: Vector2(col * tileSize, _tileRow * tileSize),
-      srcSize: Vector2.all(tileSize),
-    );
-
-    _leftSprite = tileAt(_colLeft);
-    _midSprite = tileAt(_colMid);
-    _rightSprite = tileAt(_colRight);
+    _image = await images.load(tilesetImage);
+    _parsedGrid = TileGrid.parse(tileGrid);
   }
 
   @override
@@ -117,30 +130,8 @@ class MovingPlatformComponent extends PositionComponent
 
   @override
   void render(Canvas canvas) {
-    final left = _leftSprite;
-    final mid = _midSprite;
-    final right = _rightSprite;
-    if (left == null || mid == null || right == null) return;
-
-    final cols = (size.x / tileSize).round().clamp(1, 1 << 30);
-
-    if (cols == 1) {
-      // Cuma cukup 1 tile lebar → pakai tile tengah aja biar polos.
-      mid.render(canvas, position: Vector2.zero(), size: Vector2.all(tileSize));
-      return;
-    }
-
-    for (int c = 0; c < cols; c++) {
-      final sprite = c == 0
-          ? left
-          : c == cols - 1
-          ? right
-          : mid;
-      sprite.render(
-        canvas,
-        position: Vector2(c * tileSize, 0),
-        size: Vector2.all(tileSize),
-      );
-    }
+    final image = _image;
+    if (image == null) return;
+    renderTileGrid(canvas, image, _parsedGrid, size, tileSize);
   }
 }
