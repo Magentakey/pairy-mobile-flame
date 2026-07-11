@@ -8,6 +8,7 @@ class OverlayButton extends StatelessWidget {
     required this.color,
     required this.onTap,
     this.fullWidth = false,
+    this.compact = false,
   });
 
   final String label;
@@ -15,6 +16,10 @@ class OverlayButton extends StatelessWidget {
   final Color color;
   final VoidCallback onTap;
   final bool fullWidth;
+  // Dipakai saat tombol ditaruh berdampingan (mis. dalam Row/Expanded)
+  // dan ruangnya terbatas — padding & spacing dikecilkan supaya teks
+  // tidak overflow.
+  final bool compact;
 
   @override
   Widget build(BuildContext context) {
@@ -22,7 +27,10 @@ class OverlayButton extends StatelessWidget {
       onTap: onTap,
       child: Container(
         width: fullWidth ? double.infinity : null,
-        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+        padding: EdgeInsets.symmetric(
+          horizontal: compact ? 12 : 24,
+          vertical: 12,
+        ),
         decoration: BoxDecoration(
           color: color,
           borderRadius: BorderRadius.circular(14),
@@ -32,14 +40,18 @@ class OverlayButton extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Icon(icon, color: Colors.white, size: 18),
-            const SizedBox(width: 8),
-            Text(
-              label,
-              style: const TextStyle(
-                color: Colors.white,
-                fontSize: 16,
-                fontWeight: FontWeight.w700,
-                decoration: TextDecoration.none,
+            SizedBox(width: compact ? 6 : 8),
+            Flexible(
+              child: Text(
+                label,
+                overflow: TextOverflow.ellipsis,
+                maxLines: 1,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 16,
+                  fontWeight: FontWeight.w700,
+                  decoration: TextDecoration.none,
+                ),
               ),
             ),
           ],

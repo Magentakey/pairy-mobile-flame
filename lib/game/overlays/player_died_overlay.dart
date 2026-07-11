@@ -49,11 +49,23 @@ class PlayerDiedOverlay extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 28),
-                OverlayButton(
-                  label: 'Retry',
-                  icon: Icons.replay_rounded,
-                  color: const Color(0xFFE85C4A),
-                  onTap: game.restartLevel,
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    OverlayButton(
+                      label: 'Retry',
+                      icon: Icons.replay_rounded,
+                      color: const Color(0xFFE85C4A),
+                      onTap: game.restartLevel,
+                    ),
+                    const SizedBox(width: 12),
+                    OverlayButton(
+                      label: 'Back to Map',
+                      icon: Icons.map_outlined,
+                      color: const Color(0xFF444466),
+                      onTap: game.backToMap,
+                    ),
+                  ],
                 ),
               ],
             ),

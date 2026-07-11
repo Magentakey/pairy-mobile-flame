@@ -9,8 +9,10 @@ import '../components/fountain_component.dart';
 import '../components/gate_component.dart';
 import '../components/ground_component.dart';
 import '../components/lever_component.dart';
+import '../components/map_text_component.dart';
 import '../components/moving_platform_component.dart';
 import '../components/player_component.dart';
+import '../components/trigger_zone_component.dart';
 import '../pairy_game.dart';
 import '../../models/fairy_color.dart';
 
@@ -20,6 +22,21 @@ class Level extends World with HasGameReference<PairyGame> {
   final String levelName;
   late TiledComponent levelMap;
   final List<GroundComponent> groundComponents = [];
+
+  // ── Render priority ──────────────────────────────────────────────
+  // Background (TiledComponent) & GroundComponent dibiarkan di priority
+  // default (0). MapTextComponent sengaja diberi priority di ATAS itu
+  // (textPriority) tapi di BAWAH semua komponen interaktif lain
+  // (interactivePriority), supaya text map SELALU kalah render dari
+  // player/gate/platform/lever/fountain/exitDoor/fairy, dan HANYA menang
+  // dari background & ground layer. Tanpa priority eksplisit ini,
+  // urutan render antar komponen priority-0 cuma ngikutin urutan
+  // add()/child list, yang tidak dijamin konsisten (apalagi ada
+  // komponen yang di-add lewat pass terpisah / async onLoad).
+  static const int textPriority = 1;
+  static const int interactivePriority = 2;
+  // Fairy pakai priority 100 sendiri (lihat FairyComponent) — selalu
+  // paling atas dari semuanya, termasuk di atas interactivePriority ini.
 
   /// Tinggi total map dalam pixel, dipakai buat deteksi player jatuh
   /// keluar map (fall-death). Di-set ulang tiap kali level di-load,
@@ -112,7 +129,7 @@ class Level extends World with HasGameReference<PairyGame> {
           position: Vector2(sp.x + w / 2, sp.y + h),
           size: Vector2(w, h),
           initialOpen: initialOpen,
-        );
+        )..priority = interactivePriority;
         add(gate);
         final key = _keyOf(sp);
         if (key != null) groupFor(key).gates.add(gate);
@@ -133,7 +150,7 @@ class Level extends World with HasGameReference<PairyGame> {
           distanceTiles: dist,
           speed: spd,
           initialMoving: initialMoving,
-        );
+        )..priority = interactivePriority;
         add(platform);
         final key = _keyOf(sp);
         if (key != null) groupFor(key).platforms.add(platform);
@@ -147,7 +164,7 @@ class Level extends World with HasGameReference<PairyGame> {
           final playerH = sp.height > 0 ? sp.height : 0.0;
           final player = PlayerComponent(
             position: Vector2(sp.x, sp.y + playerH - 30),
-          );
+          )..priority = interactivePriority;
           game.player = player;
           add(player);
           game.cam.follow(player);
@@ -156,9 +173,8 @@ class Level extends World with HasGameReference<PairyGame> {
           final exitW = sp.width > 0 ? sp.width : 26.0;
           final exitH = sp.height > 0 ? sp.height : 40.0;
           add(
-            ExitDoorComponent(
-              position: Vector2(sp.x + exitW / 2, sp.y + exitH),
-            ),
+            ExitDoorComponent(position: Vector2(sp.x + exitW / 2, sp.y + exitH))
+              ..priority = interactivePriority,
           );
 
         case 'Gate':
@@ -175,7 +191,7 @@ class Level extends World with HasGameReference<PairyGame> {
           lever = LeverComponent(
             position: Vector2(sp.x + leverW / 2, sp.y + leverH),
             onToggle: key == null ? null : () => groupFor(key).recompute(),
-          );
+          )..priority = interactivePriority;
           if (key != null) {
             groupFor(key).triggers.add(
               _TriggerRef(
@@ -198,7 +214,7 @@ class Level extends World with HasGameReference<PairyGame> {
             onActivationChanged: key == null
                 ? null
                 : () => groupFor(key).recompute(),
-          );
+          )..priority = interactivePriority;
           if (key != null) {
             groupFor(key).triggers.add(
               _TriggerRef(
@@ -220,6 +236,57 @@ class Level extends World with HasGameReference<PairyGame> {
             ),
           );
 
+        case 'Trigger':
+          // Invisible trigger zone — pairing lewat `name` persis seperti
+          // Lever/Fountain. Bisa jadi trigger untuk Gate/MovingPlatform
+          // (lewat _TriggerGroup.gates/platforms) SEKALIGUS memunculkan
+          // MapText (lewat _TriggerGroup.texts), asal share `name` yang
+          // sama.
+          final triggerKey = _keyOf(sp);
+          final triggerW = sp.width > 0 ? sp.width : 20.0;
+          final triggerH = sp.height > 0 ? sp.height : 20.0;
+          late final TriggerZoneComponent trigger;
+          trigger = TriggerZoneComponent(
+            position: Vector2(sp.x, sp.y),
+            size: Vector2(triggerW, triggerH),
+            onToggle: triggerKey == null
+                ? null
+                : () => groupFor(triggerKey).recompute(),
+            permanent: _getPermanent(sp),
+          );
+          if (triggerKey != null) {
+            groupFor(triggerKey).triggers.add(
+              _TriggerRef(
+                getState: () => trigger.isOn,
+                expected: _getActived(sp),
+              ),
+            );
+          }
+          add(trigger);
+
+        case 'Text':
+          // Konten teks SENGAJA diambil dari custom property "content",
+          // bukan dari `name` object — `name` di sini dipakai untuk
+          // pairing ke trigger zone (sama seperti Gate/Platform/Lever/
+          // Fountain), supaya tidak perlu placeholder aneh di `name`.
+          final content = _getTextContent(sp);
+          if (content.isEmpty) break;
+          final textW = sp.width > 0 ? sp.width : 0.0;
+          final textH = sp.height > 0 ? sp.height : 0.0;
+          final mapText = MapTextComponent(
+            text: content,
+            position: Vector2(sp.x + textW / 2, sp.y + textH / 2),
+          )..priority = textPriority;
+          final textKey = _keyOf(sp);
+          if (textKey != null) {
+            groupFor(textKey).texts.add(mapText);
+          } else {
+            // Tidak punya pasangan trigger sama sekali → tampil langsung
+            // tanpa animasi, perilaku lama sebagai label statis biasa.
+            mapText.showInstantly();
+          }
+          add(mapText);
+
         default:
           break;
       }
@@ -240,6 +307,30 @@ class Level extends World with HasGameReference<PairyGame> {
       return sp.properties.getValue<String>('color') ?? 'blue';
     } catch (_) {
       return 'blue';
+    }
+  }
+
+  // Isi teks untuk object class_ "Text", diambil dari custom property
+  // "content" (bukan `name`) — lihat komentar di case 'Text' di atas.
+  static String _getTextContent(TiledObject sp) {
+    try {
+      return sp.properties.getValue<String>('content')?.trim() ?? '';
+    } catch (_) {
+      return '';
+    }
+  }
+
+  // Custom property boolean di Tiled buat object Trigger, misal:
+  // Custom Properties → name: permanent, type: bool, default: true
+  // true (default): sekali kesentuh, trigger terkunci ON selamanya —
+  // player tidak perlu tetap berdiri di zona itu.
+  // false: trigger cuma ON selama player masih ada di dalam zona,
+  // begitu keluar langsung balik OFF (dan target ikut balik state awal).
+  static bool _getPermanent(TiledObject sp) {
+    try {
+      return sp.properties.getValue<bool>('permanent') ?? true;
+    } catch (_) {
+      return true;
     }
   }
 
@@ -324,6 +415,7 @@ class Level extends World with HasGameReference<PairyGame> {
 class _TriggerGroup {
   final List<GateComponent> gates = [];
   final List<MovingPlatformComponent> platforms = [];
+  final List<MapTextComponent> texts = [];
 
   final List<_TriggerRef> triggers = [];
 
@@ -340,6 +432,13 @@ class _TriggerGroup {
     for (final platform in platforms) {
       final shouldMove = platform.initialMoving ^ allMatch;
       shouldMove ? platform.start() : platform.stop();
+    }
+
+    // Text tidak punya konsep "initialOpen" seperti gate/platform — dia
+    // selalu mulai tersembunyi, dan langsung mengikuti hasil AND grup
+    // apa adanya (tanpa XOR): allMatch true → reveal, false → hide lagi.
+    for (final text in texts) {
+      allMatch ? text.reveal() : text.hide();
     }
   }
 }

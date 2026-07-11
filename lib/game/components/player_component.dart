@@ -45,7 +45,12 @@ class PlayerComponent extends PositionComponent
   static const double _landAnimDuration = 0.12;
 
   bool isOnGround = false;
-  bool _nearExitDoor = false;
+  // Pakai Set (bukan boolean tunggal) supaya kalau ada 2+ ExitDoor yang
+  // overlap sekaligus, keluar dari overlap salah satu pintu (collision end)
+  // TIDAK langsung mematikan status "near exit door" selama masih ada
+  // pintu lain yang masih overlap.
+  final Set<ExitDoorComponent> _touchingExitDoors = {};
+  bool get _nearExitDoor => _touchingExitDoors.isNotEmpty;
   bool _isDead = false;
   LeverComponent? nearLever;
   _HorizontalInput _input = _HorizontalInput.none;
@@ -442,24 +447,40 @@ class PlayerComponent extends PositionComponent
 
   void _updateLeverProximity() {
     if (parent == null) return;
-    LeverComponent? found;
+
+    // Kumpulkan SEMUA lever yang overlap saat ini (bisa lebih dari satu
+    // kalau ada 2+ lever berdekatan), bukan cuma ambil match pertama.
+    final overlapping = <LeverComponent>[];
     for (final child in parent!.children) {
       if (child is LeverComponent && _aabbOverlap(child, buffer: 4)) {
-        found = child;
-        break;
+        overlapping.add(child);
       }
     }
-    if (found != null && nearLever != found) {
-      nearLever = found;
-      game.leverState.value = found.isOn;
-      if (!game.overlays.isActive('LeverButton')) {
-        game.overlays.add('LeverButton');
+
+    if (overlapping.isEmpty) {
+      // Benar-benar tidak ada lever manapun yang overlap → matikan HUD.
+      if (nearLever != null) {
+        nearLever = null;
+        if (game.overlays.isActive('LeverButton')) {
+          game.overlays.remove('LeverButton');
+        }
       }
-    } else if (found == null && nearLever != null) {
-      nearLever = null;
-      if (game.overlays.isActive('LeverButton')) {
-        game.overlays.remove('LeverButton');
-      }
+      return;
+    }
+
+    // Kalau lever yang lagi dipilih masih ada di antara yang overlap,
+    // pertahankan dia (supaya tidak flip-flop antar lever saat 2+ lever
+    // sama-sama overlap). Kalau tidak, baru pilih salah satu dari yang
+    // masih overlap.
+    final stillValid = nearLever != null && overlapping.contains(nearLever);
+    final chosen = stillValid ? nearLever! : overlapping.first;
+
+    if (nearLever != chosen) {
+      nearLever = chosen;
+    }
+    game.leverState.value = chosen.isOn;
+    if (!game.overlays.isActive('LeverButton')) {
+      game.overlays.add('LeverButton');
     }
   }
 
@@ -536,7 +557,7 @@ class PlayerComponent extends PositionComponent
   ) {
     super.onCollisionStart(intersectionPoints, other);
     if (other is ExitDoorComponent) {
-      _nearExitDoor = true;
+      _touchingExitDoors.add(other);
       game.nearExitDoor.value = true;
     }
   }
@@ -545,8 +566,10 @@ class PlayerComponent extends PositionComponent
   void onCollisionEnd(PositionComponent other) {
     super.onCollisionEnd(other);
     if (other is ExitDoorComponent) {
-      _nearExitDoor = false;
-      game.nearExitDoor.value = false;
+      _touchingExitDoors.remove(other);
+      // Cuma matikan status kalau BENAR-BENAR sudah tidak overlap
+      // pintu manapun (bukan cuma satu dari beberapa pintu yang overlap).
+      game.nearExitDoor.value = _touchingExitDoors.isNotEmpty;
     }
   }
 }
