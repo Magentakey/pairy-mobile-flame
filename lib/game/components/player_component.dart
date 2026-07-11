@@ -13,6 +13,10 @@ import 'moving_platform_component.dart';
 
 enum _HorizontalInput { none, left, right }
 
+/// Arah dorongan yang dituntut sebuah solid terhadap player, dipakai buat
+/// deteksi jepitan SEBELUM resolve mana pun dijalankan (lihat _classifyPush).
+enum _PushDir { up, down, left, right }
+
 class PlayerComponent extends PositionComponent
     with CollisionCallbacks, HasGameReference<PairyGame> {
   PlayerComponent({required super.position}) : super(size: Vector2(26, 34));
@@ -49,29 +53,13 @@ class PlayerComponent extends PositionComponent
   // Tracking state gate di frame sebelumnya untuk deteksi crush
   final Map<GateComponent, bool> _gateWasOpen = {};
 
-  /// Solid (ground/platform) yang sudah "mengklaim" player sebagai
-  /// landing di FRAME INI. Dipakai untuk deteksi crush real-time:
-  /// kalau ada solid LAIN yang juga mengklaim landing pada frame yang
-  /// sama (mis. platform vertikal yang overlap player padahal player
-  /// sudah berdiri di atas platform horizontal lain), berarti player
-  /// sedang dijepit dua solid sekaligus — bukan benar-benar "pindah
-  /// pijakan". Tanpa ini, heuristik _resolveAgainst (yang cuma menilai
-  /// arah berdasarkan posisi frame lalu VS solid yang sedang diproses)
-  /// bisa salah kira ini "landing baru" dan malah nge-snap posisi
-  /// player ke atas solid kedua itu (bug: "teleport" alih-alih mati
-  /// kejepit).
-  PositionComponent? _groundedOnThisFrame;
-
-  /// Moving platform yang player SUDAH nempel di atasnya sejak frame
-  /// SEBELUMNYA (bukan baru mendarat frame ini). Dipakai supaya carry
-  /// (`position += frameDelta`) cuma diterapkan selama benar-benar
-  /// "menumpang" lanjutan — BUKAN di frame pertama kali landing.
-  /// Di frame pertama landing, `position.y` hasil resolve SUDAH
-  /// dihitung relatif terhadap posisi platform yang SAAT INI (sudah
-  /// termasuk pergerakan frame ini via `oy`), jadi menambah frameDelta
-  /// lagi di frame yang sama akan menghitung pergerakan itu 2x —
-  /// menyebabkan overshoot/snap yang kelihatan seperti teleport.
-  MovingPlatformComponent? _lastRestingPlatform;
+  /// Moving platform yang player SEDANG ditumpangi (sticky antar-frame).
+  /// Dipakai supaya kalau platform ini turun LEBIH CEPAT daripada
+  /// percepatan gravitasi player (yang tiap abis nempel mulai dari
+  /// velocity.y=0), dan kontak AABB sempat renggang sesaat karenanya,
+  /// player TETAP dianggap napel (bukan malah jatuh bebas & isOnGround
+  /// jadi false beberapa frame, yang bikin lompat gagal terus).
+  MovingPlatformComponent? _restingPlatform;
 
   @override
   Future<void> onLoad() async {
@@ -139,6 +127,7 @@ class PlayerComponent extends PositionComponent
     if (isOnGround) {
       velocity.y = jumpVelocity;
       isOnGround = false;
+      _restingPlatform = null;
     }
   }
 
@@ -147,10 +136,6 @@ class PlayerComponent extends PositionComponent
     if (_isDead) return;
     super.update(dt);
     final safeDt = dt.clamp(0.0, maxDt);
-
-    // Platform yang player SUDAH nempel sejak frame lalu (dipakai nanti
-    // buat keputusan carry di loop moving platform).
-    final wasRestingOn = _lastRestingPlatform;
 
     switch (_input) {
       case _HorizontalInput.left:
@@ -167,10 +152,6 @@ class PlayerComponent extends PositionComponent
 
     // Toleransi buat "false negative" isOnGround akibat presisi floating-point
     // satu frame pas player nempel datar di tanah (bukan beneran lompat/jatuh).
-    // BEDA dengan pendekatan sebelumnya (threshold kecepatan) yang salah nangkep
-    // momen "velocity.y lewat 0 di puncak lompatan" sebagai "sudah mendarat".
-    // Sekarang: baru dianggap BENERAN grounded kalau isOnGround true selama
-    // beberapa frame BERTURUT-TURUT (debounce), bukan cuma sesaat.
     if (isOnGround) {
       _groundedStreak++;
       _airborneStreak = 0;
@@ -178,17 +159,9 @@ class PlayerComponent extends PositionComponent
       _airborneStreak++;
       _groundedStreak = 0;
     }
-    // Butuh beberapa frame BERTURUT-TURUT !isOnGround dulu baru dianggap
-    // "beneran lompat/jatuh" — biar kedipan 1 frame pas jalan biasa di
-    // tanah datar (presisi floating-point) nggak kepanggil sebagai jump.
-    // Lompatan/jatuh beneran pasti bertahan banyak frame, jadi threshold
-    // kecil ini aman buat filter noise tanpa bikin delay yang kerasa.
     const int airborneConfirmFrames = 3;
     final isActuallyAirborne = _airborneStreak >= airborneConfirmFrames;
 
-    // Pilih frame SEKALI per frame secara manual berdasarkan lama waktu di
-    // udara — dijamin cuma maju 0->1->2 lalu berhenti di 2 (peak), nggak
-    // bisa "kebalik ke 0" atau dobel-loop kayak sebelumnya.
     if (isActuallyAirborne) {
       _jumpAirTimer += dt;
       final frameIndex = (_jumpAirTimer / _jumpFrameStepTime).floor().clamp(
@@ -196,91 +169,114 @@ class PlayerComponent extends PositionComponent
         2,
       );
       _setAnim(_jumpFrames[frameIndex]);
-      _landAnimTimer = _landAnimDuration; // siap tampil sekilas begitu landing
+      _landAnimTimer = _landAnimDuration;
     } else if (_landAnimTimer > 0) {
       _setAnim(_jumpFrames[3]);
       _landAnimTimer -= dt;
     } else {
-      _jumpAirTimer =
-          0; // reset biar lompatan berikutnya mulai dari frame 0 lagi
+      _jumpAirTimer = 0;
       if (_input != _HorizontalInput.none) {
         _setAnim(_walkAnim);
       } else {
         _setAnim(_idleAnim);
       }
     }
+
     velocity.y += gravity * safeDt;
     isOnGround = false;
-    _groundedOnThisFrame = null;
     _prevPosition.setFrom(position);
     position += velocity * safeDt;
 
-    // Fall-death: player jatuh keluar bawah map (border sudah dihapus,
-    // jadi ini pengganti border collision buat batas bawah).
+    // Fall-death: player jatuh keluar bawah map.
     if (position.y > game.levelHeightPx + fallDeathBuffer) {
       _die('Fell off the map');
       return;
     }
 
-    // Ground tiles
-    for (final ground in game.groundComponents) {
-      if (_resolveAgainst(ground)) {
-        _registerLanding(ground);
-        if (_isDead) return;
-      }
+    // ── PRE-RESOLVE CRUSH CHECK ─────────────────────────────────────────
+    // Klasifikasikan arah dorongan tiap solid yang overlap player SAAT INI,
+    // SEBELUM resolve mana pun dijalankan. Kalau ada 2 solid yang menuntut
+    // arah berlawanan pada sumbu yang sama (satu minta player didorong ke
+    // ATAS, yang lain ke BAWAH -- atau satu ke KIRI, lainnya ke KANAN) --
+    // itu tandanya player benar-benar terjepit di antara dua solid yang
+    // saling mendekat dari 2 sisi. Ini dicek SEBELUM & TERPISAH dari resolve
+    // sequential (Ground -> Gate -> Platform) supaya TIDAK tergantung urutan
+    // resolve -- resolve sequential yang lama bisa "berhasil" menghindar
+    // dari overlap salah satu sisi sebagai efek samping, yang bikin overlap
+    // sisi lainnya ikut hilang juga, alih-alih benar-benar mendeteksi
+    // jepitannya (itulah kenapa sebelumnya kejadiannya "teleport" bukan
+    // mati).
+    if (_detectSqueezeCrush()) {
+      _die('Crushed by Platform');
+      return;
     }
 
-    // Gate: cek crush SEBELUM resolve normal. Diproses SEBELUM moving
-    // platform (bukan sesudah, seperti sebelumnya) — supaya kalau player
-    // sedang resting di atas gate tertutup, klaim landing-nya SUDAH
-    // tercatat lebih dulu di frame ini sebelum moving platform lain
-    // sempat overlap dan salah kira ini "landing baru" yang tidak
-    // konflik dengan apa pun (root penyebab bug teleport gate-vs-platform).
+    // Ground tiles
+    for (final ground in game.groundComponents) {
+      _resolveAgainst(ground);
+    }
+    if (isOnGround) {
+      _restingPlatform = null;
+    }
+
+    // Gate: cek crush SEBELUM resolve normal.
     if (parent != null) {
       for (final child in parent!.children) {
         if (child is GateComponent) {
           final wasOpen = _gateWasOpen[child] ?? true;
           if (!child.isOpenState) {
             if (wasOpen && _aabbOverlap(child)) {
-              // Gate baru tutup + player di dalam → mati tertimpa
               _die('Crushed by Gate');
               _gateWasOpen[child] = false;
               return;
             }
-            if (_resolveAgainst(child)) {
-              _registerLanding(child);
-              if (_isDead) return;
-            }
+            _resolveAgainst(child);
+            if (isOnGround) _restingPlatform = null;
           }
-          // Simpan state gate frame ini untuk dibandingkan frame berikutnya
           _gateWasOpen[child] = child.isOpenState;
         }
       }
     }
 
-    // Moving platform: solid + bawa player ikut gerak, HANYA kalau player
-    // benar-benar landing di atas platform itu spesifik frame ini.
+    // Moving platform: solid + bawa player ikut gerak.
     if (parent != null) {
       for (final child in parent!.children) {
-        if (child is MovingPlatformComponent) {
-          final landedOnThis = _resolveAgainst(
-            child,
-            otherDelta: child.frameDelta,
-          );
-          if (landedOnThis) {
-            _registerLanding(child);
-            if (_isDead) return;
-            // Carry HANYA kalau ini lanjutan resting dari frame
-            // sebelumnya di platform yang SAMA. Di frame pertama
-            // landing, position.y hasil resolve sudah dihitung
-            // relatif ke posisi platform SAAT INI (oy sudah termasuk
-            // pergerakan frame ini) — nambah frameDelta lagi di frame
-            // yang sama akan menghitung pergerakan itu 2x dan bikin
-            // overshoot/snap yang kelihatan seperti teleport.
-            if (wasRestingOn == child) {
-              position += child.frameDelta;
-            }
+        if (child is! MovingPlatformComponent) continue;
+
+        if (!isOnGround && _restingPlatform == child) {
+          // Sticky re-catch: platform ini turun lebih cepat dari
+          // percepatan gravitasi player, jadi kontak AABB sempat
+          // renggang sesaat. Selama player masih sejajar horizontal
+          // dengan platform & tidak sedang lompat (velocity.y >= 0),
+          // tetap anggap napel -- jangan biarkan jatuh bebas cuma
+          // karena telat 1-2 frame nyusul turunnya platform.
+          final tl = _topLeft(child);
+          final stillAligned =
+              position.x + size.x > tl.x && position.x < tl.x + child.size.x;
+          if (stillAligned && velocity.y >= 0) {
+            position.y = tl.y - size.y;
+            position.x += child.frameDelta.x;
+            velocity.y = 0;
+            isOnGround = true;
+            continue;
+          } else {
+            _restingPlatform = null;
           }
+        }
+
+        final landedOnThis = _resolveAgainst(
+          child,
+          otherDelta: child.frameDelta,
+        );
+        if (landedOnThis) {
+          // PENTING: cuma bawa komponen X dari frameDelta. Komponen Y
+          // TIDAK boleh ditambahkan lagi -- _resolveAgainst di atas
+          // sudah menghitung position.y memakai posisi platform yang
+          // SUDAH ter-update frame ini. Menambah frameDelta.y lagi
+          // di sini men-double-count pergerakan vertikal SETIAP FRAME
+          // selama player naik di platform vertikal.
+          position.x += child.frameDelta.x;
+          _restingPlatform = child;
         }
       }
     }
@@ -288,40 +284,108 @@ class PlayerComponent extends PositionComponent
     _checkPlatformCrush();
     if (_isDead) return;
 
-    _lastRestingPlatform = _groundedOnThisFrame is MovingPlatformComponent
-        ? _groundedOnThisFrame as MovingPlatformComponent
-        : null;
-
     _updateLeverProximity();
   }
 
-  /// Crush threshold (px): seberapa dalam overlap AABB dianggap "kejepit
-  /// beneran", bukan cuma sentuhan wajar sesaat (mis. numpuk tipis di
-  /// pojok tile). Player size 26x34, tile 18px — 6px kira-kira 1/3 tile,
-  /// cukup buat menyaring noise resolve normal tapi tetap sensitif buat
-  /// kasus kejepit sungguhan.
+  Vector2 _topLeft(PositionComponent other) {
+    return other.position -
+        Vector2(other.size.x * other.anchor.x, other.size.y * other.anchor.y);
+  }
+
+  /// Tentukan arah dorongan yang dituntut [other] terhadap player SAAT INI,
+  /// TANPA mengubah posisi apa pun (murni klasifikasi, dipakai buat
+  /// _detectSqueezeCrush). Logikanya sengaja dibuat konsisten dengan
+  /// _resolveAgainst supaya hasil klasifikasi selaras dengan resolve yang
+  /// beneran dijalankan nanti.
+  _PushDir? _classifyPush(PositionComponent other, Vector2 delta) {
+    final tl = _topLeft(other);
+    final ox = tl.x;
+    final oy = tl.y;
+    final ow = other.size.x;
+    final oh = other.size.y;
+
+    final overlapR = (position.x + size.x) - ox;
+    final overlapL = (ox + ow) - position.x;
+    final overlapB = (position.y + size.y) - oy;
+    final overlapT = (oy + oh) - position.y;
+
+    if (overlapR <= 0 || overlapL <= 0 || overlapB <= 0 || overlapT <= 0) {
+      return null;
+    }
+
+    final prevOx = ox - delta.x;
+    final prevOy = oy - delta.y;
+
+    final prevBottom = _prevPosition.y + size.y;
+    final prevTop = _prevPosition.y;
+    final prevRight = _prevPosition.x + size.x;
+    final prevLeft = _prevPosition.x;
+
+    if (prevBottom <= prevOy) return _PushDir.up;
+    if (prevTop >= prevOy + oh) return _PushDir.down;
+    if (prevRight <= prevOx) return _PushDir.left;
+    if (prevLeft >= prevOx + ow) return _PushDir.right;
+
+    final minX = min(overlapR, overlapL);
+    final minY = min(overlapB, overlapT);
+    if (minY <= minX) {
+      return velocity.y >= 0 ? _PushDir.up : _PushDir.down;
+    }
+    return overlapR <= overlapL ? _PushDir.left : _PushDir.right;
+  }
+
+  /// True kalau player terjepit di antara 2 solid yang menuntut arah
+  /// dorongan berlawanan pada sumbu yang sama (atas+bawah, atau kiri+kanan)
+  /// SECARA BERSAMAAN, dan minimal salah satunya adalah moving platform
+  /// (solid statis vs statis harusnya nggak pernah saling berlawanan kalau
+  /// level didesain benar, jadi ini jaga-jaga aja).
+  bool _detectSqueezeCrush() {
+    _PushDir? verticalPush;
+    _PushDir? horizontalPush;
+    var conflict = false;
+    var involvesMover = false;
+
+    void consider(PositionComponent solid, Vector2 delta, bool isMover) {
+      if (conflict) return;
+      final dir = _classifyPush(solid, delta);
+      if (dir == null) return;
+      if (isMover) involvesMover = true;
+      if (dir == _PushDir.up || dir == _PushDir.down) {
+        if (verticalPush != null && verticalPush != dir) {
+          conflict = true;
+          return;
+        }
+        verticalPush = dir;
+      } else {
+        if (horizontalPush != null && horizontalPush != dir) {
+          conflict = true;
+          return;
+        }
+        horizontalPush = dir;
+      }
+    }
+
+    for (final ground in game.groundComponents) {
+      consider(ground, Vector2.zero(), false);
+    }
+    if (parent != null) {
+      for (final child in parent!.children) {
+        if (child is GateComponent && !child.isOpenState) {
+          consider(child, Vector2.zero(), false);
+        } else if (child is MovingPlatformComponent) {
+          consider(child, child.frameDelta, true);
+        }
+      }
+    }
+
+    return conflict && involvesMover;
+  }
+
   static const double _crushOverlapThreshold = 6.0;
 
-  /// Deteksi crush oleh moving platform. BEDA dengan gate (event diskrit
-  /// buka/tutup), platform crush sifatnya kontinu: kalau player masih
-  /// overlap DALAM dengan sesuatu (ground/gate/platform lain) setelah
-  /// semua resolve collision frame ini selesai, PADAHAL ada moving
-  /// platform yang lagi napel di player frame ini — itu artinya push-out
-  /// tadi "sukses" secara lokal (player berhasil didorong keluar dari
-  /// platform-nya sendiri, makanya overlap vs platform ~0) tapi dorongan
-  /// itu malah nge-push player ke solid lain yang nggak ikut di-resolve
-  /// ulang (ground di-resolve di AWAL frame, sebelum platform gerak).
-  ///
-  /// Makanya cek overlap dalamnya JANGAN cuma ke platform yang nyentuh —
-  /// harus ke ground/gate/platform lain juga, baru bug platform-vs-ground
-  /// (overlap sama platform sukses jadi ~0, tapi overlap sama ground
-  /// masih dalam & gak kedetect) bisa ketangkep.
   void _checkPlatformCrush() {
     if (parent == null) return;
 
-    // Trigger check-nya cuma kalau ada moving platform yang lagi napel
-    // player frame ini (buffer kecil biar "baru aja disentuh" ikut
-    // dihitung walau resolve udah bikin overlap-nya nyaris 0).
     final touchingMovingPlatform = parent!.children.any(
       (c) =>
           c is MovingPlatformComponent &&
@@ -350,9 +414,7 @@ class PlayerComponent extends PositionComponent
   }
 
   bool _deepOverlap(PositionComponent other) {
-    final tl =
-        other.position -
-        Vector2(other.size.x * other.anchor.x, other.size.y * other.anchor.y);
+    final tl = _topLeft(other);
 
     final overlapX =
         min(position.x + size.x, tl.x + other.size.x) - max(position.x, tl.x);
@@ -363,40 +425,15 @@ class PlayerComponent extends PositionComponent
         overlapY > _crushOverlapThreshold;
   }
 
-  /// Dipanggil setiap kali sebuah solid (ground/platform) berhasil
-  /// me-resolve player sebagai "landing" (isOnGround = true) pada
-  /// frame ini. Kalau sebelumnya SUDAH ada solid lain yang mengklaim
-  /// landing pada frame yang sama — dan salah satunya moving platform —
-  /// berarti player sedang dijepit dua solid yang saling bertumpuk di
-  /// posisi yang sama (mis. platform vertikal menembus ke posisi player
-  /// yang sudah berdiri di platform horizontal lain). Itu kondisi
-  /// kejepit sungguhan, jadi player mati di sini SEBELUM posisinya
-  /// sempat di-snap/teleport ke solid kedua tsb.
-  void _registerLanding(PositionComponent solid) {
-    final previous = _groundedOnThisFrame;
-    if (previous != null && previous != solid) {
-      final involvesMovingPlatform =
-          solid is MovingPlatformComponent ||
-          previous is MovingPlatformComponent;
-      if (involvesMovingPlatform) {
-        _die('Crushed by Platform');
-        return;
-      }
-    }
-    _groundedOnThisFrame = solid;
-  }
-
   void _die(String cause) {
     _isDead = true;
     velocity.setZero();
-    _animComponent.animation = _idleAnim; // freeze
+    _animComponent.animation = _idleAnim;
     game.playerDied(cause);
   }
 
   bool _aabbOverlap(PositionComponent other, {double buffer = 0}) {
-    final tl =
-        other.position -
-        Vector2(other.size.x * other.anchor.x, other.size.y * other.anchor.y);
+    final tl = _topLeft(other);
     return position.x + size.x > tl.x - buffer &&
         position.x < tl.x + other.size.x + buffer &&
         position.y + size.y > tl.y - buffer &&
@@ -428,17 +465,10 @@ class PlayerComponent extends PositionComponent
 
   /// Return true kalau resolve ini SPESIFIK bikin player landing di atas
   /// [other] pada frame ini (dipakai buat carry di moving platform).
-  ///
-  /// [otherDelta] = pergerakan [other] pada frame ini (default diam/nol).
-  /// Wajib diisi untuk object yang bergerak (mis. MovingPlatformComponent)
-  /// supaya perbandingan "posisi player frame lalu" tetap relatif terhadap
-  /// posisi [other] di frame lalu juga — bukan posisi [other] sekarang.
   bool _resolveAgainst(PositionComponent other, {Vector2? otherDelta}) {
     final delta = otherDelta ?? Vector2.zero();
 
-    final tl =
-        other.position -
-        Vector2(other.size.x * other.anchor.x, other.size.y * other.anchor.y);
+    final tl = _topLeft(other);
     final ox = tl.x;
     final oy = tl.y;
     final ow = other.size.x;
@@ -453,8 +483,6 @@ class PlayerComponent extends PositionComponent
       return false;
     }
 
-    // Posisi 'other' pada frame SEBELUMNYA, biar perbandingan arah datang
-    // player tetap akurat walau 'other' ikut gerak.
     final prevOx = ox - delta.x;
     final prevOy = oy - delta.y;
 
@@ -464,33 +492,16 @@ class PlayerComponent extends PositionComponent
     final prevLeft = _prevPosition.x;
 
     if (prevBottom <= prevOy) {
-      // Player kelihatan datang dari atas (prev frame belum overlap).
-      // Ini cuma valid dianggap "landing" beneran kalau player memang
-      // sedang bergerak turun (velocity.y > 0). Kalau velocity.y <= 0
-      // — biasanya karena player sudah resting di solid LAIN dan
-      // gravitasinya sudah di-nol-kan solid itu duluan di frame ini —
-      // JANGAN paksa posisi pindah ke sini. Biarkan overlap-nya tetap
-      // apa adanya, supaya _checkPlatformCrush bisa mendeteksinya
-      // sebagai crush, bukan malah nge-teleport diam-diam ke atas
-      // solid ini (bug lama: posisi dipindah unconditional padahal
-      // return value-nya false).
+      position.y = oy - size.y;
       if (velocity.y > 0) {
-        position.y = oy - size.y;
         velocity.y = 0;
         isOnGround = true;
         return true;
       }
       return false;
     } else if (prevTop >= prevOy + oh) {
-      // Simetris dengan kasus di atas: cuma valid dianggap "nabrak
-      // kepala dari bawah" kalau player memang sedang bergerak naik
-      // (velocity.y < 0). Sama seperti branch di atas, JANGAN pindah
-      // posisi kalau tidak — biarkan overlap terdeteksi oleh
-      // _checkPlatformCrush.
-      if (velocity.y < 0) {
-        position.y = oy + oh;
-        velocity.y = 0;
-      }
+      position.y = oy + oh;
+      if (velocity.y < 0) velocity.y = 0;
     } else if (prevRight <= prevOx) {
       position.x = ox - size.x;
       velocity.x = 0;
