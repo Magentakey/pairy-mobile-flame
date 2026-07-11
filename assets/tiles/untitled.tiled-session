@@ -213,7 +213,7 @@
         "tutorial.tmx"
     ],
     "project": "untitled.tiled-project",
-    "property.type": "string",
+    "property.type": "float",
     "recentFiles": [
         "tutorial.tmx",
         "t3.tsx",

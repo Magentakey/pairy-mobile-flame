@@ -5,6 +5,7 @@ import 'package:flame/components.dart';
 import 'package:flame/cache.dart';
 
 import '../tile_grid.dart';
+import 'stone_brick_component.dart';
 
 enum PlatformDirection { left, right, up, down }
 
@@ -120,12 +121,68 @@ class MovingPlatformComponent extends PositionComponent
 
     if (dist < 1) {
       _forward = !_forward;
-    } else {
-      final step = (speed * dt).clamp(0.0, dist);
-      position += diff.normalized() * step;
+      frameDelta.setZero();
+      return;
     }
 
+    final step = (speed * dt).clamp(0.0, dist);
+    final proposed = position + diff.normalized() * step;
+
+    if (_blockedByStoneBrick(proposed)) {
+      // Ada StoneBrick yang menghalangi jalur (BUKAN yang lagi
+      // ditumpangi di atas platform ini) -- daripada maksa nembus/dorong
+      // (yang bikin resolve collision rumit & rawan glitch/teleport),
+      // platform langsung balik arah lebih awal, seolah-olah sudah
+      // nyampe ujung jalurnya. Distance yang sudah ditentukan (menuju
+      // _start/_end) TIDAK diteruskan -- brick di tengah jalan otomatis
+      // jadi "ujung" baru buat siklus ping-pong ini.
+      _forward = !_forward;
+      frameDelta.setZero();
+      return;
+    }
+
+    position.setFrom(proposed);
     frameDelta.setFrom(position - prev);
+  }
+
+  /// True kalau [proposedPosition] (posisi platform SEANDAINYA jadi
+  /// bergerak ke sana frame ini) akan overlap sebuah [StoneBrickComponent]
+  /// yang BUKAN sedang ditumpangi di atas platform ini saat ini (brick
+  /// yang nemplok di atas platform itu WAJAR & aman -- dia ikut ke-carry
+  /// normal lewat frameDelta, bukan penghalang).
+  bool _blockedByStoneBrick(Vector2 proposedPosition) {
+    if (parent == null) return false;
+    for (final child in parent!.children) {
+      if (child is! StoneBrickComponent) continue;
+      if (_isRestingOnTop(child)) continue;
+      if (_wouldOverlap(proposedPosition, child)) return true;
+    }
+    return false;
+  }
+
+  /// True kalau [brick] saat ini persis nemplok di atas platform (bukan
+  /// menghalangi dari samping/bawah) -- posisi topLeft sama-sama dipakai
+  /// di platform & brick, jadi cukup bandingkan langsung tanpa konversi
+  /// anchor.
+  bool _isRestingOnTop(StoneBrickComponent brick) {
+    final brickBottom = brick.position.y + brick.size.y;
+    final myTop = position.y;
+    final withinX =
+        brick.position.x + brick.size.x > position.x &&
+        brick.position.x < position.x + size.x;
+    return withinX && (brickBottom - myTop).abs() < 2.0;
+  }
+
+  bool _wouldOverlap(Vector2 pos, StoneBrickComponent brick) {
+    final ax1 = pos.x;
+    final ay1 = pos.y;
+    final ax2 = pos.x + size.x;
+    final ay2 = pos.y + size.y;
+    final bx1 = brick.position.x;
+    final by1 = brick.position.y;
+    final bx2 = brick.position.x + brick.size.x;
+    final by2 = brick.position.y + brick.size.y;
+    return ax1 < bx2 && ax2 > bx1 && ay1 < by2 && ay2 > by1;
   }
 
   @override

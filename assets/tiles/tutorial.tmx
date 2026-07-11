@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.10" tiledversion="1.12.2" orientation="orthogonal" renderorder="right-down" width="116" height="50" tilewidth="18" tileheight="18" infinite="0" nextlayerid="6" nextobjectid="61">
+<map version="1.10" tiledversion="1.12.2" orientation="orthogonal" renderorder="right-down" width="116" height="50" tilewidth="18" tileheight="18" infinite="0" nextlayerid="6" nextobjectid="77">
  <tileset firstgid="1" source="background.tsx"/>
  <tileset firstgid="41" source="tileset-tiles.tsx"/>
  <tileset firstgid="221" source="t2.tsx"/>
@@ -240,7 +240,11 @@
    </properties>
   </object>
   <object id="20" name="b" type="Lever" x="965.45" y="601.942" width="10" height="10"/>
-  <object id="21" name="a" type="Lever" x="931.117" y="601.942" width="10" height="10"/>
+  <object id="21" name="a" type="Button" x="931.117" y="601.942" width="10" height="10">
+   <properties>
+    <property name="mode" value="plate"/>
+   </properties>
+  </object>
   <object id="5" name="t2" type="Fountain" x="522.716" y="598.892" width="14" height="13.3333">
    <properties>
     <property name="color" value="blue"/>
@@ -439,5 +443,73 @@
     <property name="content" value="told you...."/>
    </properties>
   </object>
+  <object id="61" name="b1" type="Button" x="1198" y="602.5" width="10" height="10">
+   <properties>
+    <property name="mode" value="plate"/>
+   </properties>
+  </object>
+  <object id="62" name="b2" type="Button" x="1250" y="602.5" width="10" height="10">
+   <properties>
+    <property name="mode" value="toggle"/>
+   </properties>
+  </object>
+  <object id="63" name="b3" type="Button" x="1306" y="602.5" width="10" height="10">
+   <properties>
+    <property name="mode" value="timer"/>
+    <property name="timerDuration" type="float" value="3.5"/>
+   </properties>
+  </object>
+  <object id="64" name="b1" type="Gate" x="1186.29" y="632.958" width="32.1667" height="21.0833">
+   <properties>
+    <property name="initialOpen" type="bool" value="false"/>
+   </properties>
+  </object>
+  <object id="66" name="b2" type="Gate" x="1238.29" y="632.958" width="32.1667" height="21.0833">
+   <properties>
+    <property name="initialOpen" type="bool" value="false"/>
+   </properties>
+  </object>
+  <object id="67" name="b3" type="Gate" x="1295.29" y="632.958" width="32.1667" height="21.0833">
+   <properties>
+    <property name="initialOpen" type="bool" value="false"/>
+   </properties>
+  </object>
+  <object id="68" type="StoneBrick" x="1385" y="594.75" width="18" height="18"/>
+  <object id="69" name="btn and stone" type="Text" x="1202.33" y="572.334">
+   <properties>
+    <property name="content" value="plate"/>
+   </properties>
+  </object>
+  <object id="71" name="btn and stone" type="Text" x="1255.08" y="572.334">
+   <properties>
+    <property name="content" value="toggle"/>
+   </properties>
+  </object>
+  <object id="72" name="btn and stone" type="Text" x="1312.08" y="572.334">
+   <properties>
+    <property name="content" value="timer"/>
+   </properties>
+  </object>
+  <object id="73" name="btn and stone" type="Text" x="1394.58" y="536.834">
+   <properties>
+    <property name="content" value="stone"/>
+   </properties>
+  </object>
+  <object id="70" name="btn and stone" type="Trigger" x="1177" y="571.667" width="152.25" height="40.6666"/>
+  <object id="74" type="MovingPlatform" x="1439" y="648.5" width="72" height="18">
+   <properties>
+    <property name="direction" value="up"/>
+    <property name="distanceTiles" type="int" value="8"/>
+    <property name="speed" type="float" value="55"/>
+   </properties>
+  </object>
+  <object id="75" type="MovingPlatform" x="1530.5" y="556.5" width="72" height="18">
+   <properties>
+    <property name="direction" value="left"/>
+    <property name="distanceTiles" type="int" value="8"/>
+    <property name="speed" type="float" value="121"/>
+   </properties>
+  </object>
+  <object id="76" type="StoneBrick" x="1467.75" y="593.75" width="18" height="18"/>
  </objectgroup>
 </map>

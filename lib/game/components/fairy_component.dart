@@ -10,6 +10,7 @@ import '../pairy_game.dart';
 import 'gate_component.dart';
 import 'ground_component.dart';
 import 'moving_platform_component.dart';
+import 'stone_brick_component.dart';
 
 class FairyComponent extends PositionComponent
     with DragCallbacks, CollisionCallbacks, HasGameReference<PairyGame> {
@@ -125,6 +126,8 @@ class FairyComponent extends PositionComponent
         _pushOutOf(child);
       } else if (child is MovingPlatformComponent) {
         _pushOutOfPlatform(child);
+      } else if (child is StoneBrickComponent) {
+        _pushOutOfBrick(child);
       } else if (child is FairyComponent && child != this) {
         _pushAwayFrom(child);
       }
@@ -183,6 +186,32 @@ class FairyComponent extends PositionComponent
     }
   }
 
+  /// Sama seperti [_pushOutOfPlatform], tapi khusus [StoneBrickComponent].
+  /// Murni efek dorong (solid) — fairy TIDAK ikut menumpang gerak brick
+  /// (baik pas brick jatuh maupun didorong), sama seperti fairy tidak
+  /// ikut menumpang moving platform.
+  void _pushOutOfBrick(StoneBrickComponent other) {
+    final tl = _topLeft(other);
+    final r = size.x / 2;
+
+    final overlapR = (position.x + r) - tl.x;
+    final overlapL = (tl.x + other.size.x) - (position.x - r);
+    final overlapB = (position.y + r) - tl.y;
+    final overlapT = (tl.y + other.size.y) - (position.y - r);
+
+    if (overlapR <= 0 || overlapL <= 0 || overlapB <= 0 || overlapT <= 0)
+      return;
+
+    final minX = min(overlapR, overlapL);
+    final minY = min(overlapB, overlapT);
+
+    if (minX < minY) {
+      position.x += overlapR < overlapL ? -overlapR : overlapL;
+    } else {
+      position.y += overlapB < overlapT ? -overlapB : overlapT;
+    }
+  }
+
   static const double _crushOverlapThreshold = 6.0;
 
   /// Deteksi fairy "kejepit" oleh moving platform: fairy masih overlap
@@ -195,9 +224,10 @@ class FairyComponent extends PositionComponent
 
     final touchingMovingPlatform = parent!.children.any(
       (c) =>
-          c is MovingPlatformComponent &&
-          c.isMoving &&
-          _shallowOverlap(c, buffer: 2),
+          (c is MovingPlatformComponent &&
+              c.isMoving &&
+              _shallowOverlap(c, buffer: 2)) ||
+          (c is StoneBrickComponent && _shallowOverlap(c, buffer: 2)),
     );
     if (!touchingMovingPlatform) return;
 
@@ -213,6 +243,11 @@ class FairyComponent extends PositionComponent
         return;
       }
       if (child is MovingPlatformComponent && _deepOverlap(child)) {
+        removeFromParent();
+        game.playerDied('Fairy Crushed by Platform');
+        return;
+      }
+      if (child is StoneBrickComponent && _deepOverlap(child)) {
         removeFromParent();
         game.playerDied('Fairy Crushed by Platform');
         return;

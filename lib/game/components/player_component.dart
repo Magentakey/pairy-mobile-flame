@@ -10,6 +10,7 @@ import 'exit_door_component.dart';
 import 'gate_component.dart';
 import 'lever_component.dart';
 import 'moving_platform_component.dart';
+import 'stone_brick_component.dart';
 
 enum _HorizontalInput { none, left, right }
 
@@ -299,6 +300,63 @@ class PlayerComponent extends PositionComponent
       }
     }
 
+    // Stone brick: solid + bisa didorong horizontal + bisa jadi pijakan
+    // (ikut ke-carry lewat frameDelta.x, sama seperti moving platform).
+    if (parent != null) {
+      for (final child in parent!.children) {
+        if (child is! StoneBrickComponent) continue;
+
+        final tl = _topLeft(child);
+        final ox = tl.x;
+        final oy = tl.y;
+        final ow = child.size.x;
+        final oh = child.size.y;
+
+        final overlapR = (position.x + size.x) - ox;
+        final overlapL = (ox + ow) - position.x;
+        final overlapB = (position.y + size.y) - oy;
+        final overlapT = (oy + oh) - position.y;
+        if (overlapR <= 0 || overlapL <= 0 || overlapB <= 0 || overlapT <= 0) {
+          continue;
+        }
+
+        final delta = child.frameDelta;
+        final prevOx = ox - delta.x;
+        final prevOy = oy - delta.y;
+        final prevBottom = _prevPosition.y + size.y;
+        final prevTop = _prevPosition.y;
+        final prevRight = _prevPosition.x + size.x;
+        final prevLeft = _prevPosition.x;
+
+        if (prevBottom <= prevOy) {
+          // Landing di atas brick -- brick jadi pijakan, sama seperti
+          // platform. Carry cuma komponen X (lihat catatan di loop
+          // moving platform di atas soal kenapa Y tidak boleh
+          // ditambahkan lagi).
+          position.y = oy - size.y;
+          if (velocity.y > 0) {
+            velocity.y = 0;
+            isOnGround = true;
+            position.x += delta.x;
+            _restingPlatform = null;
+          }
+        } else if (prevTop >= prevOy + oh) {
+          position.y = oy + oh;
+          if (velocity.y < 0) velocity.y = 0;
+        } else if (prevRight <= prevOx) {
+          // Player nabrak brick dari kiri -> coba dorong ke kanan.
+          final moved = child.tryPush(overlapR);
+          position.x = (ox + moved) - size.x;
+          velocity.x = 0;
+        } else if (prevLeft >= prevOx + ow) {
+          // Player nabrak brick dari kanan -> coba dorong ke kiri.
+          final moved = child.tryPush(-overlapL);
+          position.x = (ox + moved) + ow;
+          velocity.x = 0;
+        }
+      }
+    }
+
     _checkPlatformCrush();
     if (_isDead) return;
 
@@ -393,6 +451,18 @@ class PlayerComponent extends PositionComponent
         } else if (child is MovingPlatformComponent) {
           consider(child, child.frameDelta, true);
         }
+        // StoneBrickComponent SENGAJA TIDAK diikutkan di pre-check ini.
+        // Beda dari ground/gate/platform yang posisinya "diam" relatif
+        // terhadap heuristik _classifyPush, brick sedang aktif digerakkan
+        // (didorong player / jatuh gravitasi) di frame yang sama saat
+        // classifier ini jalan -- ada momen (mis. brick jatuh dari tepi
+        // tepat di sebelah player) di mana heuristik arahnya salah baca
+        // sebagai dorongan vertikal berlawanan dengan ground di bawah
+        // player, padahal cuma brick lewat di samping. Ini bikin false
+        // positive "kejepit" pas push brick ke tepi map buat dijatuhkan.
+        // Deteksi crush brick tetap ada lewat _checkPlatformCrush (deep
+        // overlap PASCA-resolve, jauh lebih toleran karena berbasis
+        // kedalaman overlap aktual, bukan tebakan arah pra-resolve).
       }
     }
 
@@ -406,9 +476,10 @@ class PlayerComponent extends PositionComponent
 
     final touchingMovingPlatform = parent!.children.any(
       (c) =>
-          c is MovingPlatformComponent &&
-          c.isMoving &&
-          _aabbOverlap(c, buffer: 2),
+          (c is MovingPlatformComponent &&
+              c.isMoving &&
+              _aabbOverlap(c, buffer: 2)) ||
+          (c is StoneBrickComponent && _aabbOverlap(c, buffer: 2)),
     );
     if (!touchingMovingPlatform) return;
 
@@ -425,6 +496,10 @@ class PlayerComponent extends PositionComponent
         return;
       }
       if (child is MovingPlatformComponent && _deepOverlap(child)) {
+        _die('Crushed by Platform');
+        return;
+      }
+      if (child is StoneBrickComponent && _deepOverlap(child)) {
         _die('Crushed by Platform');
         return;
       }

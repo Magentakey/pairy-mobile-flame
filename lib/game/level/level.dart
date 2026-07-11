@@ -4,6 +4,7 @@ import 'package:flame/components.dart';
 import 'package:flame_tiled/flame_tiled.dart';
 
 import '../components/exit_door_component.dart';
+import '../components/button_component.dart';
 import '../components/fairy_component.dart';
 import '../components/fountain_component.dart';
 import '../components/gate_component.dart';
@@ -12,6 +13,7 @@ import '../components/lever_component.dart';
 import '../components/map_text_component.dart';
 import '../components/moving_platform_component.dart';
 import '../components/player_component.dart';
+import '../components/stone_brick_component.dart';
 import '../components/trigger_zone_component.dart';
 import '../pairy_game.dart';
 import '../../models/fairy_color.dart';
@@ -166,6 +168,18 @@ class Level extends World with HasGameReference<PairyGame> {
         add(platform);
         final key = _keyOf(sp);
         if (key != null) groupFor(key).platforms.add(platform);
+      } else if (sp.class_ == 'StoneBrick') {
+        // StoneBrick bukan target trigger (tidak ikut _TriggerGroup sama
+        // sekali) -- murni solid fisik independen, jadi cukup di-spawn di
+        // sini tanpa registrasi pairing apa pun.
+        final w = sp.width > 0 ? sp.width : 18.0;
+        final h = sp.height > 0 ? sp.height : 18.0;
+        add(
+          StoneBrickComponent(
+            position: Vector2(sp.x, sp.y),
+            size: Vector2(w, h),
+          )..priority = playerPriority,
+        );
       }
     }
 
@@ -197,6 +211,37 @@ class Level extends World with HasGameReference<PairyGame> {
 
         case 'MovingPlatform':
           break;
+
+        case 'StoneBrick':
+          break;
+
+        case 'Button':
+          final key = _keyOf(sp);
+          final btnW = sp.width > 0 ? sp.width : 20.0;
+          final btnH = sp.height > 0 ? sp.height : 8.0;
+          final mode = _getButtonMode(sp);
+          final timerDuration = _getTimerDuration(sp);
+          late final ButtonComponent button;
+          button = ButtonComponent(
+            position: Vector2(sp.x + btnW / 2, sp.y + btnH),
+            mode: mode,
+            timerDuration: timerDuration,
+            onActivationChanged: key == null
+                ? null
+                : () {
+                    groupFor(key).recompute();
+                    _maybeToggleDebugMode(key);
+                  },
+          )..priority = interactivePriority;
+          if (key != null) {
+            groupFor(key).triggers.add(
+              _TriggerRef(
+                getState: () => button.isOn,
+                expected: _getActived(sp),
+              ),
+            );
+          }
+          add(button);
 
         case 'Lever':
           final key = _keyOf(sp);
@@ -345,6 +390,33 @@ class Level extends World with HasGameReference<PairyGame> {
       return sp.properties.getValue<String>('color') ?? 'blue';
     } catch (_) {
       return 'blue';
+    }
+  }
+
+  // Custom property string di Tiled buat object Button, misal:
+  // Custom Properties → name: mode, type: string, default: "plate"
+  // Nilai valid: "plate" | "toggle" | "timer" (lihat ButtonMode).
+  // Nilai tidak dikenal/kosong -> fallback ke ButtonMode.plate.
+  static ButtonMode _getButtonMode(TiledObject sp) {
+    try {
+      final raw = sp.properties.getValue<String>('mode')?.trim().toLowerCase();
+      return ButtonMode.values.firstWhere(
+        (m) => m.name == raw,
+        orElse: () => ButtonMode.plate,
+      );
+    } catch (_) {
+      return ButtonMode.plate;
+    }
+  }
+
+  // Custom property numerik di Tiled buat object Button (mode timer),
+  // misal: Custom Properties → name: timerDuration, type: float, default: 3.0
+  // Cuma relevan kalau mode == 'timer'; diabaikan buat mode lain.
+  static double _getTimerDuration(TiledObject sp) {
+    try {
+      return sp.properties.getValue<double>('timerDuration') ?? 3.0;
+    } catch (_) {
+      return 3.0;
     }
   }
 
