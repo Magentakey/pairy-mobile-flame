@@ -66,6 +66,14 @@ class PairyGame extends FlameGame with HasCollisionDetection {
   List<GroundComponent> get groundComponents => _level.groundComponents;
   double get levelHeightPx => _level.heightPx;
 
+  // ── Debug ────────────────────────────────────────────────────────
+  // Diaktifkan lewat trigger/lever/fountain khusus di Tiled dengan
+  // `name` = "debugmode" (lihat Level._maybeToggleDebugMode). Menyalakan
+  // outline hitbox semua komponen collision (player, ground, gate, dll)
+  // supaya gampang debug alignment collision vs sprite di lapangan,
+  // tanpa perlu rebuild dengan debugMode di-hardcode true.
+  void toggleDebugMode() => debugMode = !debugMode;
+
   // ── Pause ────────────────────────────────────────────────────────
   void togglePause() {
     if (overlays.isActive('PlayerDied') || overlays.isActive('LevelComplete'))

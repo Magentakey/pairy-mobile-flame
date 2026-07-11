@@ -19,7 +19,14 @@ enum _PushDir { up, down, left, right }
 
 class PlayerComponent extends PositionComponent
     with CollisionCallbacks, HasGameReference<PairyGame> {
-  PlayerComponent({required super.position}) : super(size: Vector2(26, 34));
+  PlayerComponent({required super.position})
+    : super(size: PlayerComponent.hitboxSize);
+
+  /// Ukuran hitbox player — dijadikan satu sumber kebenaran (dipakai juga
+  /// oleh Level saat menghitung posisi spawn dari object Tiled), supaya
+  /// tidak ada lagi angka ajaib yang bisa nyimpang dari ukuran ini kalau
+  /// suatu saat berubah lagi.
+  static final Vector2 hitboxSize = Vector2(26, 34);
 
   static const double moveSpeed = 130;
   static const double gravity = 700;
@@ -101,9 +108,15 @@ class PlayerComponent extends PositionComponent
       _walkAnim.frames.first.sprite,
     ], stepTime: 1);
 
+    // Render sprite dilebihin sedikit ke bawah (cuma visual, TIDAK
+    // mengubah `size`/hitbox asli yang dipakai physics & collision).
+    // Ini buat kompensasi sub-pixel rounding antara sprite scaling vs
+    // posisi hitbox, yang kalau dibiarkan bikin boots keliatan ngambang
+    // ~1px dari permukaan tanah.
+    const double visualGroundOverlap = 2;
     _animComponent = SpriteAnimationComponent(
       animation: _idleAnim,
-      size: size,
+      size: Vector2(size.x, size.y + visualGroundOverlap),
       anchor: Anchor.topLeft,
     );
     add(_animComponent);

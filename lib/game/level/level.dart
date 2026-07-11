@@ -163,7 +163,10 @@ class Level extends World with HasGameReference<PairyGame> {
         case 'Player':
           final playerH = sp.height > 0 ? sp.height : 0.0;
           final player = PlayerComponent(
-            position: Vector2(sp.x, sp.y + playerH - 30),
+            position: Vector2(
+              sp.x,
+              sp.y + playerH - PlayerComponent.hitboxSize.y,
+            ),
           )..priority = interactivePriority;
           game.player = player;
           add(player);
@@ -190,7 +193,12 @@ class Level extends World with HasGameReference<PairyGame> {
           late final LeverComponent lever;
           lever = LeverComponent(
             position: Vector2(sp.x + leverW / 2, sp.y + leverH),
-            onToggle: key == null ? null : () => groupFor(key).recompute(),
+            onToggle: key == null
+                ? null
+                : () {
+                    groupFor(key).recompute();
+                    _maybeToggleDebugMode(key);
+                  },
           )..priority = interactivePriority;
           if (key != null) {
             groupFor(key).triggers.add(
@@ -213,7 +221,10 @@ class Level extends World with HasGameReference<PairyGame> {
             requiredColor: _parseFairyColor(fc),
             onActivationChanged: key == null
                 ? null
-                : () => groupFor(key).recompute(),
+                : () {
+                    groupFor(key).recompute();
+                    _maybeToggleDebugMode(key);
+                  },
           )..priority = interactivePriority;
           if (key != null) {
             groupFor(key).triggers.add(
@@ -251,7 +262,10 @@ class Level extends World with HasGameReference<PairyGame> {
             size: Vector2(triggerW, triggerH),
             onToggle: triggerKey == null
                 ? null
-                : () => groupFor(triggerKey).recompute(),
+                : () {
+                    groupFor(triggerKey).recompute();
+                    _maybeToggleDebugMode(triggerKey);
+                  },
             permanent: _getPermanent(sp),
           );
           if (triggerKey != null) {
@@ -300,6 +314,18 @@ class Level extends World with HasGameReference<PairyGame> {
   static String? _keyOf(TiledObject sp) {
     final name = sp.name.trim();
     return name.isEmpty ? null : name;
+  }
+
+  // Nama khusus (case-insensitive) buat lever/fountain/trigger invisible
+  // yang fungsinya BUKAN pairing gate/platform biasa, tapi nyala/matiin
+  // `PairyGame.debugMode` (outline hitbox semua komponen collision).
+  // Dipanggil dari onToggle/onActivationChanged Lever, Fountain, DAN
+  // Trigger — jadi bisa dipasang sebagai objek jenis apa pun di Tiled,
+  // asal `name`-nya "debugmode".
+  void _maybeToggleDebugMode(String? key) {
+    if (key != null && key.toLowerCase() == 'debugmode') {
+      game.toggleDebugMode();
+    }
   }
 
   static String _getColor(TiledObject sp) {

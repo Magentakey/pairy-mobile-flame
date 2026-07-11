@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.10" tiledversion="1.12.2" orientation="orthogonal" renderorder="right-down" width="116" height="50" tilewidth="18" tileheight="18" infinite="0" nextlayerid="5" nextobjectid="41">
+<map version="1.10" tiledversion="1.12.2" orientation="orthogonal" renderorder="right-down" width="116" height="50" tilewidth="18" tileheight="18" infinite="0" nextlayerid="5" nextobjectid="59">
  <tileset firstgid="1" source="background.tsx"/>
  <tileset firstgid="41" source="tileset-tiles.tsx"/>
  <layer id="1" name="background" width="116" height="50">
@@ -195,6 +195,11 @@
     <property name="color" value="red"/>
    </properties>
   </object>
+  <object id="53" name="debugmode" type="Fountain" x="347.383" y="503.225" width="14" height="13.3333">
+   <properties>
+    <property name="color" value="red"/>
+   </properties>
+  </object>
   <object id="12" name="3" type="Fountain" x="699.466" y="599.392" width="14" height="13.3333">
    <properties>
     <property name="color" value="blue"/>
@@ -252,8 +257,8 @@
   <object id="26" type="MovingPlatform" x="807.5" y="480.25" width="72" height="18">
    <properties>
     <property name="direction" value="up"/>
-    <property name="distanceTiles" type="int" value="5"/>
-    <property name="speed" type="float" value="55"/>
+    <property name="distanceTiles" type="int" value="25"/>
+    <property name="speed" type="float" value="222"/>
    </properties>
   </object>
   <object id="17" type="MovingPlatform" x="901" y="483.75" width="72" height="18">
@@ -270,14 +275,59 @@
     <property name="content" value="TUTORIAL"/>
    </properties>
   </object>
+  <object id="54" type="Text" x="353" y="525">
+   <properties>
+    <property name="content" value="debug"/>
+   </properties>
+  </object>
+  <object id="58" name="debugmode" type="Text" x="423.75" y="508.5">
+   <properties>
+    <property name="content" value="lalu restart..."/>
+   </properties>
+  </object>
   <object id="36" name="1 to 1" type="Text" x="522.667" y="631">
    <properties>
     <property name="content" value="1 to 1"/>
    </properties>
   </object>
-  <object id="39" name="m to m" type="Text" x="678.667" y="631">
+  <object id="45" name="1 to 1" type="Text" x="461.333" y="553.667">
+   <properties>
+    <property name="content" value="fairy"/>
+   </properties>
+  </object>
+  <object id="46" name="1 to 1" type="Text" x="529.333" y="535.667">
+   <properties>
+    <property name="content" value="gate"/>
+   </properties>
+  </object>
+  <object id="47" name="1 to 1" type="Text" x="572" y="582.333">
+   <properties>
+    <property name="content" value="lever"/>
+   </properties>
+  </object>
+  <object id="48" name="1 to 1" type="Text" x="507.333" y="575.333">
+   <properties>
+    <property name="content" value="fountain"/>
+   </properties>
+  </object>
+  <object id="39" name="m to m" type="Text" x="700.121" y="644.182">
    <properties>
     <property name="content" value="m to m"/>
+   </properties>
+  </object>
+  <object id="44" name="moving platform" type="Text" x="953.667" y="631.667">
+   <properties>
+    <property name="content" value="collision nightmare...."/>
+   </properties>
+  </object>
+  <object id="51" name="to the moon" type="Text" x="838.667" y="-33">
+   <properties>
+    <property name="content" value="to the moon!!!"/>
+   </properties>
+  </object>
+  <object id="49" name="moving platform" type="Text" x="1002" y="528">
+   <properties>
+    <property name="content" value="moving platform"/>
    </properties>
   </object>
   <object id="33" name="die" type="Text" x="255.667" y="619.333" width="30.3333" height="6">
@@ -298,5 +348,22 @@
   <object id="32" name="welcome" type="Trigger" x="393.167" y="567.833" width="65" height="40.6666"/>
   <object id="37" name="1 to 1" type="Trigger" x="494.833" y="572.833" width="65" height="40.6666"/>
   <object id="40" name="m to m" type="Trigger" x="650.833" y="572.833" width="65" height="40.6666"/>
+  <object id="43" name="moving platform" type="Trigger" x="925.833" y="573.5" width="65" height="40.6666"/>
+  <object id="50" name="to the moon" type="Trigger" x="808.833" y="-57.1667" width="65" height="40.6666"/>
+  <object id="55" name="m to m" type="Text" x="678.606" y="622.485">
+   <properties>
+    <property name="content" value="1"/>
+   </properties>
+  </object>
+  <object id="56" name="m to m" type="Text" x="706.061" y="623.03">
+   <properties>
+    <property name="content" value="1"/>
+   </properties>
+  </object>
+  <object id="57" name="m to m" type="Text" x="731.697" y="622.758">
+   <properties>
+    <property name="content" value="0"/>
+   </properties>
+  </object>
  </objectgroup>
 </map>

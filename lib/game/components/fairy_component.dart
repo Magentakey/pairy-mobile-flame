@@ -1,4 +1,4 @@
-import 'dart:math' show min;
+import 'dart:math' show min, max;
 
 import 'package:flame/collisions.dart';
 import 'package:flame/components.dart';
@@ -9,6 +9,7 @@ import '../../models/fairy_color.dart';
 import '../pairy_game.dart';
 import 'gate_component.dart';
 import 'ground_component.dart';
+import 'moving_platform_component.dart';
 
 class FairyComponent extends PositionComponent
     with DragCallbacks, CollisionCallbacks, HasGameReference<PairyGame> {
@@ -100,6 +101,9 @@ class FairyComponent extends PositionComponent
     } else {
       _resolveSolids();
     }
+
+    // ── Cek crush oleh moving platform SETELAH resolve ──────────────
+    _checkPlatformCrush();
   }
 
   bool _isInsideGate(GateComponent gate) {
@@ -119,6 +123,8 @@ class FairyComponent extends PositionComponent
         _pushOutOf(child);
       } else if (child is GateComponent && !child.isOpenState) {
         _pushOutOf(child);
+      } else if (child is MovingPlatformComponent) {
+        _pushOutOfPlatform(child);
       } else if (child is FairyComponent && child != this) {
         _pushAwayFrom(child);
       }
@@ -147,6 +153,101 @@ class FairyComponent extends PositionComponent
     } else {
       position.y += overlapB < overlapT ? -overlapB : overlapT;
     }
+  }
+
+  /// Sama seperti [_pushOutOf], tapi khusus [MovingPlatformComponent].
+  /// Murni efek dorong (solid) — fairy TIDAK ikut menumpang gerak
+  /// horizontal platform saat nempel di atasnya. Dorongan dari sisi
+  /// samping platform (ujung kiri/kanan saat bergerak horizontal) tetap
+  /// jalan lewat cabang overlapR/overlapL di bawah, karena itu murni efek
+  /// collision push, bukan "mengikuti" platform.
+  void _pushOutOfPlatform(MovingPlatformComponent other) {
+    final tl = _topLeft(other);
+    final r = size.x / 2;
+
+    final overlapR = (position.x + r) - tl.x;
+    final overlapL = (tl.x + other.size.x) - (position.x - r);
+    final overlapB = (position.y + r) - tl.y;
+    final overlapT = (tl.y + other.size.y) - (position.y - r);
+
+    if (overlapR <= 0 || overlapL <= 0 || overlapB <= 0 || overlapT <= 0)
+      return;
+
+    final minX = min(overlapR, overlapL);
+    final minY = min(overlapB, overlapT);
+
+    if (minX < minY) {
+      position.x += overlapR < overlapL ? -overlapR : overlapL;
+    } else {
+      position.y += overlapB < overlapT ? -overlapB : overlapT;
+    }
+  }
+
+  static const double _crushOverlapThreshold = 6.0;
+
+  /// Deteksi fairy "kejepit" oleh moving platform: fairy masih overlap
+  /// cukup dalam (melebihi threshold di kedua sumbu) dengan solid lain
+  /// (ground/gate tertutup/platform lain) SAAT bersentuhan dengan moving
+  /// platform yang sedang bergerak. Konsisten dengan
+  /// PlayerComponent._checkPlatformCrush.
+  void _checkPlatformCrush() {
+    if (parent == null) return;
+
+    final touchingMovingPlatform = parent!.children.any(
+      (c) =>
+          c is MovingPlatformComponent &&
+          c.isMoving &&
+          _shallowOverlap(c, buffer: 2),
+    );
+    if (!touchingMovingPlatform) return;
+
+    for (final child in parent!.children) {
+      if (child is GroundComponent && _deepOverlap(child)) {
+        removeFromParent();
+        game.playerDied('Fairy Crushed by Platform');
+        return;
+      }
+      if (child is GateComponent && !child.isOpenState && _deepOverlap(child)) {
+        removeFromParent();
+        game.playerDied('Fairy Crushed by Platform');
+        return;
+      }
+      if (child is MovingPlatformComponent && _deepOverlap(child)) {
+        removeFromParent();
+        game.playerDied('Fairy Crushed by Platform');
+        return;
+      }
+    }
+  }
+
+  /// Overlap dangkal (boleh dengan buffer toleransi) — dipakai sekadar
+  /// untuk tes "apakah fairy sedang bersentuhan dengan platform ini",
+  /// BUKAN untuk tes kejepit (lihat [_deepOverlap]).
+  bool _shallowOverlap(PositionComponent other, {double buffer = 0}) {
+    final tl = _topLeft(other);
+    final r = size.x / 2;
+    return position.x + r > tl.x - buffer &&
+        position.x - r < tl.x + other.size.x + buffer &&
+        position.y + r > tl.y - buffer &&
+        position.y - r < tl.y + other.size.y + buffer;
+  }
+
+  bool _deepOverlap(PositionComponent other) {
+    final tl = _topLeft(other);
+    final r = size.x / 2;
+
+    final overlapX =
+        min(position.x + r, tl.x + other.size.x) - max(position.x - r, tl.x);
+    final overlapY =
+        min(position.y + r, tl.y + other.size.y) - max(position.y - r, tl.y);
+
+    return overlapX > _crushOverlapThreshold &&
+        overlapY > _crushOverlapThreshold;
+  }
+
+  Vector2 _topLeft(PositionComponent other) {
+    return other.position -
+        Vector2(other.size.x * other.anchor.x, other.size.y * other.anchor.y);
   }
 
   void _pushAwayFrom(FairyComponent other) {
