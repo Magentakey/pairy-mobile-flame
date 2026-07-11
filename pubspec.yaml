@@ -28,6 +28,7 @@ flutter:
   assets:
     - assets/images/player/
     - assets/images/player/walk/
+    - assets/images/player/jump/
     - assets/images/fairy/
     - assets/images/ui/
     - assets/images/environment/

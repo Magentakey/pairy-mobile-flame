@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.10" tiledversion="1.12.2" orientation="orthogonal" renderorder="right-down" width="116" height="50" tilewidth="18" tileheight="18" infinite="0" nextlayerid="5" nextobjectid="26">
+<map version="1.10" tiledversion="1.12.2" orientation="orthogonal" renderorder="right-down" width="116" height="50" tilewidth="18" tileheight="18" infinite="0" nextlayerid="5" nextobjectid="29">
  <tileset firstgid="1" source="background.tsx"/>
  <tileset firstgid="41" source="tileset-tiles.tsx"/>
  <layer id="1" name="background" width="116" height="50">
@@ -185,9 +185,14 @@
   </object>
   <object id="20" name="b" type="Lever" x="965.45" y="601.942" width="10" height="10"/>
   <object id="21" name="a" type="Lever" x="931.117" y="601.942" width="10" height="10"/>
-  <object id="5" name="2" type="Fountain" x="522.716" y="598.892" width="14" height="13.3333">
+  <object id="5" name="t2" type="Fountain" x="522.716" y="598.892" width="14" height="13.3333">
    <properties>
     <property name="color" value="blue"/>
+   </properties>
+  </object>
+  <object id="27" name="t1" type="Fountain" x="498.383" y="598.892" width="14" height="13.3333">
+   <properties>
+    <property name="color" value="red"/>
    </properties>
   </object>
   <object id="12" name="3" type="Fountain" x="699.466" y="599.392" width="14" height="13.3333">
@@ -195,7 +200,7 @@
     <property name="color" value="blue"/>
    </properties>
   </object>
-  <object id="6" name="1" type="Gate" x="520.833" y="540.833" width="46" height="25"/>
+  <object id="6" name="1" type="Gate" x="512.167" y="541.833" width="46" height="25"/>
   <object id="8" name="3" type="Gate" x="741.667" y="548.917" width="61.6667" height="62.3333"/>
   <object id="13" name="3" type="Gate" x="680.167" y="547.917" width="60.9167" height="11.0833">
    <properties>
@@ -204,8 +209,9 @@
   </object>
   <object id="24" type="Gate" x="842.167" y="502.917" width="33.25" height="22.4167"/>
   <object id="25" type="Gate" x="808.5" y="480.25" width="34.9167" height="45.0833"/>
-  <object id="7" name="2" type="Gate" x="521.5" y="506.167" width="46.3333" height="26.6667"/>
-  <object id="14" name="b" type="MovingPlatform" x="901.5" y="556.5" width="72" height="18">
+  <object id="7" name="t2" type="Gate" x="539.5" y="507.833" width="46.3333" height="26.6667"/>
+  <object id="28" name="t1" type="Gate" x="484.5" y="507.167" width="46.3333" height="26.6667"/>
+  <object id="14" name="b" type="MovingPlatform" x="901.5" y="556.167" width="72" height="18">
    <properties>
     <property name="direction" value="right"/>
     <property name="distanceTiles" type="int" value="8"/>
@@ -240,6 +246,13 @@
    <properties>
     <property name="direction" value="up"/>
     <property name="distanceTiles" type="int" value="8"/>
+    <property name="speed" type="float" value="55"/>
+   </properties>
+  </object>
+  <object id="26" type="MovingPlatform" x="807.5" y="480.25" width="72" height="18">
+   <properties>
+    <property name="direction" value="up"/>
+    <property name="distanceTiles" type="int" value="5"/>
     <property name="speed" type="float" value="55"/>
    </properties>
   </object>
