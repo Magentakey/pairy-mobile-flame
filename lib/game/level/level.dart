@@ -35,8 +35,14 @@ class Level extends World with HasGameReference<PairyGame> {
   // komponen yang di-add lewat pass terpisah / async onLoad).
   static const int textPriority = 1;
   static const int interactivePriority = 2;
+  // Player sengaja diberi priority sendiri, di ATAS semua komponen
+  // interaktif lain (gate/platform/lever/fountain/exitDoor/text) supaya
+  // dia selalu tergambar paling depan dibanding elemen level manapun —
+  // tapi tetap di BAWAH fairy (priority 100), karena secara gameplay
+  // fairy yang lagi di-drag harus selalu keliatan paling atas.
+  static const int playerPriority = 50;
   // Fairy pakai priority 100 sendiri (lihat FairyComponent) — selalu
-  // paling atas dari semuanya, termasuk di atas interactivePriority ini.
+  // paling atas dari semuanya, termasuk di atas playerPriority ini.
 
   /// Tinggi total map dalam pixel, dipakai buat deteksi player jatuh
   /// keluar map (fall-death). Di-set ulang tiap kali level di-load,
@@ -173,7 +179,7 @@ class Level extends World with HasGameReference<PairyGame> {
               sp.x,
               sp.y + playerH - PlayerComponent.hitboxSize.y,
             ),
-          )..priority = interactivePriority;
+          )..priority = playerPriority;
           game.player = player;
           add(player);
           game.cam.follow(player);

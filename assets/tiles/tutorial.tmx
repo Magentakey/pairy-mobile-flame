@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.10" tiledversion="1.12.2" orientation="orthogonal" renderorder="right-down" width="116" height="50" tilewidth="18" tileheight="18" infinite="0" nextlayerid="6" nextobjectid="60">
+<map version="1.10" tiledversion="1.12.2" orientation="orthogonal" renderorder="right-down" width="116" height="50" tilewidth="18" tileheight="18" infinite="0" nextlayerid="6" nextobjectid="61">
  <tileset firstgid="1" source="background.tsx"/>
  <tileset firstgid="41" source="tileset-tiles.tsx"/>
  <tileset firstgid="221" source="t2.tsx"/>
@@ -432,6 +432,11 @@
   <object id="59" type="Text" x="2109.75" y="567">
    <properties>
     <property name="content" value="nothing in here..."/>
+   </properties>
+  </object>
+  <object id="60" type="Text" x="2140.33" y="854" width="30.3333" height="6">
+   <properties>
+    <property name="content" value="told you...."/>
    </properties>
   </object>
  </objectgroup>
