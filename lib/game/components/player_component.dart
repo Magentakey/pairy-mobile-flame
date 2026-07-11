@@ -346,11 +346,13 @@ class PlayerComponent extends PositionComponent
         } else if (prevRight <= prevOx) {
           // Player nabrak brick dari kiri -> coba dorong ke kanan.
           final moved = child.tryPush(overlapR);
+          child.recheckGroundSupport();
           position.x = (ox + moved) - size.x;
           velocity.x = 0;
         } else if (prevLeft >= prevOx + ow) {
           // Player nabrak brick dari kanan -> coba dorong ke kiri.
           final moved = child.tryPush(-overlapL);
+          child.recheckGroundSupport();
           position.x = (ox + moved) + ow;
           velocity.x = 0;
         }
@@ -500,8 +502,20 @@ class PlayerComponent extends PositionComponent
         return;
       }
       if (child is StoneBrickComponent && _deepOverlap(child)) {
-        _die('Crushed by Platform');
-        return;
+        // Kecualikan brick yang lagi JATUH BEBAS (belum landing lagi)
+        // dan posisinya TIDAK di atas player -- ini kasus brick yang
+        // baru didorong lewat tepi map buat dijatuhkan, lewat/numpang
+        // sesaat di samping player sebelum benar-benar jatuh keluar
+        // jangkauan. Overlap X & Y bisa sesaat "dalam" karena keduanya
+        // sama-sama di ketinggian tanah, padahal ini bukan jepitan.
+        // Brick yang jatuh dari ATAS kepala player (brickTop di atas
+        // player) tetap dianggap crush yang sah.
+        final brickTop = _topLeft(child).y;
+        final fallingBeside = !child.isOnGround && brickTop >= position.y - 2;
+        if (!fallingBeside) {
+          _die('Crushed by Platform');
+          return;
+        }
       }
     }
   }
