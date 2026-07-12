@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.10" tiledversion="1.12.2" orientation="orthogonal" renderorder="right-down" width="156" height="50" tilewidth="18" tileheight="18" infinite="0" nextlayerid="6" nextobjectid="87">
+<map version="1.10" tiledversion="1.12.2" orientation="orthogonal" renderorder="right-down" width="156" height="50" tilewidth="18" tileheight="18" infinite="0" nextlayerid="6" nextobjectid="90">
  <tileset firstgid="1" source="background.tsx"/>
  <tileset firstgid="41" source="tileset-tiles.tsx"/>
  <tileset firstgid="221" source="t2.tsx"/>
@@ -519,5 +519,15 @@
    </properties>
   </object>
   <object id="86" name="to the moon" type="Trigger" x="791.167" y="-61.4632" width="80.3333" height="50.2597"/>
+  <object id="88" type="Fairy" x="343.875" y="542.25" width="20" height="20">
+   <properties>
+    <property name="color" value="yellow"/>
+   </properties>
+  </object>
+  <object id="89" type="Fairy" x="376.375" y="541.75" width="20" height="20">
+   <properties>
+    <property name="color" value="green"/>
+   </properties>
+  </object>
  </objectgroup>
 </map>

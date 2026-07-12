@@ -21,6 +21,8 @@ dev_dependencies:
     sdk: flutter
 
   flutter_lints: ^6.0.0
+  flutter_launcher_icons: ^0.14.3
+  flutter_native_splash: ^2.4.4
 
 flutter:
 
@@ -38,6 +40,27 @@ flutter:
     - assets/maps/
     - assets/audio/sfx/
     - assets/audio/bgm/
+    - assets/icon/
+
+flutter_launcher_icons:
+  android: true
+  ios: false
+  image_path: "assets/icon/icon.png"
+  min_sdk_android: 21
+  # Adaptive icon Android (opsional tapi disarankan). Gambar full sudah dipakai
+  # sebagai foreground; kalau nanti punya versi tanpa background/rounded corner,
+  # ganti adaptive_icon_foreground ke file itu untuk hasil lebih rapi.
+  adaptive_icon_background: "#0B1633"
+  adaptive_icon_foreground: "assets/icon/icon.png"
+
+flutter_native_splash:
+  color: "#0B1633"
+  image: assets/icon/icon.png
+  android_12:
+    color: "#0B1633"
+    image: assets/icon/icon.png
+  android: true
+  ios: false
   # To add assets to your application, add an assets section, like this:
   # assets:
   #   - images/a_dot_burr.jpeg
