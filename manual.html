@@ -1,0 +1,678 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<title>Panduan Map Design — Pairy (Tiled)</title>
+<style>
+  @page {
+    margin: 22mm 18mm 22mm 18mm;
+    @bottom-center {
+      content: "Pairy — Panduan Map Design Tiled";
+      font-size: 8px;
+      color: #999;
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    font-family: 'Segoe UI', Arial, sans-serif;
+    color: #232333;
+    font-size: 11.5px;
+    line-height: 1.55;
+  }
+  h1, h2, h3, h4 { color: #3B2E6A; font-family: 'Segoe UI', Arial, sans-serif; }
+  h1 { font-size: 28px; margin-bottom: 2px; }
+  h2 {
+    font-size: 18px;
+    margin-top: 30px;
+    border-bottom: 3px solid #6A3FA0;
+    padding-bottom: 6px;
+  }
+  h3 {
+    font-size: 14px;
+    margin-top: 20px;
+    color: #6A3FA0;
+  }
+  h4 { font-size: 12px; margin-top: 14px; margin-bottom: 4px; color: #444; }
+  .cover {
+    text-align: center;
+    padding-top: 90px;
+    page-break-after: always;
+  }
+  .cover .badge {
+    display: inline-block;
+    background: #6A3FA0;
+    color: white;
+    padding: 6px 18px;
+    border-radius: 20px;
+    font-size: 12px;
+    letter-spacing: 1px;
+    margin-bottom: 20px;
+  }
+  .cover h1 { font-size: 40px; margin-bottom: 6px; }
+  .cover .subtitle { font-size: 15px; color: #666; margin-bottom: 50px; }
+  .cover .meta {
+    margin-top: 80px;
+    font-size: 11px;
+    color: #888;
+  }
+  .cover .audience-box {
+    margin: 40px auto 0 auto;
+    max-width: 420px;
+    background: #F5F1FB;
+    border: 1px solid #D9CCF0;
+    border-radius: 10px;
+    padding: 18px 22px;
+    text-align: left;
+    font-size: 11.5px;
+  }
+  .audience-box strong { color: #6A3FA0; }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 10px 0 16px 0;
+    font-size: 10.5px;
+  }
+  th, td {
+    border: 1px solid #DDD6EC;
+    padding: 6px 8px;
+    text-align: left;
+    vertical-align: top;
+  }
+  th {
+    background: #6A3FA0;
+    color: white;
+    font-weight: 600;
+  }
+  tr:nth-child(even) td { background: #FAF8FD; }
+  code {
+    background: #F0EAFA;
+    color: #5A3A8A;
+    padding: 1px 5px;
+    border-radius: 4px;
+    font-family: 'Consolas', monospace;
+    font-size: 10.5px;
+  }
+  .note {
+    background: #FFF7E6;
+    border-left: 4px solid #F2B94D;
+    padding: 8px 12px;
+    margin: 10px 0;
+    font-size: 10.5px;
+    border-radius: 0 6px 6px 0;
+  }
+  .warn {
+    background: #FDECEA;
+    border-left: 4px solid #E85C4A;
+    padding: 8px 12px;
+    margin: 10px 0;
+    font-size: 10.5px;
+    border-radius: 0 6px 6px 0;
+  }
+  .tip {
+    background: #EAFAF1;
+    border-left: 4px solid #34C77B;
+    padding: 8px 12px;
+    margin: 10px 0;
+    font-size: 10.5px;
+    border-radius: 0 6px 6px 0;
+  }
+  .objectbox {
+    border: 1px solid #DDD6EC;
+    border-radius: 10px;
+    padding: 14px 16px;
+    margin: 14px 0;
+    page-break-inside: avoid;
+  }
+  .objectbox h4 {
+    margin-top: 0;
+    font-size: 13px;
+    color: white;
+    background: #6A3FA0;
+    display: inline-block;
+    padding: 3px 12px;
+    border-radius: 6px;
+  }
+  .taglist span {
+    display: inline-block;
+    background: #EDE7F6;
+    color: #5A3A8A;
+    border-radius: 10px;
+    padding: 2px 9px;
+    font-size: 9.5px;
+    margin-right: 4px;
+  }
+  .pagebreak { page-break-before: always; }
+  .toc-list { list-style: none; padding-left: 0; font-size: 12px; }
+  .toc-list li { margin-bottom: 8px; }
+  .toc-list .num { color: #6A3FA0; font-weight: 700; margin-right: 8px; }
+  .checklist { list-style: none; padding-left: 0; }
+  .checklist li { margin-bottom: 6px; }
+  .checklist li:before { content: "☐  "; color: #6A3FA0; font-weight: bold; }
+  .center { text-align: center; }
+  .small { font-size: 9.5px; color: #777; }
+  .flow {
+    background: #F5F1FB;
+    border-radius: 8px;
+    padding: 12px 16px;
+    font-size: 11px;
+    margin: 10px 0;
+  }
+</style>
+</head>
+<body>
+
+<!-- ============= COVER ============= -->
+<div class="cover">
+  <div class="badge">MAP DESIGNER MANUAL</div>
+  <h1>Panduan Membuat Map<br>di Tiled — Pairy</h1>
+  <div class="subtitle">Referensi lengkap layer, object, properties, pairing, dan aset<br>untuk membuat level tanpa perlu menyentuh kode game.</div>
+
+  <div class="audience-box">
+    <strong>Untuk siapa dokumen ini?</strong><br>
+    Dokumen ini ditulis untuk Map Designer yang bekerja di aplikasi
+    <strong>Tiled Map Editor</strong> (tiled.mapeditor.org). Anda tidak
+    perlu membaca atau memahami kode Flutter/Dart apa pun — cukup ikuti
+    ketentuan nama layer, tipe object, dan custom property di dokumen ini,
+    file <code>.tmx</code> yang Anda hasilkan akan otomatis "terbaca"
+    dengan benar oleh game.
+  </div>
+
+  <div class="meta">Versi 1.0 &nbsp;•&nbsp; Project: Pairy (Flutter + Flame)</div>
+</div>
+
+<!-- ============= DAFTAR ISI ============= -->
+<h2>Daftar Isi</h2>
+<ul class="toc-list">
+  <li><span class="num">1.</span> Persiapan &amp; Aturan Umum</li>
+  <li><span class="num">2.</span> Struktur Layer Wajib</li>
+  <li><span class="num">3.</span> Daftar Semua Object &amp; Propertinya</li>
+  <li><span class="num">4.</span> Sistem Pairing (Trigger &amp; Target)</li>
+  <li><span class="num">5.</span> Aset Tileset per Object (Gate &amp; MovingPlatform)</li>
+  <li><span class="num">6.</span> Mode Rahasia: Debug Outline</li>
+  <li><span class="num">7.</span> Studi Kasus / Contoh Kombinasi</li>
+  <li><span class="num">8.</span> Checklist Sebelum Serah Terima Map</li>
+</ul>
+
+<div class="pagebreak"></div>
+
+<!-- ============= 1. PERSIAPAN ============= -->
+<h2>1. Persiapan &amp; Aturan Umum</h2>
+
+<h3>1.1 Ukuran tile</h3>
+<p>Semua map <strong>wajib</strong> menggunakan ukuran tile <strong>18 × 18 piksel</strong>. Saat membuat file baru di Tiled, isi:</p>
+<table>
+  <tr><th>Pengaturan New Map</th><th>Nilai</th></tr>
+  <tr><td>Orientation</td><td>Orthogonal</td></tr>
+  <tr><td>Tile layer format</td><td>Base64 (zlib compressed) — default Tiled, jangan diubah</td></tr>
+  <tr><td>Tile render order</td><td>Right Down (default)</td></tr>
+  <tr><td>Map size</td><td>Fixed, sesuaikan kebutuhan level (lihat 1.2)</td></tr>
+  <tr><td>Tile size</td><td><strong>18 × 18 px</strong></td></tr>
+</table>
+
+<h3>1.2 Ukuran map &amp; batas jatuh</h3>
+<p>Tinggi map (dalam piksel) menentukan kapan pemain dianggap "jatuh keluar map" dan mati. Jangan membuat area kosong tanpa Ground di bagian bawah map kecuali itu memang jurang yang disengaja untuk mekanik jatuh.</p>
+
+<h3>1.3 Penamaan file</h3>
+<table>
+  <tr><th>Nama file</th><th>Level</th></tr>
+  <tr><td><code>tutorial.tmx</code></td><td>Tutorial (selalu bisa dimainkan, di luar penomoran)</td></tr>
+  <tr><td><code>level-01.tmx</code> … <code>level-12.tmx</code></td><td>Level 1–12 (urut, dua digit dengan leading zero)</td></tr>
+</table>
+<div class="warn">
+  <strong>Penting:</strong> nama file harus persis (huruf kecil semua, pakai tanda hubung <code>-</code>, dua digit). Salah ketik nama file akan membuat level tidak bisa dimuat oleh game.
+</div>
+
+<h3>1.4 Tempat menyimpan</h3>
+<p>Simpan file <code>.tmx</code> beserta tileset (<code>.tsx</code>) dan gambar (<code>.png</code>) di folder aset tiles proyek yang diberikan tim developer. Jangan mengubah nama folder.</p>
+
+<h3>1.5 Istilah yang dipakai di dokumen ini</h3>
+<table>
+  <tr><th>Istilah</th><th>Artinya di Tiled</th></tr>
+  <tr><td>Tipe object (Class)</td><td>Field <strong>Class</strong> pada Object saat diklik di panel Properties. Di versi Tiled lama disebut <em>Type</em>.</td></tr>
+  <tr><td>Name</td><td>Field <strong>Name</strong> pada Object (bukan Class). Dipakai untuk sistem pairing, lihat Bab 4.</td></tr>
+  <tr><td>Custom Property</td><td>Property tambahan yang ditambahkan lewat tombol <strong>+</strong> di panel Custom Properties bawah panel Properties.</td></tr>
+</table>
+
+<div class="pagebreak"></div>
+
+<!-- ============= 2. LAYER ============= -->
+<h2>2. Struktur Layer Wajib</h2>
+<p>Setiap file <code>.tmx</code> harus punya minimal 2 layer berikut, dengan <strong>nama persis</strong> seperti di tabel (case-sensitive):</p>
+
+<table>
+  <tr><th>Nama Layer</th><th>Tipe Layer</th><th>Fungsi</th></tr>
+  <tr>
+    <td><code>Ground</code></td>
+    <td>Tile Layer</td>
+    <td>
+      Tile solid (tanah, tembok, platform statis). Setiap tile yang
+      di-paint di layer ini otomatis jadi solid — pemain/fairy/brick
+      tidak bisa menembusnya, dan bisa dipakai sebagai pijakan.
+      Tile kosong (tidak dicat) = tidak solid.
+    </td>
+  </tr>
+  <tr>
+    <td><code>Spawnpoints</code></td>
+    <td>Object Layer</td>
+    <td>
+      Tempat menaruh <strong>semua</strong> object interaktif: Player,
+      Gate, MovingPlatform, StoneBrick, Button, Lever, Fountain, Fairy,
+      Trigger, Text (lihat Bab 3). Semua object HARUS ada di layer ini,
+      bukan di layer lain.
+    </td>
+  </tr>
+</table>
+
+<p>Boleh menambahkan layer lain untuk dekorasi murni tanpa collision, contoh yang sudah dipakai di level existing:</p>
+<table>
+  <tr><th>Nama Layer</th><th>Tipe</th><th>Fungsi</th></tr>
+  <tr><td><code>background</code>, <code>background2</code></td><td>Tile Layer</td><td>Dekorasi visual saja, tidak solid, boleh dobel layer untuk depth.</td></tr>
+</table>
+<div class="note">
+  Layer dekorasi boleh dinamai bebas <strong>selain</strong> <code>Ground</code> dan <code>Spawnpoints</code> — dua nama itu direservasi khusus dan dibaca langsung oleh game.
+</div>
+
+<h3>2.1 Aturan menggambar Ground</h3>
+<ul>
+  <li>Tile solid yang bersebelahan secara horizontal dalam satu baris otomatis digabung jadi satu blok oleh game — jadi bebas menggambar Ground sepanjang apapun tanpa khawatir soal performa.</li>
+  <li>Ground bersifat statis (tidak bergerak). Untuk platform yang bergerak, gunakan object <strong>MovingPlatform</strong> (Bab 3), bukan tile Ground biasa.</li>
+</ul>
+
+<div class="pagebreak"></div>
+
+<!-- ============= 3. OBJECT ============= -->
+<h2>3. Daftar Semua Object &amp; Propertinya</h2>
+<p>Semua object di bawah ini ditaruh di layer <code>Spawnpoints</code>. Field <strong>Class</strong> pada tiap object harus diisi persis sesuai tabel (huruf besar/kecil berpengaruh).</p>
+
+<div class="objectbox">
+<h4>Player</h4>
+<div class="taglist"><span>Wajib 1× per map</span><span>Titik spawn</span></div>
+<table>
+  <tr><th>Field</th><th>Ketentuan</th></tr>
+  <tr><td>Class</td><td><code>Player</code></td></tr>
+  <tr><td>Width / Height</td><td>Bebas — dipakai hanya untuk hitung posisi kaki karakter berdiri di titik ini (karakter akan berdiri tepat di alas object). Rekomendasi: 20×20.</td></tr>
+  <tr><td>Name</td><td>Tidak dipakai, boleh dikosongkan.</td></tr>
+  <tr><td>Custom Property</td><td>Tidak ada.</td></tr>
+</table>
+<div class="warn">Wajib ada tepat satu Player per map. Kalau lebih dari satu, hanya salah satu yang dipakai (tidak dijamin urutan mana).</div>
+</div>
+
+<div class="objectbox">
+<h4>ExitDoor</h4>
+<div class="taglist"><span>Wajib minimal 1× per map</span><span>Goal level</span></div>
+<table>
+  <tr><th>Field</th><th>Ketentuan</th></tr>
+  <tr><td>Class</td><td><code>ExitDoor</code></td></tr>
+  <tr><td>Width / Height</td><td>Default 26×40 kalau dikosongkan/0. Boleh disesuaikan ukuran pintu.</td></tr>
+  <tr><td>Name</td><td>Tidak dipakai.</td></tr>
+  <tr><td>Custom Property</td><td>Tidak ada.</td></tr>
+</table>
+<p class="small">Sprite pintu keluar sudah otomatis (dari aset game), tidak perlu digambar manual di tileset.</p>
+</div>
+
+<div class="objectbox">
+<h4>Gate</h4>
+<div class="taglist"><span>Target trigger</span><span>Solid saat tertutup</span></div>
+<table>
+  <tr><th>Field</th><th>Ketentuan</th></tr>
+  <tr><td>Class</td><td><code>Gate</code></td></tr>
+  <tr><td>Width / Height</td><td>Default 14×72 kalau dikosongkan/0. Titik acuan posisi = alas-tengah gate (anchor bawah-tengah).</td></tr>
+  <tr><td>Name</td><td>Isi dengan nama grup pairing kalau gate ini mau dibuka/ditutup oleh Lever/Fountain/Trigger/Button. Kosongkan kalau gate berdiri sendiri (statis sesuai <code>initialOpen</code>).</td></tr>
+  <tr><td><code>initialOpen</code> <span class="small">(bool)</span></td><td>Default <code>false</code> (tertutup di awal). Set <code>true</code> kalau gate harus terbuka sejak level dimulai.</td></tr>
+  <tr><td><code>tilesetImage</code> <span class="small">(string, opsional)</span></td><td>Lihat Bab 5. Kosongkan untuk pakai tampilan placeholder kotak ungu bergaris.</td></tr>
+  <tr><td><code>tileGrid</code> <span class="small">(string, opsional)</span></td><td>Lihat Bab 5.</td></tr>
+</table>
+<div class="warn">
+  <strong>Bahaya "kejepit":</strong> kalau gate menutup TEPAT saat pemain/fairy/stone brick masih berada persis di area gate, mereka akan mati/hancur seketika ("Crushed by Gate"). Ini disengaja sebagai mekanik puzzle — pastikan level didesain agar pemain punya cukup waktu untuk keluar area sebelum gate menutup.
+</div>
+</div>
+
+<div class="objectbox">
+<h4>MovingPlatform</h4>
+<div class="taglist"><span>Target trigger</span><span>Bisa jadi pijakan</span></div>
+<table>
+  <tr><th>Field</th><th>Ketentuan</th></tr>
+  <tr><td>Class</td><td><code>MovingPlatform</code></td></tr>
+  <tr><td>Width / Height</td><td>Default 54×18 kalau dikosongkan/0. Posisi X,Y = pojok kiri-atas platform di titik AWAL geraknya.</td></tr>
+  <tr><td>Name</td><td>Isi untuk pairing supaya bisa di-start/stop lewat Lever/Fountain/Trigger/Button. Kosongkan untuk bergerak terus sesuai <code>initialMoving</code>.</td></tr>
+  <tr><td><code>direction</code> <span class="small">(string)</span></td><td>Salah satu: <code>left</code>, <code>right</code>, <code>up</code>, <code>down</code>. Default <code>right</code>. Arah platform bergerak dari titik awal.</td></tr>
+  <tr><td><code>distanceTiles</code> <span class="small">(int)</span></td><td>Default <code>2</code>. Jarak tempuh platform dalam satuan tile (18px), dari titik awal ke titik ujung, lalu bolak-balik (ping-pong).</td></tr>
+  <tr><td><code>speed</code> <span class="small">(float)</span></td><td>Default <code>40</code> (px/detik). Kecepatan gerak platform.</td></tr>
+  <tr><td><code>initialMoving</code> <span class="small">(bool)</span></td><td>Default <code>true</code>. Set <code>false</code> kalau platform harus diam di awal sampai dipicu trigger.</td></tr>
+  <tr><td><code>tilesetImage</code> <span class="small">(string, opsional)</span></td><td>Lihat Bab 5. Kosongkan untuk pakai tampilan default (conveyor industrilla).</td></tr>
+  <tr><td><code>tileGrid</code> <span class="small">(string, opsional)</span></td><td>Lihat Bab 5.</td></tr>
+</table>
+<div class="note">
+  Platform akan otomatis balik arah lebih awal kalau di tengah jalurnya ada StoneBrick yang menghalangi (bukan yang sedang ditumpangi di atasnya). Manfaatkan ini untuk membuat platform "berhenti" di posisi tertentu tanpa perlu trigger.
+</div>
+</div>
+
+<div class="objectbox">
+<h4>StoneBrick</h4>
+<div class="taglist"><span>Solid fisik</span><span>Bisa didorong</span><span>Tanpa pairing</span></div>
+<table>
+  <tr><th>Field</th><th>Ketentuan</th></tr>
+  <tr><td>Class</td><td><code>StoneBrick</code></td></tr>
+  <tr><td>Width / Height</td><td>Default 18×18 (1 tile) kalau dikosongkan/0. Posisi X,Y = pojok kiri-atas.</td></tr>
+  <tr><td>Name</td><td>Tidak dipakai sama sekali — brick tidak ikut sistem pairing apa pun.</td></tr>
+  <tr><td>Custom Property</td><td>Tidak ada.</td></tr>
+</table>
+<p>Balok ini terkena gravitasi (jatuh kalau tidak ada pijakan), bisa didorong horizontal oleh pemain, dan bisa dipakai sebagai pijakan. Bisa juga menginjak <strong>Button</strong> sebagai pengganti pemain.</p>
+<div class="tip">
+  Cocok untuk puzzle "dorong balok ke tombol" atau "dorong balok untuk menutup jurang".
+</div>
+</div>
+
+<div class="objectbox">
+<h4>Button</h4>
+<div class="taglist"><span>Trigger</span><span>3 mode</span></div>
+<table>
+  <tr><th>Field</th><th>Ketentuan</th></tr>
+  <tr><td>Class</td><td><code>Button</code></td></tr>
+  <tr><td>Width / Height</td><td>Default 20×8 kalau dikosongkan/0. Posisi = alas-tengah tombol.</td></tr>
+  <tr><td>Name</td><td>Isi dengan nama grup pairing (target yang mau dipicu). Wajib diisi supaya tombol berguna.</td></tr>
+  <tr><td><code>mode</code> <span class="small">(string)</span></td><td>
+    <code>plate</code> (default): ON selama diinjak, OFF begitu dilepas.<br>
+    <code>toggle</code>: sekali diinjak, status berbalik (on/off) dan menetap sampai diinjak lagi.<br>
+    <code>timer</code>: begitu diinjak, ON dan mulai hitung mundur (lihat <code>timerDuration</code>); hitung mundur hanya berjalan saat tombol TIDAK diinjak.
+  </td></tr>
+  <tr><td><code>timerDuration</code> <span class="small">(float)</span></td><td>Default <code>3.0</code> detik. Hanya berlaku kalau <code>mode = timer</code>.</td></tr>
+  <tr><td><code>actived</code> <span class="small">(bool)</span></td><td>Lihat Bab 4.2. Default <code>true</code>.</td></tr>
+</table>
+<p>Bisa diinjak oleh Player <strong>maupun</strong> StoneBrick.</p>
+</div>
+
+<div class="objectbox">
+<h4>Lever</h4>
+<div class="taglist"><span>Trigger</span><span>Ditekan manual pemain</span></div>
+<table>
+  <tr><th>Field</th><th>Ketentuan</th></tr>
+  <tr><td>Class</td><td><code>Lever</code></td></tr>
+  <tr><td>Width / Height</td><td>Default 20×24 kalau dikosongkan/0. Posisi = alas-tengah tuas.</td></tr>
+  <tr><td>Name</td><td>Isi dengan nama grup pairing (target yang mau dipicu). Wajib diisi supaya lever berguna.</td></tr>
+  <tr><td><code>actived</code> <span class="small">(bool)</span></td><td>Lihat Bab 4.2. Default <code>true</code>.</td></tr>
+</table>
+<p>Pemain harus berdiri dekat lever lalu menekan tombol HUD di layar untuk mengaktifkan (bukan otomatis dengan menyentuh).</p>
+</div>
+
+<div class="objectbox">
+<h4>Fountain</h4>
+<div class="taglist"><span>Trigger</span><span>Butuh Fairy warna cocok</span></div>
+<table>
+  <tr><th>Field</th><th>Ketentuan</th></tr>
+  <tr><td>Class</td><td><code>Fountain</code></td></tr>
+  <tr><td>Width / Height</td><td>Default 24×30 kalau dikosongkan/0. Posisi = alas-tengah.</td></tr>
+  <tr><td>Name</td><td>Isi dengan nama grup pairing (target yang mau dipicu).</td></tr>
+  <tr><td><code>color</code> <span class="small">(string)</span></td><td>Salah satu: <code>blue</code> (default), <code>red</code>, <code>green</code>, <code>yellow</code>. Warna Fairy yang dibutuhkan supaya fountain ini aktif.</td></tr>
+  <tr><td><code>actived</code> <span class="small">(bool)</span></td><td>Lihat Bab 4.2. Default <code>true</code>.</td></tr>
+</table>
+<p>Aktif otomatis selama ada Fairy dengan warna yang cocok berada tepat di atas fountain (tidak perlu ditekan manual).</p>
+</div>
+
+<div class="objectbox">
+<h4>Fairy</h4>
+<div class="taglist"><span>Bisa diseret pemain</span><span>Tanpa pairing</span></div>
+<table>
+  <tr><th>Field</th><th>Ketentuan</th></tr>
+  <tr><td>Class</td><td><code>Fairy</code></td></tr>
+  <tr><td>Width / Height</td><td>Default 20×20 kalau dikosongkan/0. Posisi = titik tengah.</td></tr>
+  <tr><td>Name</td><td>Tidak dipakai.</td></tr>
+  <tr><td><code>color</code> <span class="small">(string)</span></td><td>Salah satu: <code>blue</code> (default), <code>red</code>, <code>green</code>, <code>yellow</code>. Harus sama dengan warna Fountain tujuan.</td></tr>
+</table>
+<div class="warn">
+  Fairy bisa mati kalau kejepit gate yang menutup atau kejepit moving platform — perhatikan penempatan agar tidak berada di jalur gate/platform yang bisa menutup/menjepit.
+</div>
+</div>
+
+<div class="objectbox">
+<h4>Trigger</h4>
+<div class="taglist"><span>Trigger</span><span>Invisible</span><span>Otomatis oleh Player</span></div>
+<table>
+  <tr><th>Field</th><th>Ketentuan</th></tr>
+  <tr><td>Class</td><td><code>Trigger</code></td></tr>
+  <tr><td>Width / Height</td><td>Default 20×20 kalau dikosongkan/0. Area zona invisible (tidak digambar, tidak menghalangi gerakan).</td></tr>
+  <tr><td>Name</td><td>Isi dengan nama grup pairing (target yang mau dipicu).</td></tr>
+  <tr><td><code>permanent</code> <span class="small">(bool)</span></td><td>Default <code>true</code>: sekali disentuh Player, langsung terkunci ON selamanya (tidak perlu tetap berdiri di zona). Set <code>false</code> supaya trigger hanya ON selama Player masih ada di dalam zona (balik OFF begitu keluar).</td></tr>
+  <tr><td><code>actived</code> <span class="small">(bool)</span></td><td>Lihat Bab 4.2. Default <code>true</code>.</td></tr>
+</table>
+<p>Aktif otomatis begitu Player masuk area — tidak perlu tombol HUD, tidak perlu diinjak seperti Button.</p>
+</div>
+
+<div class="objectbox">
+<h4>Text</h4>
+<div class="taglist"><span>Murni visual</span><span>Bisa dipasangkan Trigger</span></div>
+<table>
+  <tr><th>Field</th><th>Ketentuan</th></tr>
+  <tr><td>Class</td><td><code>Text</code></td></tr>
+  <tr><td>Width / Height</td><td>Bebas, hanya memengaruhi titik tengah teks (posisi = titik tengah object).</td></tr>
+  <tr><td>Name</td><td><strong>BUKAN</strong> untuk isi teks! Kosongkan untuk teks tampil langsung sejak awal (label statis), atau isi nama grup pairing supaya teks baru muncul (dengan animasi "wipe") begitu grup trigger itu aktif.</td></tr>
+  <tr><td><code>content</code> <span class="small">(string, wajib)</span></td><td>Isi teks yang mau ditampilkan di map, contoh: <code>"Tekan tuas untuk lanjut"</code>. Kalau kosong, object ini tidak akan muncul sama sekali.</td></tr>
+</table>
+<div class="tip">
+  Gunakan untuk memberi hint/instruksi ke pemain di titik-titik tertentu map, atau reveal pesan rahasia setelah puzzle terpecahkan.
+</div>
+</div>
+
+<div class="pagebreak"></div>
+
+<!-- ============= 4. PAIRING ============= -->
+<h2>4. Sistem Pairing (Trigger &amp; Target)</h2>
+
+<h3>4.1 Konsep dasar</h3>
+<p>
+Beberapa object berperan sebagai <strong>Trigger</strong> (pemicu):
+<strong>Lever</strong>, <strong>Fountain</strong>, <strong>Button</strong>,
+<strong>Trigger</strong> (invisible zone). Beberapa object lain berperan
+sebagai <strong>Target</strong> (yang dipicu): <strong>Gate</strong>,
+<strong>MovingPlatform</strong>, dan <strong>Text</strong> (untuk reveal).
+</p>
+<p>
+Cara menghubungkan Trigger ↔ Target sangat sederhana: <strong>isi field
+Name dengan kata/kode yang sama persis</strong> pada semua object yang
+mau dihubungkan. Nama boleh apa saja (huruf, angka, kata), asal
+konsisten (case-sensitive — huruf besar/kecil dianggap beda).
+</p>
+
+<div class="flow">
+<strong>Contoh paling sederhana:</strong><br>
+Lever dengan Name = <code>"gerbang1"</code> &nbsp;➜ menghubungkan ke ➜&nbsp;
+Gate dengan Name = <code>"gerbang1"</code><br><br>
+Begitu Lever ditekan ON, Gate akan terbuka. Ditekan lagi (OFF), Gate tertutup lagi.
+</div>
+
+<h3>4.2 Relasi banyak-ke-banyak (many-to-many) &amp; logika AND</h3>
+<p>
+Satu nama grup boleh dipakai oleh <strong>lebih dari satu</strong> Trigger
+dan <strong>lebih dari satu</strong> Target sekaligus. Contoh: 3 Lever dan
+2 Gate semuanya diberi Name <code>"vault"</code> — maka ketiga lever
+mengontrol kedua gate itu secara bersamaan.
+</p>
+<p>
+Kalau dalam satu grup ada <strong>lebih dari satu Trigger</strong>, maka
+berlaku logika <strong>AND</strong>: target baru berubah status kalau
+<u>SEMUA</u> trigger dalam grup itu sudah dalam kondisi yang diharapkan.
+Kalau ada satu saja trigger yang belum sesuai, target tetap di status
+awalnya (tidak berubah).
+</p>
+
+<h4>Custom property <code>actived</code> (ada di Lever, Fountain, Button, Trigger)</h4>
+<table>
+  <tr><th>Nilai <code>actived</code></th><th>Artinya</th></tr>
+  <tr><td><code>true</code> (default)</td><td>Trigger ini harus dalam kondisi <strong>ON</strong> (lever nyala / ada fairy di fountain / tombol ditekan / player masuk zona) supaya syarat AND miliknya terpenuhi.</td></tr>
+  <tr><td><code>false</code></td><td>Kebalikannya — trigger ini justru harus <strong>OFF</strong> supaya syaratnya terpenuhi. Berguna untuk membuat kondisi semacam "NOT" (misal: gerbang cuma terbuka kalau lever A menyala <em>dan</em> lever B TIDAK menyala).</td></tr>
+</table>
+
+<div class="note">
+<strong>Contoh kasus AND + NOT:</strong><br>
+Gate Name <code>"puzzle1"</code>. Lever "L1" Name <code>"puzzle1"</code> dengan <code>actived=true</code>.
+Lever "L2" Name <code>"puzzle1"</code> dengan <code>actived=false</code>.<br>
+➜ Gate baru terbuka kalau L1 <strong>menyala</strong> DAN L2 <strong>mati</strong>.
+</div>
+
+<h3>4.3 Status awal target (<code>initialOpen</code> / <code>initialMoving</code>)</h3>
+<p>
+Status target dihitung dengan rumus:<br>
+<code>status akhir = status_awal XOR (semua trigger memenuhi syarat?)</code>
+</p>
+<ul>
+  <li>Kalau <strong>semua syarat trigger terpenuhi</strong> → status target <strong>terbalik</strong> dari status awalnya (<code>initialOpen</code>/<code>initialMoving</code>).</li>
+  <li>Kalau <strong>belum semua terpenuhi</strong> → target tetap di status awalnya.</li>
+</ul>
+<div class="note">
+Contoh: Gate <code>initialOpen = false</code> (tertutup di awal), dipasangkan ke 1 Lever.
+Saat lever OFF → gate tertutup (sesuai initialOpen). Saat lever ON → gate <strong>terbuka</strong> (terbalik dari initialOpen). Lever ditekan lagi (OFF) → gate tertutup lagi. Ini yang membuat lever terasa seperti "saklar" biasa.
+</div>
+
+<h3>4.4 Object yang TIDAK ikut sistem pairing</h3>
+<table>
+  <tr><th>Object</th><th>Keterangan</th></tr>
+  <tr><td>Player</td><td>Tidak ada Name.</td></tr>
+  <tr><td>ExitDoor</td><td>Tidak ada Name.</td></tr>
+  <tr><td>Fairy</td><td>Tidak ada Name — murni diseret manual oleh pemain.</td></tr>
+  <tr><td>StoneBrick</td><td>Tidak ada Name — murni solid fisik independen.</td></tr>
+</table>
+
+<h3>4.5 Nama khusus: <code>debugmode</code></h3>
+<p>
+Kalau Anda mengisi Name = <code>"debugmode"</code> (huruf besar/kecil bebas)
+pada <strong>Lever, Fountain, atau Trigger apa pun</strong>, object itu
+tidak akan berfungsi sebagai pairing biasa — melainkan menyalakan/mematikan
+tampilan outline hitbox debug untuk keperluan development/QA. Jangan
+gunakan nama ini untuk grup pairing biasa di level final.
+</p>
+
+<div class="pagebreak"></div>
+
+<!-- ============= 5. TILESET ASSET ============= -->
+<h2>5. Aset Tileset per Object (Gate &amp; MovingPlatform)</h2>
+<p>
+Secara default, <strong>Gate</strong> tampil sebagai kotak ungu bergaris,
+dan <strong>MovingPlatform</strong> tampil sebagai conveyor abu-abu bawaan.
+Kalau Anda ingin tampilan custom sesuai tema level, isi 2 custom property
+berikut pada object Gate/MovingPlatform yang bersangkutan:
+</p>
+
+<table>
+  <tr><th>Custom Property</th><th>Tipe</th><th>Fungsi</th></tr>
+  <tr><td><code>tilesetImage</code></td><td>string</td><td>Nama file gambar tileset yang mau dipakai (contoh: <code>"tilemap_packed_industrilla expansion.png"</code>). File harus sudah ada di folder aset tiles proyek.</td></tr>
+  <tr><td><code>tileGrid</code></td><td>string</td><td>Susunan Tile ID dari tileset itu, format dijelaskan di bawah.</td></tr>
+</table>
+
+<h3>5.1 Cara membaca Tile ID</h3>
+<p>
+Buka tileset di panel <strong>Tilesets</strong> Tiled, klik satu ubin (tile)
+yang mau dipakai, lalu lihat panel <strong>Properties</strong> — akan
+ada field <strong>ID</strong> yang menunjukkan angka ID ubin tersebut.
+Salin angka itu apa adanya, tidak perlu menghitung posisi baris/kolom manual.
+</p>
+
+<h3>5.2 Format string <code>tileGrid</code></h3>
+<ul>
+  <li>Baris dipisah tanda titik-koma <code>;</code></li>
+  <li>ID dalam satu baris dipisah tanda koma <code>,</code></li>
+</ul>
+<table>
+  <tr><th>Contoh</th><th>Susunan</th><th>Cocok untuk</th></tr>
+  <tr><td><code>"4,5,6"</code></td><td>1 baris × 3 kolom (kiri, tengah-diulang, kanan)</td><td>MovingPlatform gaya conveyor</td></tr>
+  <tr><td><code>"23,24,25;33,34,35;43,44,45"</code></td><td>3 baris × 3 kolom (9-slice penuh: 4 pojok, 4 sisi, 1 tengah)</td><td>Gate gaya pintu/gerbang</td></tr>
+</table>
+
+<div class="note">
+Bagian <strong>tengah</strong> (bukan baris/kolom pertama atau terakhir) akan
+di-ulang (tile) untuk mengisi sisa ruang sesuai ukuran object — jadi gambar
+tidak akan gepeng/blur walau ukuran Gate atau Platform berbeda-beda per
+instance. Kalau ada lebih dari satu baris/kolom "tengah", motifnya akan
+berselang-seling otomatis (untuk variasi visual, misal retak/noda acak).
+</div>
+
+<div class="warn">
+Kalau <code>tilesetImage</code> diisi tapi <code>tileGrid</code> dikosongkan
+(atau sebaliknya), object akan otomatis jatuh ke tampilan default/placeholder.
+Isi <strong>keduanya</strong> untuk memakai aset custom.
+</div>
+
+<h3>5.3 Nilai default kalau kedua field dikosongkan</h3>
+<table>
+  <tr><th>Object</th><th>Tampilan default</th></tr>
+  <tr><td>Gate</td><td>Kotak ungu solid dengan garis-garis (placeholder), tanpa file gambar.</td></tr>
+  <tr><td>MovingPlatform</td><td>Tileset <code>tilemap_packed_industrilla expansion.png</code>, grid <code>"4,5,6"</code> (conveyor 3-slice).</td></tr>
+</table>
+
+<div class="pagebreak"></div>
+
+<!-- ============= 7. STUDI KASUS ============= -->
+<h2>7. Studi Kasus / Contoh Kombinasi</h2>
+
+<h3>Kasus A — Pintu terbuka dengan tuas sederhana</h3>
+<table>
+  <tr><th>Object</th><th>Class</th><th>Name</th><th>Custom Property</th></tr>
+  <tr><td>Tuas</td><td>Lever</td><td><code>door1</code></td><td>-</td></tr>
+  <tr><td>Gerbang</td><td>Gate</td><td><code>door1</code></td><td><code>initialOpen = false</code></td></tr>
+</table>
+<p>Hasil: gerbang tertutup di awal, terbuka saat tuas ditekan, tertutup lagi saat tuas ditekan ulang.</p>
+
+<h3>Kasus B — Puzzle warna Fairy membuka 2 gerbang sekaligus</h3>
+<table>
+  <tr><th>Object</th><th>Class</th><th>Name</th><th>Custom Property</th></tr>
+  <tr><td>Peri biru</td><td>Fairy</td><td>-</td><td><code>color = blue</code></td></tr>
+  <tr><td>Air mancur</td><td>Fountain</td><td><code>gerbangkembar</code></td><td><code>color = blue</code></td></tr>
+  <tr><td>Gerbang kiri</td><td>Gate</td><td><code>gerbangkembar</code></td><td><code>initialOpen = false</code></td></tr>
+  <tr><td>Gerbang kanan</td><td>Gate</td><td><code>gerbangkembar</code></td><td><code>initialOpen = false</code></td></tr>
+</table>
+<p>Hasil: kedua gerbang terbuka bersamaan begitu pemain menyeret peri biru ke air mancur.</p>
+
+<h3>Kasus C — Dorong balok ke tombol untuk menjalankan platform</h3>
+<table>
+  <tr><th>Object</th><th>Class</th><th>Name</th><th>Custom Property</th></tr>
+  <tr><td>Balok batu</td><td>StoneBrick</td><td>-</td><td>-</td></tr>
+  <tr><td>Tombol</td><td>Button</td><td><code>lift1</code></td><td><code>mode = plate</code></td></tr>
+  <tr><td>Platform</td><td>MovingPlatform</td><td><code>lift1</code></td><td><code>initialMoving = false</code>, <code>direction = up</code></td></tr>
+</table>
+<p>Hasil: platform diam sampai balok (didorong pemain) menginjak tombol, lalu platform mulai bergerak naik-turun selama tombol masih terinjak balok.</p>
+
+<h3>Kasus D — Area rahasia dengan teks yang muncul otomatis</h3>
+<table>
+  <tr><th>Object</th><th>Class</th><th>Name</th><th>Custom Property</th></tr>
+  <tr><td>Zona invisible</td><td>Trigger</td><td><code>rahasia1</code></td><td><code>permanent = true</code></td></tr>
+  <tr><td>Teks</td><td>Text</td><td><code>rahasia1</code></td><td><code>content = "Kamu menemukan jalan pintas!"</code></td></tr>
+</table>
+<p>Hasil: teks tersembunyi total sampai pemain berjalan melewati zona trigger, lalu muncul dengan animasi wipe dan tetap tampil selamanya (karena <code>permanent=true</code>).</p>
+
+<h3>Kasus E — NOT logic: gerbang hanya terbuka kalau lever A ON dan lever B OFF</h3>
+<table>
+  <tr><th>Object</th><th>Class</th><th>Name</th><th>Custom Property</th></tr>
+  <tr><td>Lever A</td><td>Lever</td><td><code>xor1</code></td><td><code>actived = true</code> (default)</td></tr>
+  <tr><td>Lever B</td><td>Lever</td><td><code>xor1</code></td><td><code>actived = false</code></td></tr>
+  <tr><td>Gate</td><td>Gate</td><td><code>xor1</code></td><td><code>initialOpen = false</code></td></tr>
+</table>
+<p>Hasil: gate hanya terbuka pada kondisi Lever A menyala <strong>dan</strong> Lever B mati.</p>
+
+<div class="pagebreak"></div>
+
+<!-- ============= 8. CHECKLIST ============= -->
+<h2>8. Checklist Sebelum Serah Terima Map</h2>
+<ul class="checklist">
+  <li>Ukuran tile 18×18 px sudah benar.</li>
+  <li>Nama file mengikuti konvensi (<code>tutorial.tmx</code> / <code>level-XX.tmx</code>).</li>
+  <li>Ada layer <code>Ground</code> (Tile Layer) dan <code>Spawnpoints</code> (Object Layer), penulisan persis (huruf besar/kecil sesuai).</li>
+  <li>Tepat satu object Player ada di map.</li>
+  <li>Minimal satu object ExitDoor ada di map, dan bisa dicapai pemain.</li>
+  <li>Semua object interaktif (Gate, MovingPlatform, StoneBrick, Button, Lever, Fountain, Fairy, Trigger, Text) ditaruh di layer <code>Spawnpoints</code>, bukan di layer lain.</li>
+  <li>Field <strong>Class</strong> tiap object sudah diisi persis sesuai Bab 3 (case-sensitive).</li>
+  <li>Semua pasangan Trigger↔Target memakai Name yang sama persis (cek typo, spasi tersembunyi, dan huruf besar/kecil).</li>
+  <li>Tidak ada Name <code>"debugmode"</code> yang tidak disengaja.</li>
+  <li>Object Text sudah diisi custom property <code>content</code> (bukan Name) untuk teksnya.</li>
+  <li>Tidak ada Fairy/StoneBrick yang bisa terjebak permanen di posisi yang tidak mungkin diselesaikan.</li>
+  <li>Gate yang bisa menutup sudah diuji tidak "menjepit mati" pemain secara tidak sengaja/tidak adil.</li>
+  <li>Sudah dicoba dimainkan dari awal sampai ExitDoor minimal 1× tanpa bug macet.</li>
+</ul>
+
+<div class="note">
+Kalau ragu soal salah satu ketentuan di atas, tetap gunakan nilai default
+dan komunikasikan ke tim developer — jangan menebak-nebak nilai custom
+property yang belum tercantum di dokumen ini.
+</div>
+
+</body>
+</html>
