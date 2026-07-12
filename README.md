@@ -139,20 +139,3 @@ pairy/
 Dokumentasi lengkap cara membuat level baru menggunakan **Tiled Map Editor** (aturan naming layer, konvensi ID lever-gate, dll) tersedia dalam bentuk PDF.
 
 > 📄 **Status: belum tersedia** — link akan ditambahkan di sini setelah manual selesai dibuat.
-
----
-
-## Roadmap level
-
-- [ ] Level 1
-- [ ] Level 2
-- [ ] Level 3
-- [ ] Level 4
-- [ ] Level 5
-- [ ] Level 6
-- [ ] Level 7
-- [ ] Level 8
-- [ ] Level 9
-- [ ] Level 10
-- [ ] Level 11
-- [ ] Level 12

@@ -5,9 +5,11 @@ import 'package:flame/components.dart';
 import 'package:flutter/material.dart';
 import 'package:flame/sprite.dart';
 
+import 'player_component.dart';
+
 class ExitDoorComponent extends PositionComponent with CollisionCallbacks {
   ExitDoorComponent({required super.position})
-      : super(size: Vector2(26, 40), anchor: Anchor.bottomCenter);
+    : super(size: Vector2(26, 40), anchor: Anchor.bottomCenter);
 
   bool _showTooltip = false;
   Sprite? _sprite;
@@ -19,14 +21,19 @@ class ExitDoorComponent extends PositionComponent with CollisionCallbacks {
   }
 
   @override
-  void onCollisionStart(Set<Vector2> intersectionPoints, PositionComponent other) {
+  void onCollisionStart(
+    Set<Vector2> intersectionPoints,
+    PositionComponent other,
+  ) {
     super.onCollisionStart(intersectionPoints, other);
+    if (other is! PlayerComponent) return;
     _showTooltip = true;
   }
 
   @override
   void onCollisionEnd(PositionComponent other) {
     super.onCollisionEnd(other);
+    if (other is! PlayerComponent) return;
     _showTooltip = false;
   }
 
