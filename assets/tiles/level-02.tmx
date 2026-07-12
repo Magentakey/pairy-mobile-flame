@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.10" tiledversion="1.12.2" orientation="orthogonal" renderorder="right-down" width="100" height="50" tilewidth="18" tileheight="18" infinite="0" nextlayerid="5" nextobjectid="197">
+<map version="1.10" tiledversion="1.12.2" orientation="orthogonal" renderorder="right-down" width="100" height="50" tilewidth="18" tileheight="18" infinite="0" nextlayerid="5" nextobjectid="199">
  <tileset firstgid="1" source="tileset-tiles.tsx"/>
  <tileset firstgid="181" source="background.tsx"/>
  <tileset firstgid="221" source="t3.tsx"/>
@@ -175,7 +175,7 @@
     <property name="content" value="and where's snow?"/>
    </properties>
   </object>
-  <object id="182" name="snowman" type="Text" x="-15.5833" y="553" width="21.3333" height="13.3333">
+  <object id="182" name="snowman" type="Text" x="-2.08334" y="553.25" width="21.3333" height="13.3333">
    <properties>
     <property name="content" value="why iam still here"/>
    </properties>
@@ -238,5 +238,11 @@
    </properties>
   </object>
   <object id="196" name="3a" type="Fountain" x="1305" y="421.5" width="24" height="30"/>
+  <object id="197" name="now what" type="Trigger" x="576.5" y="687.333" width="71" height="33.5"/>
+  <object id="198" name="now what" type="Text" x="600.34" y="650.167" width="21.3333" height="13.3333">
+   <properties>
+    <property name="content" value="now what?"/>
+   </properties>
+  </object>
  </objectgroup>
 </map>

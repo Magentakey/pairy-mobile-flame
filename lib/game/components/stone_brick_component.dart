@@ -50,21 +50,42 @@ class StoneBrickComponent extends PositionComponent
   bool get isPinnedOnPlayer => _pinnedOnPlayer != null;
   PlayerComponent? get pinnedPlayer => _pinnedOnPlayer;
 
-  /// Offset horizontal brick terhadap player, DI-CAPTURE SEKALI persis
-  /// di posisi brick jatuh (bukan di-snap ke tengah kepala) -- supaya
-  /// brick tetap nyangkut apa adanya sesuai posisi mendaratnya (bisa di
-  /// pinggir, bisa cuma nyenggol sedikit), lalu offset ini dipertahankan
-  /// tiap frame selama ikut gerak player.
+  /// Player yang barusan melepas brick ini (headroom kehalang). Dipakai
+  /// bareng [_pinCooldown] untuk MENCEGAH brick langsung nyangkut ulang
+  /// ke player yang sama di frame berikutnya, sebagai pengganti dorongan
+  /// kecepatan horizontal (yang keliatan seperti animasi "slide").
+  /// Selama cooldown, brick jatuh lurus ke bawah layaknya batu biasa.
+  PlayerComponent? _recentlyReleasedFrom;
+  double _pinCooldown = 0;
+
+  /// True kalau brick BOLEH nyangkut lagi ke [player] (dipanggil dari
+  /// PlayerComponent sebelum memutuskan pin).
+  bool canPinTo(PlayerComponent player) =>
+      !(_recentlyReleasedFrom == player && _pinCooldown > 0);
+
+  /// Sisi nudge saat brick dilepas dari pin (headroom kehalang) -- cukup
+  /// perlu tanda arahnya saja, dicapture sekali di [pinAbovePlayer].
   double _pinOffsetX = 0;
+
+  /// Posisi X player di frame sebelumnya, selama brick sedang nyangkut.
+  /// Dipakai untuk hitung [playerDx] (delta gerak player frame ini), lalu
+  /// delta itu diterapkan ke brick lewat [tryPush] -- PERSIS mekanisme
+  /// yang sama dipakai saat brick didorong biasa di lantai, dan sama
+  /// gaya carry-nya dengan MovingPlatformComponent.frameDelta (delta
+  /// inkremental, bukan hitung ulang posisi absolut tiap frame). Ini yang
+  /// bikin carry di atas kepala semulus platform vertikal, sekaligus
+  /// membuang recoilAgainst custom (sumber bug "pop"/jitter sebelumnya).
+  double _prevPinPlayerX = 0;
 
   /// Dipanggil PlayerComponent begitu terdeteksi brick yang sedang jatuh
   /// menimpa kepala player: brick berhenti jatuh & "nempel" tepat di atas
-  /// kepala PERSIS di posisi jatuhnya (lihat [_pinOffsetX]), ikut
-  /// mengikuti posisi player tiap frame (lihat [update]), alih-alih terus
-  /// mendorong player turun menembus tanah.
+  /// kepala PERSIS di posisi jatuhnya, ikut mengikuti posisi player tiap
+  /// frame (lihat [update]), alih-alih terus mendorong player turun
+  /// menembus tanah.
   void pinAbovePlayer(PlayerComponent player) {
     _pinnedOnPlayer = player;
     _pinOffsetX = position.x - player.position.x;
+    _prevPinPlayerX = player.position.x;
     velocity.setZero();
     isOnGround = true;
   }
@@ -119,6 +140,14 @@ class StoneBrickComponent extends PositionComponent
 
     _prevFramePosition.setFrom(position);
 
+    if (_pinCooldown > 0) {
+      _pinCooldown -= safeDt;
+      if (_pinCooldown <= 0) {
+        _pinCooldown = 0;
+        _recentlyReleasedFrom = null;
+      }
+    }
+
     // Nyangkut di kepala player: skip gravity & resolve normal, cukup
     // ikuti posisi player tiap frame (mengikuti gerak kiri/kanan DAN
     // naik/turunnya player, mis. saat player jatuh/berdiri di tanjakan).
@@ -164,65 +193,46 @@ class StoneBrickComponent extends PositionComponent
         }
 
         if (headroomBlocked) {
-          // Lepas: kasih sedikit dorongan menyamping (arah sesuai offset
-          // brick tadi) supaya langsung keluar dari kolom player, tidak
-          // langsung nge-pin ulang di frame berikutnya.
+          // Lepas: nudge POSISI (bukan velocity!) sedikit menyamping supaya
+          // brick langsung keluar dari kolom player pas frame ini juga.
+          // Brick lalu jatuh LURUS ke bawah layaknya batu biasa -- tidak
+          // dikasih kecepatan horizontal, karena itu yang bikin brick
+          // keliatan "meluncur"/slide alih-alih diam & jatuh vertikal.
+          // Re-pin ke player yang sama dicegah lewat cooldown singkat,
+          // bukan lewat drift horizontal terus-menerus.
           final sign = _pinOffsetX >= 0 ? 1.0 : -1.0;
           position.x += sign * 6;
           velocity
-            ..x = sign * 50
+            ..x = 0
             ..y = 0;
           _pinnedOnPlayer = null;
+          _recentlyReleasedFrom = player;
+          _pinCooldown = 0.25;
           player.releasePinnedBrick(this);
           // Lanjut jatuh normal di bawah pakai posisi yang baru di-nudge ini.
         } else {
-          var resolvedX = player.position.x + _pinOffsetX;
-
-          // Brick yang nyangkut kadang LEBIH LEBAR dari hitbox player,
-          // jadi sisi kiri/kanannya bisa nyenggol tembok/brick lain yang
-          // player sendiri belum tentu nyentuh. Kalau nyenggol, brick
-          // "ketahan"/recoil ke tepi solid tsb (ketinggalan dari player),
-          // dan otomatis balik napel lagi begitu player cukup jauh dari
-          // solid itu (dihitung ulang dari nol tiap frame).
-          void recoilAgainst(PositionComponent other) {
-            final tl =
-                other.position -
-                Vector2(
-                  other.size.x * other.anchor.x,
-                  other.size.y * other.anchor.y,
-                );
-            final overlapB = (desiredY + size.y) - tl.y;
-            final overlapT = (tl.y + other.size.y) - desiredY;
-            if (overlapB <= 0 || overlapT <= 0) return;
-
-            final overlapR = (resolvedX + size.x) - tl.x;
-            final overlapL = (tl.x + other.size.x) - resolvedX;
-            if (overlapR <= 0 || overlapL <= 0) return;
-
-            if (overlapR <= overlapL) {
-              resolvedX = tl.x - size.x;
-            } else {
-              resolvedX = tl.x + other.size.x;
-            }
-          }
-
-          for (final ground in game.groundComponents) {
-            recoilAgainst(ground);
-          }
-          for (final other in parent!.children) {
-            if (other == this || other == player) continue;
-            if (other is GateComponent && !other.isOpenState) {
-              recoilAgainst(other);
-            } else if (other is StoneBrickComponent) {
-              recoilAgainst(other);
-            } else if (other is MovingPlatformComponent) {
-              recoilAgainst(other);
-            }
-          }
-
-          position.x = resolvedX;
+          // Set Y dulu (nempel persis di atas kepala) SEBELUM tryPush,
+          // supaya cek overlap vertikal di dalam tryPush pakai tinggi
+          // brick yang benar.
           position.y = desiredY;
+
+          // Carry horizontal lewat DELTA gerak player frame ini,
+          // diterapkan lewat [_moveClamped] -- clamp inti yang SAMA
+          // dipakai [tryPush] (swept clamp arah-sadar terhadap
+          // ground/gate/brick lain/moving platform), TAPI tanpa efek
+          // samping chain-push tryPush. Brick lain yang menumpu di ATAS
+          // brick pinned ini sudah dibawa lewat mekanisme
+          // frameDelta/landed-carry terpisah di update()-nya sendiri --
+          // kalau di sini pakai tryPush (dengan chain-push), brick yang
+          // menumpu itu bakal kena dorong DUA KALI tiap frame (dobel
+          // hitung delta) dan lama-lama melenceng ke satu sisi (ini
+          // penyebab jitter & "cuma bisa 1 brick" sebelumnya).
+          final playerDx = player.position.x - _prevPinPlayerX;
+          _prevPinPlayerX = player.position.x;
+          if (playerDx != 0) _moveClamped(playerDx);
+
           velocity.setZero();
+          isOnGround = true;
           frameDelta
             ..setFrom(position)
             ..sub(_prevFramePosition);
@@ -379,61 +389,90 @@ class StoneBrickComponent extends PositionComponent
 
   /// Coba dorong brick sejauh [dx] px (positif = kanan, negatif = kiri).
   /// Return jarak yang beneran berhasil digeser (bisa < dx atau 0 kalau
-  /// kehalang).
+  /// kehalang). Chain-push ke sibling/brick yang menumpu di atas dipakai
+  /// untuk skenario "player mendorong brick di lantai".
   double tryPush(double dx) {
     if (dx == 0 || parent == null) return 0;
 
-    // Chain push: kalau ada brick lain nempel di sisi arah dorongan,
-    // dorong dia duluan (rekursif), baru clamp posisi sendiri. Tanpa
-    // ini, brick tetangga statis langsung mengunci total dorongan.
-    for (final sibling in parent!.children) {
-      if (sibling == this || sibling is! StoneBrickComponent) continue;
-      final sTl =
-          sibling.position -
-          Vector2(
-            sibling.size.x * sibling.anchor.x,
-            sibling.size.y * sibling.anchor.y,
-          );
-      final overlapB = (position.y + size.y) - sTl.y;
-      final overlapT = (sTl.y + sibling.size.y) - position.y;
-      if (overlapB <= 0 || overlapT <= 0) continue;
+    // Clamp gerak brick INI SENDIRI DULU, sebelum chain-push ke
+    // sibling/brick yang menumpu di atas. Urutan ini penting: kalau
+    // chain-push dilakukan duluan pakai [dx] mentah (urutan lama), brick
+    // yang menumpu di atas / brick lain dalam antrian bisa "kebablasan"
+    // maju penuh padahal brick yang ditumpu/di depannya ternyata mentok
+    // duluan (mis. brick paling bawah kena tembok, tapi brick di atasnya
+    // tetap maju menembus batas). Dengan clamp dulu, kita tahu persis
+    // [actualDx] (jarak yang BENERAN tercapai) sebelum meneruskannya ke
+    // sibling, sehingga seluruh tumpukan/antrian berhenti bersamaan.
+    final actualDx = _moveClamped(dx);
 
-      const gapTol = 0.5;
-      if (dx > 0) {
-        if ((sTl.x - (position.x + size.x)).abs() <= gapTol) {
-          sibling.tryPush(dx);
-          sibling.recheckGroundSupport();
+    if (actualDx != 0) {
+      // Chain push horizontal: kalau ada brick lain nempel di sisi arah
+      // dorongan, ikut dorong dia (rekursif) sejauh actualDx (bukan dx
+      // mentah).
+      for (final sibling in parent!.children) {
+        if (sibling == this || sibling is! StoneBrickComponent) continue;
+        final sTl =
+            sibling.position -
+            Vector2(
+              sibling.size.x * sibling.anchor.x,
+              sibling.size.y * sibling.anchor.y,
+            );
+        final overlapB = (position.y + size.y) - sTl.y;
+        final overlapT = (sTl.y + sibling.size.y) - position.y;
+        if (overlapB <= 0 || overlapT <= 0) continue;
+
+        const gapTol = 0.5;
+        if (dx > 0) {
+          if ((sTl.x - (position.x + size.x)).abs() <= gapTol) {
+            sibling.tryPush(actualDx);
+            sibling.recheckGroundSupport();
+          }
+        } else {
+          if ((position.x - (sTl.x + sibling.size.x)).abs() <= gapTol) {
+            sibling.tryPush(actualDx);
+            sibling.recheckGroundSupport();
+          }
         }
-      } else {
-        if ((position.x - (sTl.x + sibling.size.x)).abs() <= gapTol) {
-          sibling.tryPush(dx);
-          sibling.recheckGroundSupport();
+      }
+
+      // Chain push VERTIKAL: brick lain yang lagi numpu PERSIS di atas
+      // brick ini (menumpuk) ikut digeser actualDx yang sama, supaya
+      // tumpukan bergerak bareng DAN berhenti bareng (rekursif, kalau
+      // ada brick ke-3 numpu di brick ke-2, ikut kebawa lewat panggilan
+      // tryPush sibling di bawah).
+      for (final onTop in parent!.children) {
+        if (onTop == this || onTop is! StoneBrickComponent) continue;
+        final tTl =
+            onTop.position -
+            Vector2(
+              onTop.size.x * onTop.anchor.x,
+              onTop.size.y * onTop.anchor.y,
+            );
+        final overlapR = (position.x + size.x) - tTl.x;
+        final overlapL = (tTl.x + onTop.size.x) - position.x;
+        if (overlapR <= 0 || overlapL <= 0) continue; // gak overlap horizontal
+
+        const gapTol = 0.5;
+        final onTopBottom = tTl.y + onTop.size.y;
+        if ((onTopBottom - position.y).abs() <= gapTol) {
+          // onTop persis numpu di atas brick ini -> ikut geser.
+          onTop.tryPush(actualDx);
         }
       }
     }
 
-    // Chain push VERTIKAL: brick lain yang lagi numpu PERSIS di atas
-    // brick ini (menumpuk) harus ikut digeser dx yang sama, supaya
-    // tumpukan bergerak bareng alih-alih cuma brick paling bawah yang
-    // maju. Rekursif juga (kalau ada brick ke-3 numpu di brick ke-2,
-    // ikut kebawa lewat panggilan tryPush sibling di bawah).
-    for (final onTop in parent!.children) {
-      if (onTop == this || onTop is! StoneBrickComponent) continue;
-      final tTl =
-          onTop.position -
-          Vector2(onTop.size.x * onTop.anchor.x, onTop.size.y * onTop.anchor.y);
-      final overlapR = (position.x + size.x) - tTl.x;
-      final overlapL = (tTl.x + onTop.size.x) - position.x;
-      if (overlapR <= 0 || overlapL <= 0) continue; // gak overlap horizontal
+    return actualDx;
+  }
 
-      const gapTol = 0.5;
-      final onTopBottom = tTl.y + onTop.size.y;
-      if ((onTopBottom - position.y).abs() <= gapTol) {
-        // onTop persis numpu di atas brick ini -> ikut geser.
-        onTop.tryPush(dx);
-      }
-    }
-
+  /// Gerakkan brick ini sendiri sejauh [dx] px, diclamp terhadap
+  /// ground/gate/brick lain/moving platform -- TANPA efek samping
+  /// chain-push ke sibling lain. Dipakai oleh [tryPush] (untuk hitung
+  /// actualDx sebelum chain-push), dan juga dipakai LANGSUNG untuk carry
+  /// inkremental brick yang lagi nyangkut di kepala player (lihat
+  /// [pinAbovePlayer] & [update]) -- supaya TIDAK dobel-hitung delta
+  /// dengan mekanisme frameDelta/landed-carry biasa yang sudah dipakai
+  /// brick lain yang menumpu di atasnya.
+  double _moveClamped(double dx) {
     final desiredX = position.x + dx;
     var allowedX = desiredX;
 

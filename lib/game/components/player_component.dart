@@ -318,11 +318,15 @@ class PlayerComponent extends PositionComponent
             _restingPlatform = null;
           }
         } else if (prevTop >= prevOy + oh) {
-          if (!child.isOnGround && child.velocity.y > 0) {
+          if (!child.isOnGround &&
+              child.velocity.y > 0 &&
+              child.canPinTo(this)) {
             // Brick sedang jatuh bebas dan menimpa kepala player --
             // biarkan nyangkut di atas kepala & ikut player, JANGAN
             // dorong player turun (dulu ini bikin player mendelep ke
             // tanah karena brick terus "mendorong" turun selagi jatuh).
+            // (child.canPinTo mencegah brick yang BARU SAJA dilepas dari
+            // player ini nyangkut ulang instan di frame berikutnya.)
             child.pinAbovePlayer(this);
             _pinningBrick = child;
           } else {
