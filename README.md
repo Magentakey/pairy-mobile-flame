@@ -9,7 +9,6 @@ Pairy adalah game **2D platformer puzzle mobile** yang dibangun dengan **Flutter
 ![Flutter](https://img.shields.io/badge/Flutter-3.x-02569B?logo=flutter&logoColor=white)
 ![Flame](https://img.shields.io/badge/Flame-1.18-orange)
 ![Platform](https://img.shields.io/badge/platform-Android%20%7C%20iOS-lightgrey)
-![License](https://img.shields.io/badge/license-MIT-green)
 
 ---
 
@@ -28,6 +27,10 @@ Pairy adalah game **2D platformer puzzle mobile** yang dibangun dengan **Flutter
 - **Objek puzzle interaktif** — tuas (lever), gerbang (gate), air mancur (fountain)
 - **Exit gate** — tujuan akhir setiap level
 - **12 level** dengan tingkat kesulitan meningkat secara bertahap
+
+### Preview tilemap
+
+![Preview tilemap Pairy](assets/images/PreviewTileMap.png)
 
 ---
 
@@ -121,17 +124,13 @@ pairy/
 
 ## Referensi aset
 
-Aset yang digunakan/direkomendasikan pada project ini:
+<!-- Tambahkan sumber aset yang dipakai di project ini -->
 
 | Jenis | Sumber | Lisensi |
 |---|---|---|
-| Sprite peri (fairy) | [Elthen's 2D Pixel Art Fairy Sprites](https://elthen.itch.io/2d-pixel-art-fairy-sprites) | Berbayar (~$1) |
-| Sprite peri alternatif | [itch.io — tag fairy](https://itch.io/game-assets/tag-fairy) | Campuran gratis/berbayar |
-| UI pack | [Kenney UI Pack](https://kenney.nl/assets/ui-pack) | CC0 (bebas pakai) |
-| Environment / objek puzzle | [Kenney Pixel Platformer](https://kenney.nl/assets/pixel-platformer) | CC0 (bebas pakai) |
-| Environment alternatif | [itch.io — tag puzzle-platformer](https://itch.io/game-assets/tag-puzzle-platformer) | Campuran gratis/berbayar |
-
-Selalu cek ulang lisensi tiap aset sebelum publish ke store, khususnya untuk aset berbayar yang mungkin punya batasan penggunaan komersial.
+| | | |
+| | | |
+| | | |
 
 ---
 
@@ -157,15 +156,3 @@ Dokumentasi lengkap cara membuat level baru menggunakan **Tiled Map Editor** (at
 - [ ] Level 10
 - [ ] Level 11
 - [ ] Level 12
-
----
-
-## Contributing
-
-Kontribusi terbuka untuk siapa saja yang ingin membantu — baik dari sisi kode, aset, maupun desain level. Silakan buka issue atau pull request.
-
----
-
-## License
-
-MIT License — bebas digunakan, dimodifikasi, dan didistribusikan dengan tetap menyertakan atribusi.
