@@ -358,38 +358,24 @@ class PlayerComponent extends PositionComponent
           position.x = (ox + moved) + ow;
           velocity.x = 0;
         } else {
-          // Fallback: gak ada satupun klasifikasi arah di atas yang kena
-          // (bisa kejadian kalau player & brick udah kepalang overlap
-          // dari frame sebelumnya tanpa histori arah yang jelas -- mis.
-          // brick baru digeser instan lewat chain-push, atau ukuran
-          // brick non-standar bikin perbandingan prevLeft/prevRight
-          // meleset dikit). Tentukan arah dari sisi PALING DANGKAL
-          // penetrasinya, terus perlakukan PERSIS seperti cabang normal
-          // di atas (beneran manggil tryPush ke brick-nya, BUKAN cuma
-          // nge-snap posisi player) -- supaya brick tetap ikut kedorong,
-          // bukan cuma player yang "teleport" sementara brick diam.
-          final minH = min(overlapL, overlapR);
-          final minV = min(overlapT, overlapB);
-          if (minH <= minV) {
-            if (overlapR <= overlapL) {
-              final moved = child.tryPush(overlapR);
-              child.recheckGroundSupport();
-              position.x = (ox + moved) - size.x;
-            } else {
-              final moved = child.tryPush(-overlapL);
-              child.recheckGroundSupport();
-              position.x = (ox + moved) + ow;
-            }
-            velocity.x = 0;
+          // Fallback HORIZONTAL saja: gak ada satupun klasifikasi arah
+          // di atas yang kena. Sengaja CUMA resolve horizontal (dorong
+          // brick) di sini, TIDAK vertikal -- soalnya loop brick ini
+          // jalan SETELAH ground di-resolve duluan; kalau maksa ubah
+          // position.y di sini juga, itu bisa nimpa balik hasil resolve
+          // ground barusan dan bikin player malah "tenggelam" ke tanah
+          // (jauh lebih parah daripada sekadar overlap sesaat, yang
+          // sekarang emang udah gak lagi mematikan).
+          if (overlapR <= overlapL) {
+            final moved = child.tryPush(overlapR);
+            child.recheckGroundSupport();
+            position.x = (ox + moved) - size.x;
           } else {
-            if (overlapT < overlapB) {
-              position.y = oy - size.y;
-              if (velocity.y > 0) velocity.y = 0;
-            } else {
-              position.y = oy + oh;
-              if (velocity.y < 0) velocity.y = 0;
-            }
+            final moved = child.tryPush(-overlapL);
+            child.recheckGroundSupport();
+            position.x = (ox + moved) + ow;
           }
+          velocity.x = 0;
         }
       }
     }
@@ -644,7 +630,16 @@ class PlayerComponent extends PositionComponent
 
     if (prevBottom <= prevOy) {
       position.y = oy - size.y;
-      if (velocity.y > 0) {
+      // >= 0 (bukan cuma > 0): player yang lagi DIAM di atas solid lain
+      // (velocity.y sudah 0 dari resolve solid tsb, giliran-nya duluan
+      // di loop yang sama) tetap harus bisa "pindah pijakan" begitu ada
+      // solid LAIN (mis. moving platform vertikal) yang overlap dari
+      // bawah & lift dia. Kalau syaratnya cuma > 0, platform baru ini
+      // gak pernah dapet kredit landing (isOnGround/_restingPlatform),
+      // padahal posisi Y-nya udah keburu ke-set naik -- efeknya keliatan
+      // "teleport balik" ke solid lama begitu solid baru berhenti
+      // overlap.
+      if (velocity.y >= 0) {
         velocity.y = 0;
         isOnGround = true;
         return true;

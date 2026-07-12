@@ -100,7 +100,7 @@ class StoneBrickComponent extends PositionComponent
       final overlapR = (position.x + size.x) - g.position.x;
       final overlapL = (g.position.x + g.size.x) - position.x;
       final touchingTop = (position.y + size.y - g.position.y).abs() < 1.0;
-      return overlapR > 0 && overlapL > 0 && touchingTop;
+      return overlapR > 4.0 && overlapL > 4.0 && touchingTop;
     });
     if (!stillSupported) isOnGround = false;
   }
@@ -126,7 +126,7 @@ class StoneBrickComponent extends PositionComponent
 
     // Ground tiles
     for (final ground in game.groundComponents) {
-      _resolveVertical(ground, Vector2.zero());
+      _resolveVertical(ground, Vector2.zero(), minSupportOverlap: 4.0);
     }
 
     // Gate tertutup, moving platform (brick bisa numpang & ke-carry oleh
@@ -143,11 +143,15 @@ class StoneBrickComponent extends PositionComponent
             _crushByGate();
             return;
           }
-          _resolveVertical(child, Vector2.zero());
+          _resolveVertical(child, Vector2.zero(), minSupportOverlap: 4.0);
         }
         _gateWasOpen[child] = child.isOpenState;
       } else if (child is MovingPlatformComponent) {
-        final landed = _resolveVertical(child, child.frameDelta);
+        final landed = _resolveVertical(
+          child,
+          child.frameDelta,
+          minSupportOverlap: 4.0,
+        );
         if (landed) position.x += child.frameDelta.x;
       } else if (child is StoneBrickComponent && child != this) {
         if (_isDeeplySpawnOverlapped(child)) {
@@ -166,7 +170,7 @@ class StoneBrickComponent extends PositionComponent
             return;
           }
         } else {
-          _resolveVertical(child, child.frameDelta);
+          _resolveVertical(child, child.frameDelta, minSupportOverlap: 4.0);
         }
       }
     }
@@ -207,7 +211,11 @@ class StoneBrickComponent extends PositionComponent
   /// atau gagal numpang sama sekali di atas moving platform -- karena
   /// dua kondisi "arah jelas" di atas sama-sama tidak terpenuhi dan
   /// tidak ada resolusi apa pun yang dijalankan.
-  bool _resolveVertical(PositionComponent other, Vector2 otherDelta) {
+  bool _resolveVertical(
+    PositionComponent other,
+    Vector2 otherDelta, {
+    double minSupportOverlap = 0,
+  }) {
     final tl =
         other.position -
         Vector2(other.size.x * other.anchor.x, other.size.y * other.anchor.y);
@@ -222,6 +230,15 @@ class StoneBrickComponent extends PositionComponent
     final overlapT = (oy + oh) - position.y;
 
     if (overlapR <= 0 || overlapL <= 0 || overlapB <= 0 || overlapT <= 0) {
+      return false;
+    }
+
+    // Overlap horizontal terlalu tipis (mis. brick yang lagi didorong
+    // CEPAT lewat jurang cuma "nyerempet" ujung tanah di seberang dalam
+    // satu frame, padahal sebelumnya sempat 0 overlap total) -- jangan
+    // dianggap ketopang beneran, biar tetap jatuh ke jurang alih-alih
+    // nyangkut di ujung seberangnya.
+    if (min(overlapR, overlapL) < minSupportOverlap) {
       return false;
     }
 
