@@ -26,29 +26,14 @@ class Level extends World with HasGameReference<PairyGame> {
   final List<GroundComponent> groundComponents = [];
 
   // ── Render priority ──────────────────────────────────────────────
-  // Background (TiledComponent) & GroundComponent dibiarkan di priority
-  // default (0). MapTextComponent sengaja diberi priority di ATAS itu
-  // (textPriority) tapi di BAWAH semua komponen interaktif lain
-  // (interactivePriority), supaya text map SELALU kalah render dari
-  // player/gate/platform/lever/fountain/exitDoor/fairy, dan HANYA menang
-  // dari background & ground layer. Tanpa priority eksplisit ini,
-  // urutan render antar komponen priority-0 cuma ngikutin urutan
-  // add()/child list, yang tidak dijamin konsisten (apalagi ada
-  // komponen yang di-add lewat pass terpisah / async onLoad).
+  // Urutan render (rendah ke tinggi): background/ground (0) < text (1)
+  // < gate/platform/lever/fountain/exitDoor (2) < player (50) < fairy (100).
   static const int textPriority = 1;
   static const int interactivePriority = 2;
-  // Player sengaja diberi priority sendiri, di ATAS semua komponen
-  // interaktif lain (gate/platform/lever/fountain/exitDoor/text) supaya
-  // dia selalu tergambar paling depan dibanding elemen level manapun —
-  // tapi tetap di BAWAH fairy (priority 100), karena secara gameplay
-  // fairy yang lagi di-drag harus selalu keliatan paling atas.
   static const int playerPriority = 50;
-  // Fairy pakai priority 100 sendiri (lihat FairyComponent) — selalu
-  // paling atas dari semuanya, termasuk di atas playerPriority ini.
 
-  /// Tinggi total map dalam pixel, dipakai buat deteksi player jatuh
-  /// keluar map (fall-death). Di-set ulang tiap kali level di-load,
-  /// jadi otomatis ngikutin ukuran map masing-masing level meski beda-beda.
+  /// Tinggi total map (px), dipakai untuk deteksi fall-death. Di-set
+  /// ulang tiap kali level di-load.
   double heightPx = 0;
 
   @override
@@ -81,10 +66,8 @@ class Level extends World with HasGameReference<PairyGame> {
     final mapHeight = groundLayer.height;
     heightPx = mapHeight * tileSize;
 
-    // Greedy row-merge: gabungkan tile solid yang bersebelahan secara
-    // horizontal dalam satu baris jadi SATU GroundComponent lebar,
-    // bukan 1 component per tile. Blok tanah lebar → jauh lebih sedikit
-    // hitbox & jauh lebih ringan di loop collision player tiap frame.
+    // Greedy row-merge: gabungkan tile solid bersebelahan dalam satu
+    // baris jadi satu GroundComponent lebar, biar hitbox lebih sedikit.
     for (int y = 0; y < mapHeight; y++) {
       int x = 0;
       while (x < mapWidth) {
@@ -117,17 +100,14 @@ class Level extends World with HasGameReference<PairyGame> {
 
     final objects = spawnLayer.objects;
 
-    // Semua Gate/Platform yang share nama yang sama dengan semua
-    // Lever/Fountain yang share nama yang sama itu masuk satu _TriggerGroup.
-    // Relasinya many-to-many: 1 nama bisa punya banyak target & banyak
-    // trigger sekaligus, dan logikanya AND — target baru berubah state
-    // kalau SEMUA trigger dengan nama itu dalam kondisi "on".
+    // Object yang share `name` yang sama masuk satu _TriggerGroup
+    // (many-to-many, logika AND antar trigger).
     final groups = <String, _TriggerGroup>{};
     _TriggerGroup groupFor(String key) =>
         groups.putIfAbsent(key, _TriggerGroup.new);
 
-    // Pass 1: Gate & MovingPlatform — dibuat & di-add duluan supaya
-    // Lever/Fountain di Pass 2 sudah bisa daftar sebagai trigger grupnya.
+    // Pass 1: Gate & MovingPlatform dibuat duluan supaya Lever/Fountain
+    // di Pass 2 bisa langsung daftar ke grupnya.
     for (final sp in objects) {
       if (sp.class_ == 'Gate') {
         final w = sp.width > 0 ? sp.width.toDouble() : 14.0;
@@ -169,9 +149,7 @@ class Level extends World with HasGameReference<PairyGame> {
         final key = _keyOf(sp);
         if (key != null) groupFor(key).platforms.add(platform);
       } else if (sp.class_ == 'StoneBrick') {
-        // StoneBrick bukan target trigger (tidak ikut _TriggerGroup sama
-        // sekali) -- murni solid fisik independen, jadi cukup di-spawn di
-        // sini tanpa registrasi pairing apa pun.
+        // StoneBrick bukan target trigger, murni solid fisik independen.
         final w = sp.width > 0 ? sp.width : 18.0;
         final h = sp.height > 0 ? sp.height : 18.0;
         add(
@@ -305,11 +283,7 @@ class Level extends World with HasGameReference<PairyGame> {
           );
 
         case 'Trigger':
-          // Invisible trigger zone — pairing lewat `name` persis seperti
-          // Lever/Fountain. Bisa jadi trigger untuk Gate/MovingPlatform
-          // (lewat _TriggerGroup.gates/platforms) SEKALIGUS memunculkan
-          // MapText (lewat _TriggerGroup.texts), asal share `name` yang
-          // sama.
+          // Invisible trigger zone, pairing lewat `name` seperti Lever/Fountain.
           final triggerKey = _keyOf(sp);
           final triggerW = sp.width > 0 ? sp.width : 20.0;
           final triggerH = sp.height > 0 ? sp.height : 20.0;
@@ -336,10 +310,7 @@ class Level extends World with HasGameReference<PairyGame> {
           add(trigger);
 
         case 'Text':
-          // Konten teks SENGAJA diambil dari custom property "content",
-          // bukan dari `name` object — `name` di sini dipakai untuk
-          // pairing ke trigger zone (sama seperti Gate/Platform/Lever/
-          // Fountain), supaya tidak perlu placeholder aneh di `name`.
+          // Konten teks dari property "content", `name` dipakai untuk pairing.
           final content = _getTextContent(sp);
           if (content.isEmpty) break;
           final textW = sp.width > 0 ? sp.width : 0.0;
@@ -352,8 +323,7 @@ class Level extends World with HasGameReference<PairyGame> {
           if (textKey != null) {
             groupFor(textKey).texts.add(mapText);
           } else {
-            // Tidak punya pasangan trigger sama sekali → tampil langsung
-            // tanpa animasi, perilaku lama sebagai label statis biasa.
+            // Tanpa pasangan trigger, tampil langsung tanpa animasi.
             mapText.showInstantly();
           }
           add(mapText);
@@ -366,19 +336,14 @@ class Level extends World with HasGameReference<PairyGame> {
 
   // Key pairing sekarang langsung pakai `name` object di Tiled apa adanya
   // (tanpa prefix "gate"/"platform" lagi) — bebas mau diisi "1", "a",
-  // "iamunique", dst. Nama kosong = objek berdiri sendiri (tidak ikut
-  // grup manapun, murni pakai initialOpen/initialMoving-nya sendiri).
+  // Nama kosong = objek berdiri sendiri, tidak ikut grup manapun.
   static String? _keyOf(TiledObject sp) {
     final name = sp.name.trim();
     return name.isEmpty ? null : name;
   }
 
-  // Nama khusus (case-insensitive) buat lever/fountain/trigger invisible
-  // yang fungsinya BUKAN pairing gate/platform biasa, tapi nyala/matiin
-  // `PairyGame.debugMode` (outline hitbox semua komponen collision).
-  // Dipanggil dari onToggle/onActivationChanged Lever, Fountain, DAN
-  // Trigger — jadi bisa dipasang sebagai objek jenis apa pun di Tiled,
-  // asal `name`-nya "debugmode".
+  // `name` == "debugmode" (case-insensitive) pada Lever/Fountain/Trigger
+  // manapun akan toggle `PairyGame.debugMode` alih-alih pairing biasa.
   void _maybeToggleDebugMode(String? key) {
     if (key != null && key.toLowerCase() == 'debugmode') {
       game.toggleDebugMode();
@@ -393,10 +358,8 @@ class Level extends World with HasGameReference<PairyGame> {
     }
   }
 
-  // Custom property string di Tiled buat object Button, misal:
-  // Custom Properties → name: mode, type: string, default: "plate"
-  // Nilai valid: "plate" | "toggle" | "timer" (lihat ButtonMode).
-  // Nilai tidak dikenal/kosong -> fallback ke ButtonMode.plate.
+  // Property "mode" (string) di object Button: "plate"|"toggle"|"timer".
+  // Fallback ke ButtonMode.plate kalau tidak dikenal/kosong.
   static ButtonMode _getButtonMode(TiledObject sp) {
     try {
       final raw = sp.properties.getValue<String>('mode')?.trim().toLowerCase();
@@ -409,9 +372,7 @@ class Level extends World with HasGameReference<PairyGame> {
     }
   }
 
-  // Custom property numerik di Tiled buat object Button (mode timer),
-  // misal: Custom Properties → name: timerDuration, type: float, default: 3.0
-  // Cuma relevan kalau mode == 'timer'; diabaikan buat mode lain.
+  // Property "timerDuration" (float), hanya relevan untuk mode timer.
   static double _getTimerDuration(TiledObject sp) {
     try {
       return sp.properties.getValue<double>('timerDuration') ?? 3.0;
@@ -420,8 +381,7 @@ class Level extends World with HasGameReference<PairyGame> {
     }
   }
 
-  // Isi teks untuk object class_ "Text", diambil dari custom property
-  // "content" (bukan `name`) — lihat komentar di case 'Text' di atas.
+  // Isi teks object class_ "Text", dari property "content".
   static String _getTextContent(TiledObject sp) {
     try {
       return sp.properties.getValue<String>('content')?.trim() ?? '';
@@ -430,12 +390,8 @@ class Level extends World with HasGameReference<PairyGame> {
     }
   }
 
-  // Custom property boolean di Tiled buat object Trigger, misal:
-  // Custom Properties → name: permanent, type: bool, default: true
-  // true (default): sekali kesentuh, trigger terkunci ON selamanya —
-  // player tidak perlu tetap berdiri di zona itu.
-  // false: trigger cuma ON selama player masih ada di dalam zona,
-  // begitu keluar langsung balik OFF (dan target ikut balik state awal).
+  // Property "permanent" (bool, default true) di object Trigger.
+  // true: sekali ON terkunci selamanya. false: OFF lagi begitu player keluar.
   static bool _getPermanent(TiledObject sp) {
     try {
       return sp.properties.getValue<bool>('permanent') ?? true;
@@ -444,10 +400,7 @@ class Level extends World with HasGameReference<PairyGame> {
     }
   }
 
-  // Custom property boolean di Tiled buat object Gate, misal:
-  // Custom Properties → name: initialOpen, type: bool, default: false
-  // Kalau tidak diisi, default-nya false (gate tertutup di awal),
-  // sama seperti behavior lama.
+  // Property "initialOpen" (bool, default false) di object Gate.
   static bool _getInitialOpen(TiledObject sp) {
     try {
       return sp.properties.getValue<bool>('initialOpen') ?? false;
@@ -456,10 +409,7 @@ class Level extends World with HasGameReference<PairyGame> {
     }
   }
 
-  // Custom property boolean di Tiled buat object MovingPlatform, misal:
-  // Custom Properties → name: initialMoving, type: bool, default: true
-  // Kalau tidak diisi, default-nya true (platform bergerak di awal),
-  // dan tetap true walau tidak punya pasangan lever/fountain sama sekali.
+  // Property "initialMoving" (bool, default true) di object MovingPlatform.
   static bool _getInitialMoving(TiledObject sp) {
     try {
       return sp.properties.getValue<bool>('initialMoving') ?? true;
@@ -468,11 +418,8 @@ class Level extends World with HasGameReference<PairyGame> {
     }
   }
 
-  // Custom property string generik di Tiled, dipakai buat `tilesetImage`
-  // & `tileGrid` baik di object Gate maupun MovingPlatform. null kalau
-  // property tidak diisi / kosong — caller yang menentukan fallback
-  // default masing-masing (Gate: null → placeholder lama; MovingPlatform
-  // → fallback ke tileset & grid conveyor lama).
+  // Property string generik (tilesetImage/tileGrid) di Gate/MovingPlatform.
+  // null kalau kosong, caller yang tentukan fallback default.
   static String? _getStringProp(TiledObject sp, String propName) {
     try {
       final value = sp.properties.getValue<String>(propName)?.trim();
@@ -482,14 +429,9 @@ class Level extends World with HasGameReference<PairyGame> {
     }
   }
 
-  // Custom property boolean di Lever/Fountain, misal:
-  // Custom Properties → name: actived, type: bool, default: true
-  // Ini bukan "apakah trigger sedang on/off", tapi ekspektasi yang harus
-  // dicapai supaya trigger ini dianggap memenuhi syarat AND grup:
-  // - actived=true (default): trigger ini harus dalam kondisi ON
-  //   (lever nyala / ada fairy warna cocok di fountain) baru "memenuhi syarat".
-  // - actived=false: kebalikannya — trigger ini justru harus OFF baru
-  //   "memenuhi syarat" (dipakai buat bikin kondisi semacam NOT).
+  // Property "actived" (bool, default true) di Lever/Fountain/Trigger:
+  // nilai yang diharapkan supaya trigger ini "memenuhi syarat" AND grup.
+  // false dipakai untuk bikin kondisi semacam NOT.
   static bool _getActived(TiledObject sp) {
     try {
       return sp.properties.getValue<bool>('actived') ?? true;
@@ -519,23 +461,13 @@ class Level extends World with HasGameReference<PairyGame> {
   }
 }
 
-/// Kumpulan Gate/MovingPlatform (target) dan Lever/Fountain (trigger)
-/// yang share nama object yang sama di Tiled. Relasinya many-to-many:
-/// 1 grup bisa punya banyak target dan banyak trigger sekaligus.
+/// Kumpulan Gate/MovingPlatform (target) dan Lever/Fountain/Trigger
+/// yang share `name` yang sama di Tiled (many-to-many).
 ///
-/// Logikanya AND: target baru dianggap "aktif" kalau SEMUA trigger
-/// dalam grup itu match dengan ekspektasi masing-masing (lihat
-/// [_TriggerRef.expected], dari custom property `actived` di Tiled,
-/// default true). Kalau satu saja tidak match, target tetap di state
-/// awalnya (belum berubah).
-///
-/// Contoh: 2 lever nama "a" — lever1 `actived=true` (default), lever2
-/// `actived=false`. AND baru terpenuhi kalau lever1 ON dan lever2 OFF.
-///
-/// State target dihitung deterministik tiap [recompute] dipanggil:
-///   state = initialState XOR AND(semua trigger match ekspektasinya)
-/// — bukan flip/toggle biasa, supaya hasilnya konsisten walau
-/// triggernya banyak dan berubah gantian.
+/// Logika AND: target "aktif" kalau semua trigger match ekspektasinya
+/// masing-masing ([_TriggerRef.expected], dari property `actived`).
+/// State dihitung deterministik tiap [recompute]:
+///   state = initialState XOR AND(semua trigger match ekspektasi)
 class _TriggerGroup {
   final List<GateComponent> gates = [];
   final List<MovingPlatformComponent> platforms = [];
@@ -558,20 +490,16 @@ class _TriggerGroup {
       shouldMove ? platform.start() : platform.stop();
     }
 
-    // Text tidak punya konsep "initialOpen" seperti gate/platform — dia
-    // selalu mulai tersembunyi, dan langsung mengikuti hasil AND grup
-    // apa adanya (tanpa XOR): allMatch true → reveal, false → hide lagi.
+    // Text selalu mulai tersembunyi, ikut hasil AND grup langsung
+    // (tanpa XOR): allMatch true -> reveal, false -> hide.
     for (final text in texts) {
       allMatch ? text.reveal() : text.hide();
     }
   }
 }
 
-/// Satu trigger (Lever/Fountain) dalam grup.
-/// [getState] baca state real-time-nya (lever.isOn / fountain.isActivated).
-/// [expected] adalah nilai yang harus dicapai supaya trigger ini dianggap
-/// "memenuhi syarat" AND — datang dari custom property `actived` di Tiled
-/// pada object Lever/Fountain tsb (default true).
+/// Satu trigger dalam grup. [getState] baca state real-time-nya,
+/// [expected] adalah nilai yang harus dicapai (dari property `actived`).
 class _TriggerRef {
   _TriggerRef({required this.getState, required this.expected});
 

@@ -2,29 +2,10 @@ import 'package:flame_audio/flame_audio.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 /// Service terpusat untuk SFX dan BGM.
-///
-/// ── Kenapa pakai AudioPool untuk SFX ────────────────────────────────
-/// `FlameAudio.play(file)` (dipakai di versi awal) bikin instance
-/// `MediaPlayer` NATIVE baru setiap kali dipanggil. Di Android itu berat
-/// (alokasi/dekode/rilis native tiap panggilan) — begitu lever/button
-/// dipencet berkali-kali cepat, main thread ke-block sampai ratusan
-/// frame ke-skip (lihat log `Choreographer: Skipped ... frames`), yang
-/// bikin SFX kedengeran delay, dan SFX lain yang jatuh pas thread lagi
-/// macet (mis. fountain-touch pas fairy nyentuh sebentar) jadi ke-drop
-/// sama sekali karena Future-nya nggak sempat selesai/keburu di-skip.
-///
-/// [AudioPool] preload beberapa instance player untuk 1 file dan
-/// tinggal "dipinjam" (start) saat dipanggil — jauh lebih ringan/instant,
-/// cocok buat SFX pendek yang bisa overlapping (lever di-spam, dsb).
-///
-/// ── BGM ────────────────────────────────────────────────────────────
-/// - [menuBgm] ("ThePathOfGoblinKing.ogg"): dipakai selama di Home &
-///   MapSelect. Selama berpindah-pindah ANTARA Home <-> MapSelect,
-///   bgm ini TIDAK di-restart — tetap lanjut dari posisi sebelumnya
-///   (lihat guard [_menuBgmPlaying] di [playMenuBgm]).
-/// - [gameBgm] ("PlatformShoes8Instumental.ogg"): dipakai selama di
-///   Gameplay (tutorial maupun level manapun). SELALU restart dari
-///   awal setiap kali masuk ke Gameplay (dipanggil tiap [playGameBgm]).
+/// SFX pakai AudioPool (preload + reuse instance) supaya ringan saat
+/// dipanggil berkali-kali cepat (lever/button di-spam, dll).
+/// menuBgm dipakai di Home & MapSelect (tidak restart saat pindah antar
+/// keduanya). gameBgm selalu restart tiap masuk Gameplay.
 class AudioService {
   AudioService._();
 
@@ -45,19 +26,12 @@ class AudioService {
   static const String _prefsSfxVolumeKey = 'audio_sfx_volume';
   static const String _prefsBgmVolumeKey = 'audio_bgm_volume';
 
-  /// Multiplier volume global (0.0 - 1.0), terpisah buat SFX & BGM.
-  /// Di-persist ke SharedPreferences supaya kesimpen antar sesi.
+  /// Volume global (0.0-1.0), terpisah untuk SFX & BGM, di-persist ke prefs.
   static double _sfxVolume = 1.0;
   static double _bgmVolume = 1.0;
 
-  /// Basis volume dari track BGM yang SEDANG main (1.3 buat menuBgm, 0.3
-  /// buat gameBgm) -- dicatat tiap kali [playMenuBgm]/[playGameBgm]
-  /// dipanggil, dipakai lagi di [setBgmVolume] supaya live-adjust slider
-  /// menghasilkan angka yang SAMA persis dengan yang bakal dipakai kalau
-  /// track-nya di-restart (mis. balik dari MapSelect ke Gameplay lagi).
-  /// Tanpa ini, live-adjust cuma pakai _bgmVolume mentah (tanpa basis),
-  /// jadi meteran 100% bisa kedengeran beda kenceng sebelum & sesudah
-  /// BGM di-restart walau _bgmVolume-nya sama persis.
+  /// Basis volume track BGM aktif (1.3 menu, 0.3 game), dipakai supaya
+  /// live-adjust slider konsisten dengan volume saat track direstart.
   static double _currentBgmBase = 0.3;
 
   static double get sfxVolume => _sfxVolume;
@@ -65,8 +39,7 @@ class AudioService {
 
   static final Map<String, AudioPool> _pools = {};
 
-  /// Preload semua file audio + siapkan AudioPool untuk tiap SFX.
-  /// Aman dipanggil berkali-kali (no-op setelah pertama kali berhasil).
+  /// Preload semua audio + siapkan AudioPool tiap SFX. Aman dipanggil ulang.
   static Future<void> init() async {
     if (_initialized) return;
     _initialized = true;
@@ -76,8 +49,7 @@ class AudioService {
       _sfxVolume = prefs.getDouble(_prefsSfxVolumeKey) ?? 1.0;
       _bgmVolume = prefs.getDouble(_prefsBgmVolumeKey) ?? 1.0;
     } catch (_) {
-      // Gagal baca preferences (mis. platform belum siap) -- tetap
-      // lanjut pakai default 1.0, jangan sampai audio gagal total.
+      // fallback ke default 1.0
     }
 
     try {
@@ -93,8 +65,6 @@ class AudioService {
         gameBgm,
       ]);
 
-      // maxPlayers 3-4: cukup buat overlap wajar (mis. lever dipencet
-      // 2x beruntun sebelum instance pertama selesai) tanpa boros memori.
       Future<void> makePool(String file, {int maxPlayers = 3}) async {
         _pools[file] = await FlameAudio.createPool(
           file,
@@ -107,21 +77,18 @@ class AudioService {
         makePool(_sfxBump),
         makePool(_sfxDisappear),
         makePool(_sfxButton),
-        makePool(_sfxLever, maxPlayers: 4), // sering di-spam
+        makePool(_sfxLever, maxPlayers: 4),
         makePool(_sfxLevelComplete, maxPlayers: 1),
         makePool(_sfxFountainTouch),
       ]);
     } catch (_) {
-      // Kalau preload/pool gagal (mis. device audio bermasalah), jangan
-      // crash seluruh game — _playSfx di bawah sudah null-safe kalau
-      // pool belum sempat kebentuk.
+      // jangan crash game kalau preload gagal
     }
   }
 
-  // ── BGM ────────────────────────────────────────────────────────────
+  // ── BGM ──────────────────────────────────────────────────────────
 
-  /// Play/lanjutkan BGM menu (Home & MapSelect). Kalau BGM ini sudah
-  /// berjalan (berpindah antar Home <-> MapSelect), TIDAK di-restart.
+  /// Play/lanjutkan BGM menu (Home & MapSelect), tidak restart kalau sudah main.
   static Future<void> playMenuBgm() async {
     _currentBgmBase = 1.3;
     if (_menuBgmPlaying) return;
@@ -131,7 +98,7 @@ class AudioService {
     } catch (_) {}
   }
 
-  /// Play BGM gameplay, SELALU restart dari awal.
+  /// Play BGM gameplay, selalu restart dari awal.
   static Future<void> playGameBgm() async {
     _currentBgmBase = 0.3;
     _menuBgmPlaying = false;
@@ -147,29 +114,19 @@ class AudioService {
     } catch (_) {}
   }
 
-  /// Ganti volume BGM (0.0 - 1.0), langsung ke-apply ke track yang lagi
-  /// main (tanpa restart) + di-persist buat sesi berikutnya. Dikali basis
-  /// track yang lagi aktif ([_currentBgmBase]) supaya HASIL AKHIRNYA
-  /// konsisten sama yang dipakai [playMenuBgm]/[playGameBgm] pas
-  /// di-restart -- meteran 100% harus kedengeran SAMA kenceng baik lagi
-  /// digeser langsung maupun setelah pindah screen & balik lagi.
+  /// Ganti volume BGM (0.0-1.0), langsung apply + persist.
   static Future<void> setBgmVolume(double volume) async {
     _bgmVolume = volume.clamp(0.0, 1.0);
     try {
       await FlameAudio.bgm.audioPlayer.setVolume(_currentBgmBase * _bgmVolume);
-    } catch (_) {
-      // BGM belum/nggak lagi main -- gapapa, volume baru bakal kepakai
-      // pas play berikutnya lewat multiplier di playMenuBgm/playGameBgm.
-    }
+    } catch (_) {}
     try {
       final prefs = await SharedPreferences.getInstance();
       await prefs.setDouble(_prefsBgmVolumeKey, _bgmVolume);
     } catch (_) {}
   }
 
-  /// Ganti volume SFX (0.0 - 1.0), dipakai sebagai multiplier ke semua
-  /// panggilan [_playSfx] SELANJUTNYA (SFX sifatnya "sekali tembak" jadi
-  /// nggak ada instance yang lagi main buat di-adjust real-time).
+  /// Ganti volume SFX (0.0-1.0), berlaku untuk pemanggilan berikutnya.
   static Future<void> setSfxVolume(double volume) async {
     _sfxVolume = volume.clamp(0.0, 1.0);
     try {
@@ -179,8 +136,6 @@ class AudioService {
   }
 
   // ── SFX ──────────────────────────────────────────────────────────
-  // Volume per-SFX disesuaikan manual (toggle_001/lever sebelumnya
-  // kekencengan dibanding yang lain, jadi diturunkan relatif).
 
   static void playJump() => _playSfx(_sfxJump, volume: 0.7);
   static void playBump() => _playSfx(_sfxBump, volume: 1.0);
@@ -194,8 +149,7 @@ class AudioService {
     final effectiveVolume = (volume * _sfxVolume).clamp(0.0, 1.0);
     final pool = _pools[file];
     if (pool == null) {
-      // Pool belum siap (mis. init() belum selesai) — fallback ke
-      // FlameAudio.play biasa daripada diam saja tanpa suara sama sekali.
+      // fallback kalau pool belum siap
       // ignore: discarded_futures
       FlameAudio.play(file, volume: effectiveVolume).catchError((_) {});
       return;

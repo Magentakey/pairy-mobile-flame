@@ -4,26 +4,18 @@ import 'dart:ui' as ui;
 import 'package:flame/components.dart';
 import 'package:flutter/material.dart';
 
-/// Komponen text murni untuk ditaruh di map lewat Tiled (object dengan
-/// class_ "Text"). Isi teksnya diambil dari custom property "content" —
-/// SENGAJA bukan dari `name` object, karena `name` justru dipakai untuk
-/// pairing dengan invisible trigger zone (lihat [TriggerZoneComponent]),
-/// persis pola yang sama dengan Lever/Fountain/Gate/MovingPlatform.
+/// Komponen text untuk ditaruh di map lewat Tiled (object class_ "Text").
+/// Isi teks dari custom property "content" (bukan `name`, karena `name`
+/// dipakai untuk pairing ke trigger zone, lihat [TriggerZoneComponent]).
+/// Murni visual, tanpa hitbox/collision.
 ///
-/// Murni visual — tidak ada hitbox/collision sama sekali.
+/// Default sembunyi total. Kalau di-pair dengan trigger zone, muncul
+/// lewat animasi wipe kiri-ke-kanan saat trigger aktif (lihat
+/// [reveal]/[hide]). Tanpa pasangan trigger, langsung tampil penuh
+/// (label statis).
 ///
-/// Defaultnya SEMBUNYI TOTAL (tidak tergambar sama sekali). Kalau text
-/// ini di-pair (share `name`) dengan sebuah trigger zone, dia baru
-/// muncul begitu trigger itu aktif, lewat animasi wipe linear dari kiri
-/// ke kanan: gradient fade transparan yang bergerak, ditambah sedikit
-/// particle mengikuti garis wipe-nya (lihat [reveal]/[hide]). Kalau text
-/// ini TIDAK punya pasangan trigger sama sekali (name kosong), dia
-/// langsung ditampilkan penuh tanpa animasi (perilaku lama, sekadar
-/// label statis di map).
-///
-/// Priority-nya sengaja rendah (lihat pemanggil di level.dart) supaya
-/// text ini selalu tergambar DI ATAS background & ground layer, tapi
-/// tetap DI BAWAH semua komponen interaktif lain.
+/// Priority rendah supaya tergambar di atas background/ground tapi di
+/// bawah komponen interaktif lain.
 class MapTextComponent extends PositionComponent {
   MapTextComponent({
     required this.text,

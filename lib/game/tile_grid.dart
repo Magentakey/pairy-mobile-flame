@@ -2,38 +2,18 @@ import 'dart:ui';
 
 import 'package:flame/components.dart';
 
-/// Template kecil NxM (baris x kolom) tile-ID yang lalu di-"stretch"
-/// untuk mengisi ukuran komponen sesungguhnya, dengan gaya 9-slice:
-/// - baris pertama & terakhir = edge atas/bawah (tetap, tidak di-repeat)
-/// - kolom pertama & terakhir = edge kiri/kanan (tetap, tidak di-repeat)
-/// - baris/kolom DI ANTARANYA = interior, di-tile berulang (bukan
-///   di-stretch/blur) untuk mengisi sisa ruang — supaya pixel art tetap
-///   tajam walau ukuran komponennya beda-beda per instance. Kalau
-///   interior lebih dari satu baris/kolom, dipakai bergantian (cycle)
-///   supaya bisa ada variasi tile (mis. retak/noda acak di tengah gate).
+/// Template NxM (baris x kolom) tile-ID yang di-"stretch" ke ukuran
+/// komponen sesungguhnya, gaya 9-slice: edge (baris/kolom pertama &
+/// terakhir) tetap, interior di-tile berulang (bukan stretch/blur) biar
+/// pixel art tetap tajam. Interior lebih dari 1 -> cycle untuk variasi.
 ///
-/// Minimal butuh grid 1x1 (semua slot pakai 1 tile yang sama — ini yang
-/// dipakai MovingPlatform versi lama sebelum ada left/mid/right), tapi
-/// biasanya:
-///   - 1 baris x 3 kolom → kiri/tengah(repeat)/kanan (mis. conveyor).
-///   - 3 baris x 3 kolom → 9-slice penuh (mis. gate/pintu).
+/// Minimal grid 1x1 (semua slot sama). Umumnya: 1x3 untuk kiri/tengah/
+/// kanan (conveyor), 3x3 untuk 9-slice penuh (gate).
 ///
-/// ## Format string — pakai tile ID (BUKAN col/row manual)
-/// Baris dipisah `;`, ID dalam satu baris dipisah `,`. Tiap angka
-/// adalah **tile ID lokal** tileset itu — angka yang sama persis dengan
-/// yang muncul di panel "Properties" Tiled saat kamu klik satu tile di
-/// panel Tilesets (field "ID"). Tidak perlu hitung manual kolom/baris;
-/// tinggal klik tile yang mau dipakai di Tiled, salin angka ID-nya.
-///
-/// Contoh conveyor 1x3 (kiri/tengah/kanan):
-///   "4,5,6"
-/// Contoh gate 3x3:
-///   "23,24,25;33,34,35;43,44,45"
-///
-/// ID → posisi piksel di-convert otomatis saat render, dengan cara
-/// menghitung jumlah kolom tileset dari `image.width ~/ tileSize`
-/// (persis bagaimana Tiled sendiri menghitung ID: `id = row * kolom +
-/// col`), jadi tidak perlu properti tambahan untuk lebar tileset.
+/// ## Format string: tile ID, bukan col/row manual
+/// Baris dipisah `;`, ID dalam baris dipisah `,`. Angka = tile ID lokal
+/// tileset (sama seperti field "ID" di panel Properties Tiled).
+/// Contoh: "4,5,6" (1x3) atau "23,24,25;33,34,35;43,44,45" (3x3).
 class TileGrid {
   TileGrid._(this._rows);
 
@@ -82,15 +62,13 @@ class TileGrid {
   }
 }
 
-/// Render [grid] pakai tileset [image] (tiap tile berukuran [tileSize]
-/// x [tileSize] piksel di source image), diskalakan mengisi
-/// [targetSize] dengan aturan 9-slice + repeat interior (lihat
-/// dokumentasi [TileGrid]).
+/// Render [grid] pakai tileset [image] (tiap tile [tileSize]x[tileSize]px
+/// di source image), diskalakan mengisi [targetSize] dengan aturan
+/// 9-slice + repeat interior (lihat [TileGrid]).
 ///
-/// Kolom tileset (dipakai buat convert ID → col/row) dihitung otomatis
-/// dari `image.width ~/ tileSize` — sama seperti cara Tiled menomori ID
-/// tile di file .tsx-nya, jadi ID yang kamu salin dari panel Properties
-/// Tiled akan selalu cocok tanpa perlu properti "kolom tileset" manual.
+/// Kolom tileset dihitung dari `image.width ~/ tileSize`, sama seperti
+/// cara Tiled menomori ID tile, jadi ID dari panel Properties Tiled
+/// selalu cocok tanpa perlu properti tambahan.
 void renderTileGrid(
   Canvas canvas,
   Image image,
@@ -127,19 +105,12 @@ void renderTileGrid(
   }
 }
 
-/// Map index slot render ([slot], dari 0..slotCount-1) ke index
-/// baris/kolom di grid definisi ([defCount] total definisi tersedia
-/// pada axis itu):
-/// - defCount == 1 → semua slot pakai definisi itu-itu saja.
-/// - slotCount == 1 → pakai definisi tengah (biar tidak berat sebelah
-///   ke salah satu edge, mis. platform yang cuma 1 tile lebar).
-/// - slot pertama  → selalu definisi pertama (edge awal).
-/// - slot terakhir → selalu definisi terakhir (edge akhir).
-/// - defCount == 2 tapi slotCount > 2 → tidak ada interior
-///   didefinisikan; slot tengah fallback pakai definisi terakhir biar
-///   tidak index-out-of-range.
-/// - defCount >= 3 → slot di tengah cycle lewat definisi interior
-///   (index 1..defCount-2).
+/// Map index slot render ke index baris/kolom di grid definisi:
+/// - defCount == 1: semua slot pakai definisi itu-itu saja.
+/// - slotCount == 1: pakai definisi tengah.
+/// - slot pertama/terakhir: selalu edge pertama/terakhir.
+/// - defCount == 2 tapi slotCount > 2: slot tengah fallback ke definisi terakhir.
+/// - defCount >= 3: slot tengah cycle lewat definisi interior.
 int _sliceIndex(int slot, int slotCount, int defCount) {
   if (defCount == 1) return 0;
   if (slotCount == 1) return defCount ~/ 2;

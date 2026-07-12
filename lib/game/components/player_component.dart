@@ -15,8 +15,8 @@ import 'stone_brick_component.dart';
 
 enum _HorizontalInput { none, left, right }
 
-/// Arah dorongan yang dituntut sebuah solid terhadap player, dipakai buat
-/// deteksi jepitan SEBELUM resolve mana pun dijalankan (lihat _classifyPush).
+/// Arah dorongan sebuah solid terhadap player, dipakai untuk deteksi
+/// jepitan sebelum resolve dijalankan.
 enum _PushDir { up, down, left, right }
 
 class PlayerComponent extends PositionComponent
@@ -24,10 +24,7 @@ class PlayerComponent extends PositionComponent
   PlayerComponent({required super.position})
     : super(size: PlayerComponent.hitboxSize);
 
-  /// Ukuran hitbox player — dijadikan satu sumber kebenaran (dipakai juga
-  /// oleh Level saat menghitung posisi spawn dari object Tiled), supaya
-  /// tidak ada lagi angka ajaib yang bisa nyimpang dari ukuran ini kalau
-  /// suatu saat berubah lagi.
+  /// Ukuran hitbox player, dipakai juga oleh Level untuk hitung spawn.
   static final Vector2 hitboxSize = Vector2(26, 34);
 
   static const double moveSpeed = 130;
@@ -35,9 +32,7 @@ class PlayerComponent extends PositionComponent
   static const double jumpVelocity = -300;
   static const double maxDt = 1 / 30;
 
-  /// Jarak (px) di bawah batas map sebelum player dianggap "jatuh"
-  /// dan mati. Dikasih buffer biar ada jeda visual jatuh dulu,
-  /// bukan langsung mati pas nyentuh Y = tinggi map.
+  /// Buffer jarak (px) di bawah map sebelum player dianggap jatuh & mati.
   static const double fallDeathBuffer = 80;
 
   final Vector2 velocity = Vector2.zero();
@@ -48,31 +43,24 @@ class PlayerComponent extends PositionComponent
   late final List<SpriteAnimation> _jumpFrames; // index 0-2 rising, 3 landing
   double _jumpAirTimer = 0;
   double _landAnimTimer = 0;
-  int _groundedStreak = 0; // jumlah frame BERTURUT-TURUT isOnGround == true
-  int _airborneStreak = 0; // jumlah frame BERTURUT-TURUT isOnGround == false
+  int _groundedStreak = 0;
+  int _airborneStreak = 0;
   static const double _jumpFrameStepTime = 0.09;
   static const double _landAnimDuration = 0.12;
 
   bool isOnGround = false;
-  // Pakai Set (bukan boolean tunggal) supaya kalau ada 2+ ExitDoor yang
-  // overlap sekaligus, keluar dari overlap salah satu pintu (collision end)
-  // TIDAK langsung mematikan status "near exit door" selama masih ada
-  // pintu lain yang masih overlap.
+  // Set (bukan boolean tunggal) supaya overlap 2+ ExitDoor tidak saling
+  // mematikan status saat salah satunya collision-end duluan.
   final Set<ExitDoorComponent> _touchingExitDoors = {};
   bool get _nearExitDoor => _touchingExitDoors.isNotEmpty;
   bool _isDead = false;
   LeverComponent? nearLever;
   _HorizontalInput _input = _HorizontalInput.none;
 
-  // Tracking state gate di frame sebelumnya untuk deteksi crush
   final Map<GateComponent, bool> _gateWasOpen = {};
 
-  /// Moving platform yang player SEDANG ditumpangi (sticky antar-frame).
-  /// Dipakai supaya kalau platform ini turun LEBIH CEPAT daripada
-  /// percepatan gravitasi player (yang tiap abis nempel mulai dari
-  /// velocity.y=0), dan kontak AABB sempat renggang sesaat karenanya,
-  /// player TETAP dianggap napel (bukan malah jatuh bebas & isOnGround
-  /// jadi false beberapa frame, yang bikin lompat gagal terus).
+  /// Platform yang sedang ditumpangi player (sticky antar-frame), supaya
+  /// platform turun cepat tidak bikin player "lepas" & jatuh bebas.
   MovingPlatformComponent? _restingPlatform;
 
   @override
@@ -91,10 +79,8 @@ class PlayerComponent extends PositionComponent
 
     final jumpImage = await game.images.load('player/jump/player_jump.png');
 
-    // Tiap frame dijadiin animasi statis 1-frame sendiri-sendiri, biar kita
-    // kontrol manual frame mana yang tampil (bukan gantungin ke loop:false
-    // bawaan Flame, yang ternyata suka sempat mengulang dulu sebelum
-    // benar-benar freeze).
+    // Tiap frame jadi animasi statis 1-frame agar frame yang tampil
+    // dikontrol manual.
     _jumpFrames = List.generate(4, (index) {
       return SpriteAnimation.spriteList([
         Sprite(
@@ -110,11 +96,8 @@ class PlayerComponent extends PositionComponent
       _walkAnim.frames.first.sprite,
     ], stepTime: 1);
 
-    // Render sprite dilebihin sedikit ke bawah (cuma visual, TIDAK
-    // mengubah `size`/hitbox asli yang dipakai physics & collision).
-    // Ini buat kompensasi sub-pixel rounding antara sprite scaling vs
-    // posisi hitbox, yang kalau dibiarkan bikin boots keliatan ngambang
-    // ~1px dari permukaan tanah.
+    // Sprite dilebihin dikit ke bawah (visual saja, hitbox tetap) untuk
+    // kompensasi rounding biar boots tidak ngambang dari tanah.
     const double visualGroundOverlap = 2;
     _animComponent = SpriteAnimationComponent(
       animation: _idleAnim,
@@ -124,10 +107,7 @@ class PlayerComponent extends PositionComponent
     add(_animComponent);
   }
 
-  /// Assign animasi cuma kalau beda dari yang sedang jalan sekarang.
-  /// Flame selalu bikin ticker baru tiap kali setter `animation` dipanggil
-  /// (walau objeknya sama persis) — kalau di-assign ulang tiap frame,
-  /// animasi keliatan stuck karena ke-reset ke frame 0 terus-terusan.
+  /// Assign animasi hanya kalau beda, supaya tidak reset ke frame 0 tiap frame.
   void _setAnim(SpriteAnimation anim) {
     if (_animComponent.animation != anim) {
       _animComponent.animation = anim;
@@ -171,8 +151,7 @@ class PlayerComponent extends PositionComponent
         velocity.x = 0;
     }
 
-    // Toleransi buat "false negative" isOnGround akibat presisi floating-point
-    // satu frame pas player nempel datar di tanah (bukan beneran lompat/jatuh).
+    // Toleransi false-negative isOnGround akibat presisi floating-point.
     if (isOnGround) {
       _groundedStreak++;
       _airborneStreak = 0;
@@ -214,19 +193,8 @@ class PlayerComponent extends PositionComponent
       return;
     }
 
-    // ── PRE-RESOLVE CRUSH CHECK ─────────────────────────────────────────
-    // Klasifikasikan arah dorongan tiap solid yang overlap player SAAT INI,
-    // SEBELUM resolve mana pun dijalankan. Kalau ada 2 solid yang menuntut
-    // arah berlawanan pada sumbu yang sama (satu minta player didorong ke
-    // ATAS, yang lain ke BAWAH -- atau satu ke KIRI, lainnya ke KANAN) --
-    // itu tandanya player benar-benar terjepit di antara dua solid yang
-    // saling mendekat dari 2 sisi. Ini dicek SEBELUM & TERPISAH dari resolve
-    // sequential (Ground -> Gate -> Platform) supaya TIDAK tergantung urutan
-    // resolve -- resolve sequential yang lama bisa "berhasil" menghindar
-    // dari overlap salah satu sisi sebagai efek samping, yang bikin overlap
-    // sisi lainnya ikut hilang juga, alih-alih benar-benar mendeteksi
-    // jepitannya (itulah kenapa sebelumnya kejadiannya "teleport" bukan
-    // mati).
+    // Cek kejepit (squeeze) sebelum resolve collision sequential berjalan,
+    // supaya deteksi tidak tergantung urutan resolve.
     if (_detectSqueezeCrush()) {
       _die('Crushed by Platform');
       return;
@@ -240,7 +208,7 @@ class PlayerComponent extends PositionComponent
       _restingPlatform = null;
     }
 
-    // Gate: cek crush SEBELUM resolve normal.
+    // Gate: cek crush sebelum resolve normal.
     if (parent != null) {
       for (final child in parent!.children) {
         if (child is GateComponent) {
@@ -259,18 +227,14 @@ class PlayerComponent extends PositionComponent
       }
     }
 
-    // Moving platform: solid + bawa player ikut gerak.
+    // Moving platform: solid + membawa player ikut gerak.
     if (parent != null) {
       for (final child in parent!.children) {
         if (child is! MovingPlatformComponent) continue;
 
         if (!isOnGround && _restingPlatform == child) {
-          // Sticky re-catch: platform ini turun lebih cepat dari
-          // percepatan gravitasi player, jadi kontak AABB sempat
-          // renggang sesaat. Selama player masih sejajar horizontal
-          // dengan platform & tidak sedang lompat (velocity.y >= 0),
-          // tetap anggap napel -- jangan biarkan jatuh bebas cuma
-          // karena telat 1-2 frame nyusul turunnya platform.
+          // Sticky re-catch: platform turun lebih cepat dari gravitasi
+          // player, jadi tetap dianggap napel selama sejajar & tidak lompat.
           final tl = _topLeft(child);
           final stillAligned =
               position.x + size.x > tl.x && position.x < tl.x + child.size.x;
@@ -290,20 +254,14 @@ class PlayerComponent extends PositionComponent
           otherDelta: child.frameDelta,
         );
         if (landedOnThis) {
-          // PENTING: cuma bawa komponen X dari frameDelta. Komponen Y
-          // TIDAK boleh ditambahkan lagi -- _resolveAgainst di atas
-          // sudah menghitung position.y memakai posisi platform yang
-          // SUDAH ter-update frame ini. Menambah frameDelta.y lagi
-          // di sini men-double-count pergerakan vertikal SETIAP FRAME
-          // selama player naik di platform vertikal.
+          // Cuma bawa komponen X, Y sudah dihitung di _resolveAgainst.
           position.x += child.frameDelta.x;
           _restingPlatform = child;
         }
       }
     }
 
-    // Stone brick: solid + bisa didorong horizontal + bisa jadi pijakan
-    // (ikut ke-carry lewat frameDelta.x, sama seperti moving platform).
+    // Stone brick: solid + bisa didorong horizontal + bisa jadi pijakan.
     if (parent != null) {
       for (final child in parent!.children) {
         if (child is! StoneBrickComponent) continue;
@@ -331,10 +289,7 @@ class PlayerComponent extends PositionComponent
         final prevLeft = _prevPosition.x;
 
         if (prevBottom <= prevOy) {
-          // Landing di atas brick -- brick jadi pijakan, sama seperti
-          // platform. Carry cuma komponen X (lihat catatan di loop
-          // moving platform di atas soal kenapa Y tidak boleh
-          // ditambahkan lagi).
+          // Landing di atas brick, brick jadi pijakan (carry X saja).
           position.y = oy - size.y;
           if (velocity.y > 0) {
             velocity.y = 0;
@@ -346,26 +301,19 @@ class PlayerComponent extends PositionComponent
           position.y = oy + oh;
           if (velocity.y < 0) velocity.y = 0;
         } else if (prevRight <= prevOx) {
-          // Player nabrak brick dari kiri -> coba dorong ke kanan.
+          // Nabrak dari kiri -> dorong ke kanan.
           final moved = child.tryPush(overlapR);
           child.recheckGroundSupport();
           position.x = (ox + moved) - size.x;
           velocity.x = 0;
         } else if (prevLeft >= prevOx + ow) {
-          // Player nabrak brick dari kanan -> coba dorong ke kiri.
+          // Nabrak dari kanan -> dorong ke kiri.
           final moved = child.tryPush(-overlapL);
           child.recheckGroundSupport();
           position.x = (ox + moved) + ow;
           velocity.x = 0;
         } else {
-          // Fallback HORIZONTAL saja: gak ada satupun klasifikasi arah
-          // di atas yang kena. Sengaja CUMA resolve horizontal (dorong
-          // brick) di sini, TIDAK vertikal -- soalnya loop brick ini
-          // jalan SETELAH ground di-resolve duluan; kalau maksa ubah
-          // position.y di sini juga, itu bisa nimpa balik hasil resolve
-          // ground barusan dan bikin player malah "tenggelam" ke tanah
-          // (jauh lebih parah daripada sekadar overlap sesaat, yang
-          // sekarang emang udah gak lagi mematikan).
+          // Fallback horizontal saja (vertikal sudah diresolve ground di atas).
           if (overlapR <= overlapL) {
             final moved = child.tryPush(overlapR);
             child.recheckGroundSupport();
@@ -391,11 +339,8 @@ class PlayerComponent extends PositionComponent
         Vector2(other.size.x * other.anchor.x, other.size.y * other.anchor.y);
   }
 
-  /// Tentukan arah dorongan yang dituntut [other] terhadap player SAAT INI,
-  /// TANPA mengubah posisi apa pun (murni klasifikasi, dipakai buat
-  /// _detectSqueezeCrush). Logikanya sengaja dibuat konsisten dengan
-  /// _resolveAgainst supaya hasil klasifikasi selaras dengan resolve yang
-  /// beneran dijalankan nanti.
+  /// Klasifikasi arah dorongan [other] terhadap player, tanpa mengubah
+  /// posisi (dipakai oleh _detectSqueezeCrush).
   _PushDir? _classifyPush(PositionComponent other, Vector2 delta) {
     final tl = _topLeft(other);
     final ox = tl.x;
@@ -433,11 +378,8 @@ class PlayerComponent extends PositionComponent
     return overlapR <= overlapL ? _PushDir.left : _PushDir.right;
   }
 
-  /// True kalau player terjepit di antara 2 solid yang menuntut arah
-  /// dorongan berlawanan pada sumbu yang sama (atas+bawah, atau kiri+kanan)
-  /// SECARA BERSAMAAN, dan minimal salah satunya adalah moving platform
-  /// (solid statis vs statis harusnya nggak pernah saling berlawanan kalau
-  /// level didesain benar, jadi ini jaga-jaga aja).
+  /// True kalau player terjepit di antara 2 solid dengan arah dorongan
+  /// berlawanan pada sumbu yang sama, minimal salah satunya moving platform.
   bool _detectSqueezeCrush() {
     _PushDir? verticalPush;
     _PushDir? horizontalPush;
@@ -474,18 +416,9 @@ class PlayerComponent extends PositionComponent
         } else if (child is MovingPlatformComponent) {
           consider(child, child.frameDelta, true);
         }
-        // StoneBrickComponent SENGAJA TIDAK diikutkan di pre-check ini.
-        // Beda dari ground/gate/platform yang posisinya "diam" relatif
-        // terhadap heuristik _classifyPush, brick sedang aktif digerakkan
-        // (didorong player / jatuh gravitasi) di frame yang sama saat
-        // classifier ini jalan -- ada momen (mis. brick jatuh dari tepi
-        // tepat di sebelah player) di mana heuristik arahnya salah baca
-        // sebagai dorongan vertikal berlawanan dengan ground di bawah
-        // player, padahal cuma brick lewat di samping. Ini bikin false
-        // positive "kejepit" pas push brick ke tepi map buat dijatuhkan.
-        // Deteksi crush brick tetap ada lewat _checkPlatformCrush (deep
-        // overlap PASCA-resolve, jauh lebih toleran karena berbasis
-        // kedalaman overlap aktual, bukan tebakan arah pra-resolve).
+        // StoneBrickComponent sengaja tidak diikutkan di sini karena
+        // posisinya aktif berubah (bisa false-positive), sudah dicover
+        // lewat _checkPlatformCrush (deep overlap pasca-resolve).
       }
     }
 
@@ -497,16 +430,9 @@ class PlayerComponent extends PositionComponent
   void _checkPlatformCrush() {
     if (parent == null) return;
 
-    // CATATAN: StoneBrickComponent SENGAJA TIDAK diikutkan lagi di sini.
-    // Deep-overlap check buat brick kadang salah baca overlap sesaat pas
-    // lagi didorong lurus (bukan cuma di tepi map) dan bikin false
-    // positive "Crushed by Platform" yang gak konsisten/susah direproduce.
-    // Ditimbang dari sisi gameplay, ke-tembus/overlap sesaat sama brick
-    // yang didorong jauh lebih gak berbahaya (gak ngebahayain progres
-    // player) dibanding risiko mati palsu berulang, jadi mekanisme
-    // matinya dimatikan total buat StoneBrickComponent. Kalau memang mau
-    // ada mekanik "kejepit brick", ini perlu didesain ulang dari nol
-    // (bukan sekadar deep-overlap check kayak gini).
+    // StoneBrickComponent sengaja tidak diikutkan (deep-overlap check
+    // untuk brick rawan false-positive saat didorong), jadi mekanisme
+    // "kejepit brick" dimatikan total.
     final touchingMovingPlatform = parent!.children.any(
       (c) =>
           c is MovingPlatformComponent &&
@@ -564,8 +490,7 @@ class PlayerComponent extends PositionComponent
   void _updateLeverProximity() {
     if (parent == null) return;
 
-    // Kumpulkan SEMUA lever yang overlap saat ini (bisa lebih dari satu
-    // kalau ada 2+ lever berdekatan), bukan cuma ambil match pertama.
+    // Kumpulkan semua lever yang overlap saat ini (bisa lebih dari satu).
     final overlapping = <LeverComponent>[];
     for (final child in parent!.children) {
       if (child is LeverComponent && _aabbOverlap(child, buffer: 4)) {
@@ -574,7 +499,6 @@ class PlayerComponent extends PositionComponent
     }
 
     if (overlapping.isEmpty) {
-      // Benar-benar tidak ada lever manapun yang overlap → matikan HUD.
       if (nearLever != null) {
         nearLever = null;
         if (game.overlays.isActive('LeverButton')) {
@@ -584,10 +508,8 @@ class PlayerComponent extends PositionComponent
       return;
     }
 
-    // Kalau lever yang lagi dipilih masih ada di antara yang overlap,
-    // pertahankan dia (supaya tidak flip-flop antar lever saat 2+ lever
-    // sama-sama overlap). Kalau tidak, baru pilih salah satu dari yang
-    // masih overlap.
+    // Pertahankan lever yang sedang dipilih kalau masih overlap, supaya
+    // tidak flip-flop saat 2+ lever overlap bersamaan.
     final stillValid = nearLever != null && overlapping.contains(nearLever);
     final chosen = stillValid ? nearLever! : overlapping.first;
 
@@ -600,8 +522,8 @@ class PlayerComponent extends PositionComponent
     }
   }
 
-  /// Return true kalau resolve ini SPESIFIK bikin player landing di atas
-  /// [other] pada frame ini (dipakai buat carry di moving platform).
+  /// True kalau resolve ini bikin player landing di atas [other] frame ini
+  /// (dipakai untuk carry di moving platform).
   bool _resolveAgainst(PositionComponent other, {Vector2? otherDelta}) {
     final delta = otherDelta ?? Vector2.zero();
 
@@ -630,15 +552,9 @@ class PlayerComponent extends PositionComponent
 
     if (prevBottom <= prevOy) {
       position.y = oy - size.y;
-      // >= 0 (bukan cuma > 0): player yang lagi DIAM di atas solid lain
-      // (velocity.y sudah 0 dari resolve solid tsb, giliran-nya duluan
-      // di loop yang sama) tetap harus bisa "pindah pijakan" begitu ada
-      // solid LAIN (mis. moving platform vertikal) yang overlap dari
-      // bawah & lift dia. Kalau syaratnya cuma > 0, platform baru ini
-      // gak pernah dapet kredit landing (isOnGround/_restingPlatform),
-      // padahal posisi Y-nya udah keburu ke-set naik -- efeknya keliatan
-      // "teleport balik" ke solid lama begitu solid baru berhenti
-      // overlap.
+      // >= 0 supaya player yang lagi diam di atas solid lain tetap bisa
+      // pindah pijakan ke solid baru (mis. platform vertikal) tanpa
+      // "teleport balik" ke solid lama.
       if (velocity.y >= 0) {
         velocity.y = 0;
         isOnGround = true;
@@ -692,8 +608,6 @@ class PlayerComponent extends PositionComponent
     super.onCollisionEnd(other);
     if (other is ExitDoorComponent) {
       _touchingExitDoors.remove(other);
-      // Cuma matikan status kalau BENAR-BENAR sudah tidak overlap
-      // pintu manapun (bukan cuma satu dari beberapa pintu yang overlap).
       game.nearExitDoor.value = _touchingExitDoors.isNotEmpty;
     }
   }

@@ -39,11 +39,8 @@ class ExitDoorComponent extends PositionComponent with CollisionCallbacks {
 
   @override
   void render(Canvas canvas) {
-    // Dengan Anchor.bottomCenter, (0,0) render = pojok kiri atas component
-    _sprite?.render(
-      canvas,
-      size: size,
-    ); // ← ganti semua drawRect/drawArc/drawCircle di atas dengan ini
+    // Anchor.bottomCenter: (0,0) render = pojok kiri atas component.
+    _sprite?.render(canvas, size: size);
 
     if (!_showTooltip) return;
 

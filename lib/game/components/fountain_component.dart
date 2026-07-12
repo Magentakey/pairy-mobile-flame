@@ -5,20 +5,12 @@ import '../../models/fairy_color.dart';
 import 'fairy_component.dart';
 
 /// Fountain aktif saat fairy berwarna sama berada di atasnya.
-/// Fountain tidak lagi memegang referensi langsung ke gate/platform —
-/// ia cuma melaporkan perubahan [isActivated] lewat [onActivationChanged].
-/// Target sebenarnya (gate/platform) dan logika AND-nya dikelola oleh
-/// grup trigger di level.dart (lihat _TriggerGroup), supaya fountain
-/// bisa jadi salah satu dari banyak trigger yang share nama yang sama.
+/// Hanya melaporkan perubahan [isActivated] lewat [onActivationChanged];
+/// target (gate/platform) & logika AND dikelola grup trigger di level.dart.
 ///
-/// NOTE: Overlap detection dilakukan MANUAL (AABB clamp) di [update],
-/// bukan lewat Flame CollisionCallbacks. Ini disengaja: kombinasi
-/// CircleHitbox (fairy) vs RectangleHitbox (fountain) punya edge case
-/// di engine Flame — kalau titik pusat fairy persis segaris dengan
-/// sumbu simetri fountain (misal fairy pas di tengah horizontal),
-/// proyeksi SAT jadi degenerate dan onCollisionStart bisa gagal
-/// terpanggil sama sekali. Manual AABB check di bawah ini tidak
-/// punya masalah tsb karena tidak bergantung pada arah normal.
+/// Overlap dicek manual (circle-vs-rect clamp) di [update], bukan lewat
+/// CollisionCallbacks, untuk menghindari edge case SAT Flame saat fairy
+/// segaris dengan sumbu simetri fountain.
 class FountainComponent extends PositionComponent {
   FountainComponent({
     required super.position,

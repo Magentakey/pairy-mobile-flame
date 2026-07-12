@@ -4,16 +4,13 @@ import 'package:flutter/material.dart';
 
 import 'player_component.dart';
 
-/// Invisible trigger zone — `isOn` bernilai true selama [PlayerComponent]
-/// overlap dengan area ini, dan otomatis false lagi begitu player keluar.
-/// Tidak ada render sama sekali (murni logic) dan hitbox-nya passive,
-/// jadi tidak menghalangi gerakan player sama sekali.
+/// Invisible trigger zone. `isOn` true selama [PlayerComponent] overlap,
+/// balik false saat player keluar (kecuali [permanent]). Tidak ada render,
+/// hitbox passive (tidak menghalangi gerakan).
 ///
 /// Pairing ke target lain (Gate/MovingPlatform/MapText) lewat `name`
-/// object di Tiled — persis pola yang sama dengan Lever/Fountain, lihat
-/// `_TriggerGroup` di level.dart. Artinya satu trigger zone bisa dipakai
-/// bareng untuk membuka gate, menjalankan moving platform, DAN
-/// memunculkan text sekaligus, asal semuanya share `name` yang sama.
+/// object di Tiled, sama seperti Lever/Fountain (lihat `_TriggerGroup`
+/// di level.dart).
 class TriggerZoneComponent extends PositionComponent with CollisionCallbacks {
   TriggerZoneComponent({
     required super.position,

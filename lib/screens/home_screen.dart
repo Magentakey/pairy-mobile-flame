@@ -9,10 +9,8 @@ class HomeScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Lanjutkan (atau mulai) BGM menu. init() sudah dipanggil sekali di
-    // main.dart sebelum runApp, jadi di sini cukup play saja — supaya
-    // tidak ada race manggil init() berkali-kali dari tiap rebuild yang
-    // bisa numpuk pemanggilan bgm.play() dan bikin audio ke-layer.
+    //  main home screen for the game, displaying the title and options.
+
     AudioService.playMenuBgm();
 
     return Scaffold(

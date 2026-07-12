@@ -12,17 +12,9 @@ class GateComponent extends PositionComponent with CollisionCallbacks {
     required super.position,
     required super.size,
     this.initialOpen = false,
-    // ── Asset per-instance (opsional) ─────────────────────────────────
-    // Kalau tilesetImage & tileGrid TIDAK diisi (null/kosong), gate
-    // render pakai placeholder kotak-ungu-bergaris seperti sebelumnya
-    // (behavior lama, tidak ada breaking change untuk gate yang sudah
-    // ada). Untuk pakai asset asli, isi keduanya lewat custom property
-    // di object Tiled (lihat Level._spawnObjects):
-    //   tilesetImage (string) — nama file, relatif ke assets/tiles/
-    //   tileGrid     (string) — minimal 3x3, isi tile ID (lihat format
-    //     ID di lib/game/tile_grid.dart — sama seperti field "ID" di
-    //     panel Properties Tiled saat klik satu tile), contoh:
-    //     "23,24,25;33,34,35;43,44,45"
+    // Asset opsional: kalau kosong, pakai placeholder kotak-ungu-bergaris.
+    // Isi lewat custom property object Tiled (tilesetImage & tileGrid,
+    // lihat lib/game/tile_grid.dart untuk format ID).
     this.tilesetImage,
     this.tileGrid,
     this.tileSize = 18,

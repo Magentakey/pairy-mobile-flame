@@ -196,10 +196,8 @@ class _MapSelectScreenState extends State<MapSelectScreen> {
                         builder: (context, constraints) {
                           const spacing = 12.0;
 
-                          // Ukuran circle dihitung dari sisi yang lebih membatasi
-                          // (lebar per kolom vs tinggi per baris), lalu dipakai
-                          // untuk KEDUA dimensi supaya circle selalu proporsional
-                          // dan grid selalu pas mengisi area tanpa overflow.
+                          // Circle size dari sisi yang lebih membatasi,
+                          // dipakai untuk kedua dimensi biar proporsional.
                           final cellW =
                               (constraints.maxWidth - spacing * (cols - 1)) /
                               cols;

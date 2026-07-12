@@ -18,12 +18,8 @@ class FairyComponent extends PositionComponent
     : super(
         size: Vector2.all(20),
         anchor: Anchor.center,
-        // Priority tinggi eksplisit — supaya fairy SELALU render paling
-        // atas dibanding komponen level lain (fountain, gate, platform,
-        // ground, dst), apa pun urutan object id-nya di Tiled. Tanpa ini,
-        // urutan render cuma ngikutin urutan add() (= urutan object di
-        // layer Spawnpoints), jadi kalau id Fountain < id Fairy, Fountain
-        // ke-add duluan dan bisa nutupin fairy pas overlap.
+        // Priority tinggi supaya fairy selalu render paling atas,
+        // apa pun urutan object id-nya di Tiled.
         priority: 100,
       );
 
@@ -32,14 +28,9 @@ class FairyComponent extends PositionComponent
   Vector2 _fingerWorldPos = Vector2.zero();
   bool _isDragging = false;
 
-  // Posisi kamera (cam.viewfinder.position) di frame sebelumnya, dipakai
-  // SELAMA dragging untuk kompensasi pan kamera (lihat update()). Perlu
-  // karena event drag (onDragUpdate) HANYA fired kalau jari BENERAN
-  // bergerak di layar -- kalau jari diam tapi kamera ikut geser (mis.
-  // cam.follow(player) pas player jalan), tidak ada event baru sama
-  // sekali, jadi _fingerWorldPos jadi stale/ketinggalan padahal titik di
-  // layar yang ditunjuk jari itu sekarang berkorespondensi ke posisi
-  // dunia yang berbeda.
+  // Posisi kamera frame sebelumnya, untuk kompensasi pan kamera saat
+  // dragging (onDragUpdate cuma fire kalau jari beneran gerak, jadi
+  // perlu di-track manual kalau kamera geser sementara jari diam).
   final Vector2 _prevCamPosition = Vector2.zero();
 
   // Track gate state tiap frame untuk deteksi crush
@@ -64,8 +55,8 @@ class FairyComponent extends PositionComponent
     super.onDragUpdate(event);
     if (!_isDragging) return;
     _fingerWorldPos += event.localDelta;
-    // Batas map sekarang ditangani oleh blok collision fisik (GroundComponent),
-    // jadi tidak perlu clamp manual ke ukuran map di sini lagi.
+    // Batas map ditangani collision fisik (GroundComponent), tidak
+    // perlu clamp manual di sini.
   }
 
   @override
@@ -78,7 +69,7 @@ class FairyComponent extends PositionComponent
   void update(double dt) {
     super.update(dt);
 
-    // ── Cek gate crush SEBELUM movement ─────────────────────────────
+    // Cek gate crush sebelum movement.
     if (parent != null) {
       for (final child in parent!.children) {
         if (child is GateComponent) {
@@ -94,14 +85,10 @@ class FairyComponent extends PositionComponent
       }
     }
 
-    // ── Movement ────────────────────────────────────────────────────
+    // Movement
     if (_isDragging) {
-      // Kompensasi pan kamera: kalau kamera geser (mis. ngikutin player
-      // yang jalan) SEMENTARA jari diam di layar, titik dunia yang
-      // ditunjuk jari itu ikut geser sebesar pergeseran kamera juga.
-      // Tanpa ini, _fingerWorldPos cuma ke-update pas ada event drag
-      // baru (jari beneran gerak), jadi fairy keliatan "netep" nggak
-      // ngikutin walau jari masih di posisi layar yang sama.
+      // Kompensasi pan kamera supaya fairy tetap ngikutin titik layar
+      // yang ditunjuk jari, walau jari sendiri diam saat kamera geser.
       final camPos = game.cam.viewfinder.position;
       final camDelta = camPos - _prevCamPosition;
       if (camDelta.x != 0 || camDelta.y != 0) {
@@ -127,7 +114,7 @@ class FairyComponent extends PositionComponent
       _resolveSolids();
     }
 
-    // ── Cek crush oleh moving platform SETELAH resolve ──────────────
+    // Cek crush oleh moving platform setelah resolve.
     _checkPlatformCrush();
   }
 
@@ -182,12 +169,8 @@ class FairyComponent extends PositionComponent
     }
   }
 
-  /// Sama seperti [_pushOutOf], tapi khusus [MovingPlatformComponent].
-  /// Murni efek dorong (solid) — fairy TIDAK ikut menumpang gerak
-  /// horizontal platform saat nempel di atasnya. Dorongan dari sisi
-  /// samping platform (ujung kiri/kanan saat bergerak horizontal) tetap
-  /// jalan lewat cabang overlapR/overlapL di bawah, karena itu murni efek
-  /// collision push, bukan "mengikuti" platform.
+  /// Sama seperti [_pushOutOf], khusus [MovingPlatformComponent].
+  /// Murni efek dorong — fairy tidak ikut ter-carry gerak platform.
   void _pushOutOfPlatform(MovingPlatformComponent other) {
     final tl = _topLeft(other);
     final r = size.x / 2;
@@ -210,10 +193,7 @@ class FairyComponent extends PositionComponent
     }
   }
 
-  /// Sama seperti [_pushOutOfPlatform], tapi khusus [StoneBrickComponent].
-  /// Murni efek dorong (solid) — fairy TIDAK ikut menumpang gerak brick
-  /// (baik pas brick jatuh maupun didorong), sama seperti fairy tidak
-  /// ikut menumpang moving platform.
+  /// Sama seperti [_pushOutOfPlatform], khusus [StoneBrickComponent].
   void _pushOutOfBrick(StoneBrickComponent other) {
     final tl = _topLeft(other);
     final r = size.x / 2;
@@ -238,10 +218,8 @@ class FairyComponent extends PositionComponent
 
   static const double _crushOverlapThreshold = 6.0;
 
-  /// Deteksi fairy "kejepit" oleh moving platform: fairy masih overlap
-  /// cukup dalam (melebihi threshold di kedua sumbu) dengan solid lain
-  /// (ground/gate tertutup/platform lain) SAAT bersentuhan dengan moving
-  /// platform yang sedang bergerak. Konsisten dengan
+  /// Deteksi fairy kejepit oleh moving platform (deep overlap dengan
+  /// solid lain saat bersentuhan platform bergerak), konsisten dengan
   /// PlayerComponent._checkPlatformCrush.
   void _checkPlatformCrush() {
     if (parent == null) return;
@@ -279,9 +257,8 @@ class FairyComponent extends PositionComponent
     }
   }
 
-  /// Overlap dangkal (boleh dengan buffer toleransi) — dipakai sekadar
-  /// untuk tes "apakah fairy sedang bersentuhan dengan platform ini",
-  /// BUKAN untuk tes kejepit (lihat [_deepOverlap]).
+  /// Overlap dangkal (dengan buffer toleransi), untuk tes "bersentuhan",
+  /// bukan tes kejepit (lihat [_deepOverlap]).
   bool _shallowOverlap(PositionComponent other, {double buffer = 0}) {
     final tl = _topLeft(other);
     final r = size.x / 2;
