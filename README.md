@@ -1,4 +1,8 @@
-# Pairy
+<p align="center">
+  <img src="assets/icon/icon.png" alt="Pairy icon" width="120" />
+</p>
+
+<h1 align="center">Pairy</h1>
 
 Pairy adalah game **2D platformer puzzle mobile** yang dibangun dengan **Flutter** dan **Flame Engine**. Pemain menjelajahi level demi level sambil dibantu oleh empat peri (fairy) berwarna — biru, merah, hijau, dan kuning — untuk memecahkan puzzle berbasis tuas (lever), gerbang (gate), dan air mancur (fountain) hingga mencapai pintu keluar.
 
@@ -11,23 +15,7 @@ Pairy adalah game **2D platformer puzzle mobile** yang dibangun dengan **Flutter
 
 ## Alur pengerjaan
 
-\`\`\`mermaid
-flowchart TD
-    A["1. Setup project<br/><small>Init Flutter + Flame</small>"] --> B["2. Riset & cari aset<br/><small>Sprite, audio, tileset</small>"]
-    B --> C["3. Buat core component<br/><small>Player, fairy, objek level</small>"]
-    C --> D["4. Buat game mechanics<br/><small>Fisika, input, puzzle</small>"]
-    D --> E["5. Buat level system<br/><small>Loader Tiled map</small>"]
-    E --> F["6. Buat UI/UX<br/><small>Menu, HUD, overlay</small>"]
-    F --> G["7. Buat manual map designer<br/><small>Dokumentasi PDF</small>"]
-    G --> H["8. Desain & build map level 1-12<br/><small>Progressive difficulty</small>"]
-    H --> I["9. Integrasi audio & polish<br/><small>BGM, SFX, efek</small>"]
-    I --> J["10. Testing & balancing<br/><small>Playtest, fix bug</small>"]
-    J --> K["11. Optimasi & build release<br/><small>APK, AAB, IPA</small>"]
-    K --> L["12. Deploy<br/><small>Play Store, App Store, itch.io</small>"]
-
-    style G fill:#9FE1CB,stroke:#0F6E56,color:#04342C
-    style H fill:#9FE1CB,stroke:#0F6E56,color:#04342C
-\`\`\`
+![Alur pengerjaan Pairy](assets/images/alur_pengerjaan_pairy.png)
 
 > Tahap 7 & 8 (manual map designer + desain level) bersifat iteratif — manual dibuat lebih dulu supaya map designer bisa membangun level 1–12 tanpa perlu menyentuh kode.
 
@@ -59,46 +47,46 @@ flowchart TD
 ## Getting started
 
 ### Prasyarat
-- [Flutter SDK](https://docs.flutter.dev/get-started/install) (channel stable, sesuai versi di \`pubspec.yaml\`)
+- [Flutter SDK](https://docs.flutter.dev/get-started/install) (channel stable, sesuai versi di `pubspec.yaml`)
 - Android Studio / Xcode (tergantung target platform)
 - Emulator atau perangkat fisik untuk testing
 
 ### Clone
-\`\`\`bash
+```bash
 git clone https://github.com/Magentakey/pairy-mobile-flame.git
 cd pairy-mobile-flame
 git checkout alt2
-\`\`\`
+```
 
 ### Install dependencies
-\`\`\`bash
+```bash
 flutter pub get
-\`\`\`
+```
 
 ### Jalankan (development)
-\`\`\`bash
+```bash
 flutter run
-\`\`\`
+```
 
 ### Build (release)
 
 **Android**
-\`\`\`bash
+```bash
 flutter build apk --release
 # atau untuk Play Store
 flutter build appbundle --release
-\`\`\`
+```
 
 **iOS**
-\`\`\`bash
+```bash
 flutter build ios --release
-\`\`\`
+```
 
 ---
 
 ## Struktur project
 
-\`\`\`
+```
 pairy/
 ├── android/                # Konfigurasi native Android
 ├── ios/                     # Konfigurasi native iOS
@@ -127,7 +115,7 @@ pairy/
 │   ├── widgets/                   # Widget Flutter reusable
 │   └── main.dart
 └── pubspec.yaml
-\`\`\`
+```
 
 ---
 
