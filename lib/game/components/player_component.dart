@@ -357,6 +357,39 @@ class PlayerComponent extends PositionComponent
           child.recheckGroundSupport();
           position.x = (ox + moved) + ow;
           velocity.x = 0;
+        } else {
+          // Fallback: gak ada satupun klasifikasi arah di atas yang kena
+          // (bisa kejadian kalau player & brick udah kepalang overlap
+          // dari frame sebelumnya tanpa histori arah yang jelas -- mis.
+          // brick baru digeser instan lewat chain-push, atau ukuran
+          // brick non-standar bikin perbandingan prevLeft/prevRight
+          // meleset dikit). Tentukan arah dari sisi PALING DANGKAL
+          // penetrasinya, terus perlakukan PERSIS seperti cabang normal
+          // di atas (beneran manggil tryPush ke brick-nya, BUKAN cuma
+          // nge-snap posisi player) -- supaya brick tetap ikut kedorong,
+          // bukan cuma player yang "teleport" sementara brick diam.
+          final minH = min(overlapL, overlapR);
+          final minV = min(overlapT, overlapB);
+          if (minH <= minV) {
+            if (overlapR <= overlapL) {
+              final moved = child.tryPush(overlapR);
+              child.recheckGroundSupport();
+              position.x = (ox + moved) - size.x;
+            } else {
+              final moved = child.tryPush(-overlapL);
+              child.recheckGroundSupport();
+              position.x = (ox + moved) + ow;
+            }
+            velocity.x = 0;
+          } else {
+            if (overlapT < overlapB) {
+              position.y = oy - size.y;
+              if (velocity.y > 0) velocity.y = 0;
+            } else {
+              position.y = oy + oh;
+              if (velocity.y < 0) velocity.y = 0;
+            }
+          }
         }
       }
     }
@@ -478,12 +511,21 @@ class PlayerComponent extends PositionComponent
   void _checkPlatformCrush() {
     if (parent == null) return;
 
+    // CATATAN: StoneBrickComponent SENGAJA TIDAK diikutkan lagi di sini.
+    // Deep-overlap check buat brick kadang salah baca overlap sesaat pas
+    // lagi didorong lurus (bukan cuma di tepi map) dan bikin false
+    // positive "Crushed by Platform" yang gak konsisten/susah direproduce.
+    // Ditimbang dari sisi gameplay, ke-tembus/overlap sesaat sama brick
+    // yang didorong jauh lebih gak berbahaya (gak ngebahayain progres
+    // player) dibanding risiko mati palsu berulang, jadi mekanisme
+    // matinya dimatikan total buat StoneBrickComponent. Kalau memang mau
+    // ada mekanik "kejepit brick", ini perlu didesain ulang dari nol
+    // (bukan sekadar deep-overlap check kayak gini).
     final touchingMovingPlatform = parent!.children.any(
       (c) =>
-          (c is MovingPlatformComponent &&
-              c.isMoving &&
-              _aabbOverlap(c, buffer: 2)) ||
-          (c is StoneBrickComponent && _aabbOverlap(c, buffer: 2)),
+          c is MovingPlatformComponent &&
+          c.isMoving &&
+          _aabbOverlap(c, buffer: 2),
     );
     if (!touchingMovingPlatform) return;
 
@@ -502,22 +544,6 @@ class PlayerComponent extends PositionComponent
       if (child is MovingPlatformComponent && _deepOverlap(child)) {
         _die('Crushed by Platform');
         return;
-      }
-      if (child is StoneBrickComponent && _deepOverlap(child)) {
-        // Kecualikan brick yang lagi JATUH BEBAS (belum landing lagi)
-        // dan posisinya TIDAK di atas player -- ini kasus brick yang
-        // baru didorong lewat tepi map buat dijatuhkan, lewat/numpang
-        // sesaat di samping player sebelum benar-benar jatuh keluar
-        // jangkauan. Overlap X & Y bisa sesaat "dalam" karena keduanya
-        // sama-sama di ketinggian tanah, padahal ini bukan jepitan.
-        // Brick yang jatuh dari ATAS kepala player (brickTop di atas
-        // player) tetap dianggap crush yang sah.
-        final brickTop = _topLeft(child).y;
-        final fallingBeside = !child.isOnGround && brickTop >= position.y - 2;
-        if (!fallingBeside) {
-          _die('Crushed by Platform');
-          return;
-        }
       }
     }
   }

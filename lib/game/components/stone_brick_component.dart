@@ -5,6 +5,7 @@ import 'package:flame/components.dart';
 import 'package:flutter/material.dart';
 
 import '../pairy_game.dart';
+import 'crushed_text_component.dart';
 import 'gate_component.dart';
 import 'moving_platform_component.dart';
 
@@ -36,17 +37,11 @@ class StoneBrickComponent extends PositionComponent
   static const double maxDt = 1 / 30;
 
   /// Jarak (px) di bawah batas map sebelum brick dianggap "jatuh keluar
-  /// map" dan direspawn ke posisi spawn awalnya (konsisten dengan
-  /// PlayerComponent.fallDeathBuffer, cuma brick tidak "mati", cuma
-  /// balik ke awal).
-  static const double _fallResetBuffer = 80;
+  /// map" dan DIHANCURKAN (dihapus dari game, bukan respawn).
+  static const double _fallDeathBuffer = 80;
 
   final Vector2 velocity = Vector2.zero();
   bool isOnGround = false;
-
-  /// Posisi spawn awal (posisi dari object Tiled) — dipakai buat
-  /// respawn kalau brick ketiban Gate yang menutup atau jatuh keluar map.
-  late final Vector2 _spawnPosition;
 
   // Tracking state gate di frame sebelumnya, dipakai buat deteksi "baru
   // saja menutup PAS lagi overlap brick" -- persis pola yang sama dipakai
@@ -63,21 +58,21 @@ class StoneBrickComponent extends PositionComponent
   @override
   Future<void> onLoad() async {
     add(RectangleHitbox(collisionType: CollisionType.passive));
-    _spawnPosition = position.clone();
     _prevFramePosition.setFrom(position);
   }
 
-  /// Kembalikan brick ke posisi spawn awal & reset semua state gerak --
-  /// dipakai saat brick ketiban Gate yang menutup, atau jatuh keluar map.
-  /// TIDAK dipakai untuk kasus ketiban/kehalang MovingPlatform (itu tetap
-  /// ditangani MovingPlatformComponent dengan balik arah, brick-nya
-  /// sendiri tidak diapa-apakan).
-  void _respawn() {
-    position.setFrom(_spawnPosition);
-    _prevFramePosition.setFrom(_spawnPosition);
-    velocity.setZero();
-    isOnGround = false;
-    frameDelta.setZero();
+  /// Hancurkan brick ini beneran (dihapus dari game) sambil memunculkan
+  /// text "Crushed" yang fade-out di titik brick-nya. Dipakai HANYA saat
+  /// brick ketiban Gate yang menutup. TIDAK dipakai untuk kasus
+  /// ketiban/kehalang MovingPlatform (itu tetap ditangani
+  /// MovingPlatformComponent dengan balik arah, brick-nya sendiri tidak
+  /// diapa-apakan).
+  void _crushByGate() {
+    final par = parent;
+    if (par != null) {
+      par.add(CrushedTextComponent(position: position + size / 2));
+    }
+    removeFromParent();
   }
 
   bool _overlaps(PositionComponent other) {
@@ -123,9 +118,9 @@ class StoneBrickComponent extends PositionComponent
     position += velocity * safeDt;
 
     // Jatuh keluar map (mis. didorong lewat tepi map buat "dibuang") —
-    // balik ke posisi spawn awal, bukan jatuh selamanya.
-    if (position.y > game.levelHeightPx + _fallResetBuffer) {
-      _respawn();
+    // hancur beneran, dihapus dari game (bukan respawn).
+    if (position.y > game.levelHeightPx + _fallDeathBuffer) {
+      removeFromParent();
       return;
     }
 
@@ -143,11 +138,9 @@ class StoneBrickComponent extends PositionComponent
         if (!child.isOpenState) {
           if (wasOpen && _overlaps(child)) {
             // Gate baru saja menutup PAS brick lagi ada di area gate —
-            // daripada resolve manual yang glitchy/teleport-y (deep
-            // overlap terhadap solid statis), langsung respawn ke
-            // posisi awal brick.
-            _respawn();
-            _gateWasOpen[child] = false;
+            // hancur beneran + munculkan text "Crushed" fade-out di
+            // titiknya, daripada resolve manual yang glitchy/teleport-y.
+            _crushByGate();
             return;
           }
           _resolveVertical(child, Vector2.zero());
@@ -166,10 +159,10 @@ class StoneBrickComponent extends PositionComponent
           // "berebut" jadi yang di atas tiap frame (dua-duanya pakai
           // fallback ambigu yang sama), bikin salah satu atau keduanya
           // jitter/terbang. Daripada begitu, cukup SALAH SATU (dipilih
-          // deterministik lewat hashCode biar tidak saling respawn
-          // bolak-balik) direspawn balik ke titik awalnya sendiri.
+          // deterministik lewat hashCode biar tidak dua-duanya kena)
+          // yang dihapus.
           if (identityHashCode(this) > identityHashCode(child)) {
-            _respawn();
+            removeFromParent();
             return;
           }
         } else {

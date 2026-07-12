@@ -117,7 +117,7 @@ class AudioService {
   // Volume per-SFX disesuaikan manual (toggle_001/lever sebelumnya
   // kekencengan dibanding yang lain, jadi diturunkan relatif).
 
-  static void playJump() => _playSfx(_sfxJump, volume: 0.7);
+  static void playJump() => _playSfx(_sfxJump, volume: 0.4);
   static void playBump() => _playSfx(_sfxBump, volume: 1.0);
   static void playDisappear() => _playSfx(_sfxDisappear, volume: 0.8);
   static void playButton() => _playSfx(_sfxButton, volume: 0.4);
