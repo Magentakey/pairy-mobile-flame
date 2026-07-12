@@ -27,15 +27,40 @@ class AudioService {
   static const String _prefsBgmVolumeKey = 'audio_bgm_volume';
 
   /// Volume global (0.0-1.0), terpisah untuk SFX & BGM, di-persist ke prefs.
+  /// _bgmVolume (slider) HANYA berlaku untuk gameBgm — menuBgm sengaja
+  /// tidak ikut slider, selalu diputar di volume tetapnya sendiri.
   static double _sfxVolume = 1.0;
   static double _bgmVolume = 1.0;
 
-  /// Basis volume track BGM aktif (1.3 menu, 0.3 game), dipakai supaya
-  /// live-adjust slider konsisten dengan volume saat track direstart.
-  static double _currentBgmBase = 0.3;
+  /// Basis volume tetap untuk menuBgm, TIDAK dikalikan _bgmVolume.
+  /// File ThePathOfGoblinKing.ogg sudah di-loudness-normalize (~-15 LUFS,
+  /// sepadan dengan gameBgm) lewat ffmpeg loudnorm, jadi cukup 1.0 di sini
+  /// — TIDAK perlu diisi angka >1.0, karena native audio player akan
+  /// meng-clamp berapa pun nilai di atas 1.0 jadi 1.0 (tidak ada efek
+  /// tambahan, hanya percuma).
+  static const double _menuBgmBaseVolume = 1.0;
+
+  /// Basis volume gameBgm, dikalikan _bgmVolume (slider) setiap saat.
+  /// Disamakan dengan _menuBgmBaseVolume (1.0) supaya BGM gameplay dan
+  /// menu terdengar sebanding di volume slider maksimal.
+  static const double _gameBgmBaseVolume = 1.0;
+
+  /// Track mana yang sedang aktif, dipakai [setBgmVolume] untuk
+  /// menentukan apakah live-update volume perlu diterapkan (hanya
+  /// kalau gameBgm yang sedang main).
+  static bool _gameBgmActive = false;
 
   static double get sfxVolume => _sfxVolume;
   static double get bgmVolume => _bgmVolume;
+
+  // ══════════════════════════════════════════════════════════════════
+  // ── KONFIGURASI MANUAL (edit di sini) ───────────────────────────────
+  // Nilai volume yang dipakai saat toggle BGM/SFX di posisi ON.
+  // Ubah angka di bawah sesuai selera (rentang 0.0 - 1.0), tidak perlu
+  // ubah kode di tempat lain.
+  static const double bgmOnVolume = 1.0;
+  static const double sfxOnVolume = 1.0;
+  // ══════════════════════════════════════════════════════════════════
 
   static final Map<String, AudioPool> _pools = {};
 
@@ -89,37 +114,77 @@ class AudioService {
   // ── BGM ──────────────────────────────────────────────────────────
 
   /// Play/lanjutkan BGM menu (Home & MapSelect), tidak restart kalau sudah main.
+  /// Volume tetap ([_menuBgmBaseVolume]), tidak terpengaruh slider BGM.
   static Future<void> playMenuBgm() async {
-    _currentBgmBase = 1.3;
+    _gameBgmActive = false;
     if (_menuBgmPlaying) return;
     _menuBgmPlaying = true;
     try {
-      await FlameAudio.bgm.play(menuBgm, volume: _currentBgmBase * _bgmVolume);
+      await FlameAudio.bgm.play(menuBgm, volume: _menuBgmBaseVolume);
     } catch (_) {}
   }
 
-  /// Play BGM gameplay, selalu restart dari awal.
+  /// Play BGM gameplay, selalu restart dari awal. Volume ikut slider BGM.
   static Future<void> playGameBgm() async {
-    _currentBgmBase = 0.3;
     _menuBgmPlaying = false;
+    _gameBgmActive = true;
     try {
-      await FlameAudio.bgm.play(gameBgm, volume: _currentBgmBase * _bgmVolume);
+      await FlameAudio.bgm.play(
+        gameBgm,
+        volume: _gameBgmBaseVolume * _bgmVolume,
+      );
     } catch (_) {}
   }
 
   static Future<void> stopBgm() async {
     _menuBgmPlaying = false;
+    _gameBgmActive = false;
+    _pausedByLifecycle = false;
     try {
       await FlameAudio.bgm.stop();
     } catch (_) {}
   }
 
-  /// Ganti volume BGM (0.0-1.0), langsung apply + persist.
+  /// True kalau BGM (menu ATAU game) sedang di-pause oleh [pauseBgm],
+  /// dipakai [resumeBgm] supaya tidak asal resume kalau memang belum
+  /// pernah diputar/sudah di-stop lewat jalur lain.
+  static bool _pausedByLifecycle = false;
+
+  /// Pause BGM yang sedang aktif (menu atau game), dipanggil saat app
+  /// masuk background (AppLifecycleState.paused/hidden). Track mana pun
+  /// yang sedang main (menuBgm/gameBgm) sama-sama ke-pause, karena
+  /// keduanya berbagi satu channel FlameAudio.bgm.
+  static Future<void> pauseBgm() async {
+    if (!_menuBgmPlaying && !_gameBgmActive) return;
+    try {
+      await FlameAudio.bgm.pause();
+      _pausedByLifecycle = true;
+    } catch (_) {}
+  }
+
+  /// Lanjutkan BGM yang tadi di-pause [pauseBgm], dipanggil saat app
+  /// kembali ke foreground (AppLifecycleState.resumed). Tidak melakukan
+  /// apa-apa kalau sebelumnya tidak di-pause oleh lifecycle (mis. BGM
+  /// memang belum pernah main atau sudah di-stop lewat jalur lain).
+  static Future<void> resumeBgm() async {
+    if (!_pausedByLifecycle) return;
+    _pausedByLifecycle = false;
+    try {
+      await FlameAudio.bgm.resume();
+    } catch (_) {}
+  }
+
+  /// Ganti volume BGM (0.0-1.0), persist selalu. Live-apply hanya kalau
+  /// gameBgm yang sedang main — menuBgm tidak terpengaruh slider ini.
   static Future<void> setBgmVolume(double volume) async {
     _bgmVolume = volume.clamp(0.0, 1.0);
-    try {
-      await FlameAudio.bgm.audioPlayer.setVolume(_currentBgmBase * _bgmVolume);
-    } catch (_) {}
+    if (_gameBgmActive) {
+      try {
+        await FlameAudio.bgm.audioPlayer.setVolume(
+          _gameBgmBaseVolume * _bgmVolume,
+        );
+      } catch (_) {}
+    }
     try {
       final prefs = await SharedPreferences.getInstance();
       await prefs.setDouble(_prefsBgmVolumeKey, _bgmVolume);

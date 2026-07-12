@@ -47,7 +47,6 @@ class HudControlsOverlay extends StatelessWidget {
             ),
           ),
         ),
-
         // ── Pause button — top right ─────────────────────────────────
         Positioned(
           right: 12,
@@ -96,13 +95,13 @@ class _HudButton extends StatelessWidget {
       onTapUp: (_) => onUp(),
       onTapCancel: onUp,
       child: Container(
-        width: 52,
-        height: 52,
+        width: 68,
+        height: 68,
         decoration: BoxDecoration(
           color: (activeColor ?? AppColors.surfaceMuted).withValues(alpha: 0.85),
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(14),
         ),
-        child: Icon(icon, color: Colors.white.withValues(alpha: 0.9), size: 28),
+        child: Icon(icon, color: Colors.white.withValues(alpha: 0.9), size: 36),
       ),
     );
   }

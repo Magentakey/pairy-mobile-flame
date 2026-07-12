@@ -1,5 +1,5 @@
 {
-    "activeFile": "tutorial.tmx",
+    "activeFile": "level-01.tmx",
     "expandedProjectPaths": [
         "."
     ],
@@ -7,7 +7,7 @@
         "background.tsx": {
             "dynamicWrapping": false,
             "scaleInDock": 4,
-            "scaleInEditor": 5.5
+            "scaleInEditor": 3
         },
         "bg-extrud.tsx": {
             "scaleInDock": 1,
@@ -45,22 +45,22 @@
             "expandedObjectLayers": [
                 2
             ],
-            "scale": 0.33,
+            "scale": 5.5,
             "selectedLayer": 3,
             "viewCenter": {
-                "x": 933.3333333333335,
-                "y": 434.848484848485
+                "x": 1744.909090909091,
+                "y": 560.6363636363636
             }
         },
         "level-02.tmx": {
             "expandedObjectLayers": [
                 2
             ],
-            "scale": 0.75,
-            "selectedLayer": 0,
+            "scale": 2,
+            "selectedLayer": 3,
             "viewCenter": {
-                "x": 900.6666666666665,
-                "y": 450
+                "x": 881.5,
+                "y": 675.75
             }
         },
         "level-03.tmx": {
@@ -139,7 +139,7 @@
             "scale": 0.5,
             "selectedLayer": 0,
             "viewCenter": {
-                "x": 322,
+                "x": 323,
                 "y": 179
             }
         },
@@ -147,17 +147,17 @@
             "scale": 0.75,
             "selectedLayer": 2,
             "viewCenter": {
-                "x": 322.66666666666663,
-                "y": 179.33333333333326
+                "x": 323.33333333333326,
+                "y": 179.33333333333331
             }
         },
         "t2.tsx": {
             "scaleInDock": 2,
-            "scaleInEditor": 1
+            "scaleInEditor": 3
         },
         "t3.tsx": {
             "scaleInDock": 2,
-            "scaleInEditor": 5.5
+            "scaleInEditor": 3
         },
         "t4-metal expansion.tsx": {
             "dynamicWrapping": false,
@@ -167,7 +167,7 @@
         "t5-automation.tsx": {
             "dynamicWrapping": false,
             "scaleInDock": 1,
-            "scaleInEditor": 1
+            "scaleInEditor": 5.5
         },
         "t6-adventure.tsx": {
             "dynamicWrapping": false,
@@ -188,18 +188,18 @@
         },
         "tileset-tiles.tsx": {
             "dynamicWrapping": false,
-            "scaleInDock": 2,
+            "scaleInDock": 3,
             "scaleInEditor": 3
         },
         "tutorial.tmx": {
             "expandedObjectLayers": [
                 4
             ],
-            "scale": 0.25,
+            "scale": 3,
             "selectedLayer": 4,
             "viewCenter": {
-                "x": 1436,
-                "y": 106
+                "x": 897.3333333333333,
+                "y": 505.49999999999994
             }
         }
     },
@@ -210,24 +210,34 @@
     "map.tileWidth": 18,
     "map.width": 36,
     "openFiles": [
-        "tutorial.tmx"
+        "tutorial.tmx",
+        "t3.tsx",
+        "t2.tsx",
+        "level-01.tmx",
+        "tileset-tiles.tsx",
+        "level-11.tmx",
+        "level-12.tmx",
+        "background.tsx",
+        "t4-metal expansion.tsx",
+        "t5-automation.tsx"
     ],
     "project": "untitled.tiled-project",
-    "property.type": "float",
+    "property.type": "bool",
     "recentFiles": [
         "tutorial.tmx",
         "t3.tsx",
-        "tileset-tiles.tsx",
-        "background.tsx",
-        "t6-adventure.tsx",
+        "t2.tsx",
         "t5-automation.tsx",
         "t4-metal expansion.tsx",
-        "level-02.tmx",
-        "t2.tsx",
+        "background.tsx",
         "level-12.tmx",
         "level-11.tmx",
-        "level-10.tmx"
+        "tileset-tiles.tsx",
+        "level-01.tmx",
+        "t6-adventure.tsx",
+        "level-02.tmx"
     ],
+    "resizeMap.removeObjects": true,
     "tileset.lastUsedFormat": "tsx",
     "tileset.margin": 0,
     "tileset.spacing": 0,

@@ -54,6 +54,7 @@ class PlayerComponent extends PositionComponent
   final Set<ExitDoorComponent> _touchingExitDoors = {};
   bool get _nearExitDoor => _touchingExitDoors.isNotEmpty;
   bool _isDead = false;
+  bool get isDead => _isDead;
   LeverComponent? nearLever;
   _HorizontalInput _input = _HorizontalInput.none;
 
@@ -62,6 +63,19 @@ class PlayerComponent extends PositionComponent
   /// Platform yang sedang ditumpangi player (sticky antar-frame), supaya
   /// platform turun cepat tidak bikin player "lepas" & jatuh bebas.
   MovingPlatformComponent? _restingPlatform;
+
+  /// StoneBrick yang sedang nyangkut di atas kepala player (lihat
+  /// StoneBrickComponent.pinAbovePlayer). Selama tidak null, player tidak
+  /// bisa lompat.
+  StoneBrickComponent? _pinningBrick;
+  bool get isPinnedByBrick => _pinningBrick != null;
+
+  /// Dipanggil StoneBrickComponent sendiri saat brick yang nyangkut
+  /// terlepas (mis. headroom kehalang platform rendah). Player jadi
+  /// bisa lompat lagi.
+  void releasePinnedBrick(StoneBrickComponent brick) {
+    if (_pinningBrick == brick) _pinningBrick = null;
+  }
 
   @override
   Future<void> onLoad() async {
@@ -120,6 +134,7 @@ class PlayerComponent extends PositionComponent
 
   void jump() {
     if (_isDead) return;
+    if (_pinningBrick != null) return;
     if (_nearExitDoor) {
       game.completeLevel();
       return;
@@ -266,6 +281,11 @@ class PlayerComponent extends PositionComponent
       for (final child in parent!.children) {
         if (child is! StoneBrickComponent) continue;
 
+        // Brick ini sudah nyangkut di kepala player (sendiri) -- posisinya
+        // sudah dikelola penuh oleh StoneBrickComponent.update(), tidak
+        // perlu diresolve lagi di sini.
+        if (child.pinnedPlayer == this) continue;
+
         final tl = _topLeft(child);
         final ox = tl.x;
         final oy = tl.y;
@@ -298,8 +318,19 @@ class PlayerComponent extends PositionComponent
             _restingPlatform = null;
           }
         } else if (prevTop >= prevOy + oh) {
-          position.y = oy + oh;
-          if (velocity.y < 0) velocity.y = 0;
+          if (!child.isOnGround && child.velocity.y > 0) {
+            // Brick sedang jatuh bebas dan menimpa kepala player --
+            // biarkan nyangkut di atas kepala & ikut player, JANGAN
+            // dorong player turun (dulu ini bikin player mendelep ke
+            // tanah karena brick terus "mendorong" turun selagi jatuh).
+            child.pinAbovePlayer(this);
+            _pinningBrick = child;
+          } else {
+            // Brick statis/sudah bertumpu (mis. player lompat kejedot
+            // brick dari bawah) -- perilaku normal: stop lompatan.
+            position.y = oy + oh;
+            if (velocity.y < 0) velocity.y = 0;
+          }
         } else if (prevRight <= prevOx) {
           // Nabrak dari kiri -> dorong ke kanan.
           final moved = child.tryPush(overlapR);
