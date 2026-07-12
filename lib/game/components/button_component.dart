@@ -2,6 +2,7 @@ import 'package:flame/collisions.dart';
 import 'package:flame/components.dart';
 import 'package:flutter/material.dart';
 
+import '../../services/audio_service.dart';
 import 'player_component.dart';
 import 'stone_brick_component.dart';
 
@@ -75,6 +76,11 @@ class ButtonComponent extends PositionComponent with CollisionCallbacks {
 
     final pressed = _isPressed();
 
+    if (pressed && !_wasPressed) {
+      // Rising edge fisik (mulai diinjak) — sama buat semua mode.
+      AudioService.playButton();
+    }
+
     if (mode == ButtonMode.plate) {
       if (pressed != isOn) {
         isOn = pressed;
@@ -87,9 +93,16 @@ class ButtonComponent extends PositionComponent with CollisionCallbacks {
       }
     } else {
       // ButtonMode.timer
-      if (pressed && !_wasPressed && !isOn) {
-        isOn = true;
-        onActivationChanged?.call();
+      if (pressed && !_wasPressed) {
+        // Rising edge: kalau belum ON, nyalakan dari 0 (fresh start).
+        // Kalau SUDAH ON (lagi di-pause di tengah countdown), re-press
+        // harus RESTART countdown dari penuh lagi (timerDuration),
+        // bukan cuma dibiarkan pause di sisa waktu sebelumnya.
+        _remaining = timerDuration;
+        if (!isOn) {
+          isOn = true;
+          onActivationChanged?.call();
+        }
       }
       if (isOn && !pressed) {
         // Countdown JALAN cuma selama TIDAK diinjak (dilepas). Selama

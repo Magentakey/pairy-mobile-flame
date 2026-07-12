@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../core/app_colors.dart';
 import '../game/pairy_game.dart';
 import '../services/progress_service.dart';
+import '../services/audio_service.dart';
 
 class MapSelectScreen extends StatefulWidget {
   const MapSelectScreen({super.key});
@@ -27,6 +28,9 @@ class _MapSelectScreenState extends State<MapSelectScreen> {
   void initState() {
     super.initState();
     _loadProgress();
+    // init() sudah dipanggil sekali di main.dart, jadi di sini cukup
+    // play saja (guarded, tidak restart kalau sudah jalan dari Home).
+    AudioService.playMenuBgm();
   }
 
   Future<void> _loadProgress() async {

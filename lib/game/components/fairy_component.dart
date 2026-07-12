@@ -32,6 +32,16 @@ class FairyComponent extends PositionComponent
   Vector2 _fingerWorldPos = Vector2.zero();
   bool _isDragging = false;
 
+  // Posisi kamera (cam.viewfinder.position) di frame sebelumnya, dipakai
+  // SELAMA dragging untuk kompensasi pan kamera (lihat update()). Perlu
+  // karena event drag (onDragUpdate) HANYA fired kalau jari BENERAN
+  // bergerak di layar -- kalau jari diam tapi kamera ikut geser (mis.
+  // cam.follow(player) pas player jalan), tidak ada event baru sama
+  // sekali, jadi _fingerWorldPos jadi stale/ketinggalan padahal titik di
+  // layar yang ditunjuk jari itu sekarang berkorespondensi ke posisi
+  // dunia yang berbeda.
+  final Vector2 _prevCamPosition = Vector2.zero();
+
   // Track gate state tiap frame untuk deteksi crush
   final Map<GateComponent, bool> _gateWasOpen = {};
 
@@ -46,6 +56,7 @@ class FairyComponent extends PositionComponent
     super.onDragStart(event);
     _isDragging = true;
     _fingerWorldPos.setFrom(position);
+    _prevCamPosition.setFrom(game.cam.viewfinder.position);
   }
 
   @override
@@ -85,6 +96,19 @@ class FairyComponent extends PositionComponent
 
     // ── Movement ────────────────────────────────────────────────────
     if (_isDragging) {
+      // Kompensasi pan kamera: kalau kamera geser (mis. ngikutin player
+      // yang jalan) SEMENTARA jari diam di layar, titik dunia yang
+      // ditunjuk jari itu ikut geser sebesar pergeseran kamera juga.
+      // Tanpa ini, _fingerWorldPos cuma ke-update pas ada event drag
+      // baru (jari beneran gerak), jadi fairy keliatan "netep" nggak
+      // ngikutin walau jari masih di posisi layar yang sama.
+      final camPos = game.cam.viewfinder.position;
+      final camDelta = camPos - _prevCamPosition;
+      if (camDelta.x != 0 || camDelta.y != 0) {
+        _fingerWorldPos += camDelta;
+      }
+      _prevCamPosition.setFrom(camPos);
+
       const maxSpeed = 600.0;
       const stepSize = 8.0;
       final diff = _fingerWorldPos - position;

@@ -6,6 +6,7 @@ import 'components/ground_component.dart';
 import 'components/player_component.dart';
 import 'level/level.dart';
 import '../services/progress_service.dart';
+import '../services/audio_service.dart';
 
 class PairyGame extends FlameGame with HasCollisionDetection {
   PairyGame({int levelIndex = 0, this.onBackToMap})
@@ -47,7 +48,11 @@ class PairyGame extends FlameGame with HasCollisionDetection {
   bool get hasNextLevel => _currentLevelIndex < levelNames.length - 1;
 
   @override
-  Future<void> onLoad() async => _loadLevel();
+  Future<void> onLoad() async {
+    // init() sudah dipanggil sekali di main.dart sebelum runApp.
+    AudioService.playGameBgm();
+    await _loadLevel();
+  }
 
   Future<void> _loadLevel() async {
     final name = levelNames[_currentLevelIndex.clamp(0, levelNames.length - 1)];
@@ -114,6 +119,12 @@ class PairyGame extends FlameGame with HasCollisionDetection {
   // ── Death ────────────────────────────────────────────────────────
   void playerDied(String cause) {
     _deathCause = cause;
+    if (cause == 'Fell off the map') {
+      AudioService.playDisappear();
+    } else {
+      // Semua kasus "Crushed by ..." (Gate/Platform/Fairy Crushed by ...)
+      AudioService.playBump();
+    }
     pauseEngine();
     overlays.add('PlayerDied');
   }
@@ -124,6 +135,7 @@ class PairyGame extends FlameGame with HasCollisionDetection {
     // _currentLevelIndex 0-based → level number = index + 1
     // Yang di-unlock = level number berikutnya = index + 2
     await ProgressService.unlockLevel(_currentLevelIndex + 2);
+    AudioService.playLevelComplete();
     pauseEngine();
     overlays.add('LevelComplete');
   }

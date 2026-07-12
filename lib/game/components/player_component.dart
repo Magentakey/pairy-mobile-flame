@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flame/sprite.dart';
 
 import '../pairy_game.dart';
+import '../../services/audio_service.dart';
 import 'exit_door_component.dart';
 import 'gate_component.dart';
 import 'lever_component.dart';
@@ -147,6 +148,7 @@ class PlayerComponent extends PositionComponent
       velocity.y = jumpVelocity;
       isOnGround = false;
       _restingPlatform = null;
+      AudioService.playJump();
     }
   }
 

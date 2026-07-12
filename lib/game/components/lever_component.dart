@@ -2,6 +2,8 @@ import 'package:flame/collisions.dart';
 import 'package:flame/components.dart';
 import 'package:flutter/material.dart';
 
+import '../../services/audio_service.dart';
+
 /// Tuas yang diaktifkan dengan menekan tombol HUD saat player berada
 /// di dekatnya. Anchor.bottomCenter — titik spawn di Tiled = kaki lever.
 class LeverComponent extends PositionComponent with CollisionCallbacks {
@@ -18,6 +20,7 @@ class LeverComponent extends PositionComponent with CollisionCallbacks {
 
   void activate() {
     isOn = !isOn;
+    AudioService.playLever();
     onToggle?.call();
   }
 

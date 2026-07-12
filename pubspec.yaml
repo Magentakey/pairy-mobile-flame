@@ -1,5 +1,5 @@
 name: pairy
-description: "Pairy - 2D Platform Puzzle Mobile Game (Prototype MVP) built with Flutter + Flame."
+description: "Pairy - 2D Platform Puzzle Mobile Game built with Flutter + Flame."
 publish_to: 'none' 
 version: 1.0.0+1
 
@@ -13,6 +13,7 @@ dependencies:
   cupertino_icons: ^1.0.8
   flame: ^1.18.0
   flame_tiled: any
+  flame_audio: ^2.0.0
   shared_preferences: ^2.2.0
 
 dev_dependencies:

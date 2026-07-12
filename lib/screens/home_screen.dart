@@ -2,12 +2,19 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import '../core/app_colors.dart';
+import '../services/audio_service.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
+    // Lanjutkan (atau mulai) BGM menu. init() sudah dipanggil sekali di
+    // main.dart sebelum runApp, jadi di sini cukup play saja — supaya
+    // tidak ada race manggil init() berkali-kali dari tiap rebuild yang
+    // bisa numpuk pemanggilan bgm.play() dan bikin audio ke-layer.
+    AudioService.playMenuBgm();
+
     return Scaffold(
       backgroundColor: AppColors.background,
       body: Center(
