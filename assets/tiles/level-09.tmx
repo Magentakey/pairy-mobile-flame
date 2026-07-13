@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.10" tiledversion="1.12.2" orientation="orthogonal" renderorder="right-down" width="100" height="50" tilewidth="18" tileheight="18" infinite="0" nextlayerid="9" nextobjectid="102">
+<map version="1.10" tiledversion="1.12.2" orientation="orthogonal" renderorder="right-down" width="100" height="50" tilewidth="18" tileheight="18" infinite="0" nextlayerid="9" nextobjectid="103">
  <tileset firstgid="1" source="tileset-tiles.tsx"/>
  <tileset firstgid="181" source="background.tsx"/>
  <tileset firstgid="221" source="t4-metal expansion.tsx"/>
@@ -167,16 +167,17 @@
 </data>
  </layer>
  <objectgroup id="6" name="Spawnpoints">
-  <object id="87" name="stone1" type="StoneBrick" x="178.667" y="591.333" width="180" height="18"/>
-  <object id="88" name="stone1" type="StoneBrick" x="178.667" y="569.333" width="162" height="18"/>
-  <object id="89" name="stone1" type="StoneBrick" x="178.667" y="548.333" width="144" height="18"/>
-  <object id="90" name="stone1" type="StoneBrick" x="178.667" y="527.333" width="126" height="18"/>
-  <object id="91" name="stone1" type="StoneBrick" x="178.667" y="506.333" width="108" height="18"/>
-  <object id="92" name="stone1" type="StoneBrick" x="178.667" y="485.333" width="90" height="18"/>
-  <object id="93" name="stone1" type="StoneBrick" x="178.667" y="464.333" width="72" height="18"/>
-  <object id="94" name="stone1" type="StoneBrick" x="178.667" y="443.333" width="54" height="18"/>
-  <object id="95" name="stone1" type="StoneBrick" x="178.667" y="422.333" width="36" height="18"/>
-  <object id="96" name="stone1" type="StoneBrick" x="178.667" y="401.333" width="18" height="18"/>
+  <object id="87" name="stone1" type="StoneBrick" x="178.667" y="566.333" width="180" height="18"/>
+  <object id="102" name="stone1" type="StoneBrick" x="178.667" y="588.333" width="201" height="18"/>
+  <object id="88" name="stone1" type="StoneBrick" x="178.667" y="544.333" width="162" height="18"/>
+  <object id="89" name="stone1" type="StoneBrick" x="178.667" y="523.333" width="144" height="18"/>
+  <object id="90" name="stone1" type="StoneBrick" x="178.667" y="502.333" width="126" height="18"/>
+  <object id="91" name="stone1" type="StoneBrick" x="178.667" y="481.333" width="108" height="18"/>
+  <object id="92" name="stone1" type="StoneBrick" x="178.667" y="460.333" width="90" height="18"/>
+  <object id="93" name="stone1" type="StoneBrick" x="178.667" y="439.333" width="72" height="18"/>
+  <object id="94" name="stone1" type="StoneBrick" x="178.667" y="418.333" width="54" height="18"/>
+  <object id="95" name="stone1" type="StoneBrick" x="178.667" y="397.333" width="36" height="18"/>
+  <object id="96" name="stone1" type="StoneBrick" x="178.667" y="376.333" width="18" height="18"/>
   <object id="97" name="player" type="Player" x="68.5" y="590" width="20" height="20"/>
   <object id="98" name="stone1" type="StoneBrick" x="1062.33" y="333.667" width="180" height="18"/>
   <object id="99" name="1a" type="Button" x="773.333" y="605.667" width="20" height="8"/>

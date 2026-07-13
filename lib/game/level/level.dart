@@ -66,27 +66,64 @@ class Level extends World with HasGameReference<PairyGame> {
     final mapHeight = groundLayer.height;
     heightPx = mapHeight * tileSize;
 
-    // Greedy row-merge: gabungkan tile solid bersebelahan dalam satu
-    // baris jadi satu GroundComponent lebar, biar hitbox lebih sedikit.
+    // Greedy row/column-merge: untuk tiap tile solid yang belum
+    // ke-visit, bandingin dulu berapa panjang run-nya ke kanan (row)
+    // vs ke bawah (column), lalu ambil arah yang paling banyak/panjang
+    // buat di-merge jadi satu GroundComponent, biar hitbox lebih sedikit.
+    final visited = List<bool>.filled(mapWidth * mapHeight, false);
+
+    bool isSolid(int x, int y) {
+      if (x < 0 || x >= mapWidth || y < 0 || y >= mapHeight) return false;
+      final index = y * mapWidth + x;
+      return data[index] != 0 && !visited[index];
+    }
+
+    void markVisited(int x0, int y0, int w, int h) {
+      for (int yy = y0; yy < y0 + h; yy++) {
+        for (int xx = x0; xx < x0 + w; xx++) {
+          visited[yy * mapWidth + xx] = true;
+        }
+      }
+    }
+
     for (int y = 0; y < mapHeight; y++) {
-      int x = 0;
-      while (x < mapWidth) {
-        final index = y * mapWidth + x;
-        if (data[index] == 0) {
-          x++;
-          continue;
+      for (int x = 0; x < mapWidth; x++) {
+        if (!isSolid(x, y)) continue;
+
+        // Hitung run horizontal (ke kanan) mulai dari (x, y).
+        int rowRun = 0;
+        while (isSolid(x + rowRun, y)) {
+          rowRun++;
         }
 
-        // Cari berapa tile berturut-turut yang solid ke kanan.
-        final runStart = x;
-        while (x < mapWidth && data[y * mapWidth + x] != 0) {
-          x++;
+        // Hitung run vertical (ke bawah) mulai dari (x, y).
+        int colRun = 0;
+        while (isSolid(x, y + colRun)) {
+          colRun++;
         }
-        final runLength = x - runStart;
+
+        // Bandingin, ambil yang paling banyak/panjang buat di-merge.
+        late final int runStartX;
+        late final int runStartY;
+        late final int runW;
+        late final int runH;
+        if (rowRun >= colRun) {
+          runStartX = x;
+          runStartY = y;
+          runW = rowRun;
+          runH = 1;
+        } else {
+          runStartX = x;
+          runStartY = y;
+          runW = 1;
+          runH = colRun;
+        }
+
+        markVisited(runStartX, runStartY, runW, runH);
 
         final ground = GroundComponent(
-          position: Vector2(runStart * tileSize, y * tileSize),
-          size: Vector2(runLength * tileSize, tileSize),
+          position: Vector2(runStartX * tileSize, runStartY * tileSize),
+          size: Vector2(runW * tileSize, runH * tileSize),
         );
         groundComponents.add(ground);
         add(ground);
