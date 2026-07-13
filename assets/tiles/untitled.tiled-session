@@ -1,5 +1,5 @@
 {
-    "activeFile": "level-04.tmx",
+    "activeFile": "level-12.tmx",
     "expandedProjectPaths": [
         "."
     ],
@@ -48,7 +48,7 @@
             "scale": 1,
             "selectedLayer": 3,
             "viewCenter": {
-                "x": 731,
+                "x": 825.5,
                 "y": 450.5
             }
         },
@@ -59,8 +59,8 @@
             "scale": 1.5,
             "selectedLayer": 3,
             "viewCenter": {
-                "x": 900,
-                "y": 450.3333333333333
+                "x": 900.3333333333333,
+                "y": 450.33333333333337
             }
         },
         "level-03.tmx": {
@@ -70,7 +70,7 @@
             "scale": 0.5,
             "selectedLayer": 3,
             "viewCenter": {
-                "x": 900,
+                "x": 901,
                 "y": 449
             }
         },
@@ -86,87 +86,99 @@
             "expandedObjectLayers": [
                 4
             ],
-            "scale": 0.33,
-            "selectedLayer": 3,
+            "scale": 0.125,
+            "selectedLayer": 0,
             "viewCenter": {
-                "x": 622.7272727272726,
-                "y": 1562.1212121212122
+                "x": 108,
+                "y": 1796
             }
         },
         "level-05.tmx": {
             "expandedObjectLayers": [
                 6
             ],
-            "scale": 0.33,
+            "scale": 1,
             "selectedLayer": 3,
             "viewCenter": {
-                "x": 1307.5757575757577,
-                "y": 410.60606060606074
+                "x": 613.5,
+                "y": 485.5
             }
         },
         "level-06.tmx": {
             "expandedObjectLayers": [
                 6
             ],
-            "scale": 0.75,
+            "scale": 0.5,
             "selectedLayer": 3,
             "viewCenter": {
-                "x": 255.33333333333326,
-                "y": -122
+                "x": 901,
+                "y": 449
             }
         },
         "level-07.tmx": {
             "expandedObjectLayers": [
                 6
             ],
-            "scale": 1,
+            "scale": 3,
             "selectedLayer": 3,
             "viewCenter": {
-                "x": 45.5,
-                "y": 217.5
+                "x": 39.16666666666666,
+                "y": 401.16666666666663
             }
         },
         "level-08.tmx": {
             "expandedObjectLayers": [
                 4
             ],
-            "scale": 3,
+            "scale": 2,
             "selectedLayer": 3,
             "viewCenter": {
-                "x": 793.1666666666666,
-                "y": 521.1666666666666
+                "x": 692.75,
+                "y": 573.25
             }
         },
         "level-09.tmx": {
-            "scale": 0.5,
-            "selectedLayer": 0,
+            "expandedObjectLayers": [
+                6
+            ],
+            "scale": 4,
+            "selectedLayer": 3,
             "viewCenter": {
-                "x": 323,
-                "y": 179
+                "x": 236.875,
+                "y": 468.375
             }
         },
         "level-10.tmx": {
-            "scale": 0.5,
-            "selectedLayer": 0,
+            "expandedObjectLayers": [
+                6
+            ],
+            "scale": 4,
+            "selectedLayer": 3,
             "viewCenter": {
-                "x": 323,
-                "y": 179
+                "x": 1722.375,
+                "y": 141.125
             }
         },
         "level-11.tmx": {
-            "scale": 0.5,
-            "selectedLayer": 0,
+            "expandedObjectLayers": [
+                6
+            ],
+            "scale": 2,
+            "selectedLayer": 3,
             "viewCenter": {
-                "x": 271,
-                "y": 179
+                "x": 1596.25,
+                "y": 429.75
             }
         },
         "level-12.tmx": {
-            "scale": 0.75,
-            "selectedLayer": 2,
+            "expandedObjectLayers": [
+                4
+            ],
+            "scale": 3,
+            "selectedLayer": 3,
             "viewCenter": {
-                "x": 323.33333333333326,
-                "y": 179.33333333333331
+                "x": 1617.8333333333333,
+                "y": 1059.8333333333333
             }
         },
         "t2.tsx": {
@@ -232,7 +244,6 @@
         "t3.tsx",
         "t2.tsx",
         "tileset-tiles.tsx",
-        "level-11.tmx",
         "level-12.tmx",
         "background.tsx",
         "t4-metal expansion.tsx",
@@ -245,23 +256,26 @@
         "level-05.tmx",
         "level-06.tmx",
         "level-07.tmx",
-        "level-08.tmx"
+        "level-08.tmx",
+        "level-09.tmx",
+        "level-10.tmx",
+        "level-11.tmx"
     ],
     "project": "untitled.tiled-project",
-    "property.type": "float",
+    "property.type": "bool",
     "recentFiles": [
         "tutorial.tmx",
         "t3.tsx",
         "t2.tsx",
         "tileset-tiles.tsx",
         "level-11.tmx",
-        "level-12.tmx",
-        "background.tsx",
-        "t4-metal expansion.tsx",
-        "t5-automation.tsx",
-        "t6-adventure.tsx",
-        "level-01.tmx",
-        "level-02.tmx"
+        "level-10.tmx",
+        "level-09.tmx",
+        "level-08.tmx",
+        "level-07.tmx",
+        "level-06.tmx",
+        "level-05.tmx",
+        "level-04.tmx"
     ],
     "resizeMap.removeObjects": true,
     "tileset.lastUsedFormat": "tsx",
