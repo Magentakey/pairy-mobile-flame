@@ -1,5 +1,5 @@
 {
-    "activeFile": "level-04.tmx",
+    "activeFile": "level-05.tmx",
     "expandedProjectPaths": [
         "."
     ],
@@ -45,22 +45,22 @@
             "expandedObjectLayers": [
                 2
             ],
-            "scale": 0.5,
+            "scale": 0.33,
             "selectedLayer": 3,
             "viewCenter": {
-                "x": 775,
-                "y": 705
+                "x": 387.8787878787879,
+                "y": 449.9999999999999
             }
         },
         "level-02.tmx": {
             "expandedObjectLayers": [
                 2
             ],
-            "scale": 0.33,
-            "selectedLayer": 1,
+            "scale": 1.5,
+            "selectedLayer": 3,
             "viewCenter": {
-                "x": 428.78787878787887,
-                "y": 925.7575757575756
+                "x": 882.9999999999999,
+                "y": 680.3333333333333
             }
         },
         "level-03.tmx": {
@@ -70,8 +70,8 @@
             "scale": 0.5,
             "selectedLayer": 3,
             "viewCenter": {
-                "x": 689,
-                "y": 615
+                "x": 443,
+                "y": 449
             }
         },
         "level-03tmx.tmx": {
@@ -86,19 +86,22 @@
             "expandedObjectLayers": [
                 4
             ],
-            "scale": 0.75,
+            "scale": 2,
             "selectedLayer": 3,
             "viewCenter": {
-                "x": 425.99999999999994,
-                "y": 2432.6666666666665
+                "x": 1644.25,
+                "y": 1076.75
             }
         },
         "level-05.tmx": {
-            "scale": 0.75,
-            "selectedLayer": 0,
+            "expandedObjectLayers": [
+                6
+            ],
+            "scale": 2,
+            "selectedLayer": 3,
             "viewCenter": {
-                "x": 321.99999999999994,
-                "y": 179.33333333333326
+                "x": 1714.25,
+                "y": 532.75
             }
         },
         "level-06.tmx": {
@@ -145,7 +148,7 @@
             "scale": 0.5,
             "selectedLayer": 0,
             "viewCenter": {
-                "x": 323,
+                "x": 271,
                 "y": 179
             }
         },
@@ -204,8 +207,8 @@
             "scale": 3,
             "selectedLayer": 4,
             "viewCenter": {
-                "x": 1060.1666666666665,
-                "y": 583.5
+                "x": 1404.1666666666665,
+                "y": 449.8333333333333
             }
         }
     },
@@ -233,7 +236,7 @@
         "level-05.tmx"
     ],
     "project": "untitled.tiled-project",
-    "property.type": "bool",
+    "property.type": "float",
     "recentFiles": [
         "tutorial.tmx",
         "t3.tsx",
