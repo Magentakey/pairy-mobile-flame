@@ -45,33 +45,33 @@
             "expandedObjectLayers": [
                 2
             ],
-            "scale": 1,
+            "scale": 3,
             "selectedLayer": 3,
             "viewCenter": {
-                "x": 1659,
-                "y": 761.5
+                "x": 887.8333333333333,
+                "y": 712.5
             }
         },
         "level-02.tmx": {
             "expandedObjectLayers": [
                 2
             ],
-            "scale": 1.5,
-            "selectedLayer": 2,
+            "scale": 2,
+            "selectedLayer": 3,
             "viewCenter": {
-                "x": 1680.6666666666665,
-                "y": 840.3333333333333
+                "x": 629.25,
+                "y": 567.75
             }
         },
         "level-03.tmx": {
             "expandedObjectLayers": [
                 2
             ],
-            "scale": 1.5,
-            "selectedLayer": 1,
+            "scale": 2,
+            "selectedLayer": 2,
             "viewCenter": {
-                "x": 1666.6666666666665,
-                "y": 621
+                "x": 352.25,
+                "y": 586.25
             }
         },
         "level-03tmx.tmx": {
@@ -83,11 +83,14 @@
             }
         },
         "level-04.tmx": {
-            "scale": 0.75,
-            "selectedLayer": 0,
+            "expandedObjectLayers": [
+                4
+            ],
+            "scale": 2,
+            "selectedLayer": 3,
             "viewCenter": {
-                "x": 323.33333333333326,
-                "y": 179.33333333333331
+                "x": 1829.25,
+                "y": 899.25
             }
         },
         "level-05.tmx": {
@@ -201,8 +204,8 @@
             "scale": 3,
             "selectedLayer": 4,
             "viewCenter": {
-                "x": 897.3333333333333,
-                "y": 505.49999999999994
+                "x": 985.1666666666666,
+                "y": 583.5
             }
         }
     },
@@ -225,7 +228,7 @@
         "t5-automation.tsx"
     ],
     "project": "untitled.tiled-project",
-    "property.type": "float",
+    "property.type": "bool",
     "recentFiles": [
         "tutorial.tmx",
         "t3.tsx",
