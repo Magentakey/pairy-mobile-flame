@@ -313,11 +313,11 @@
  </layer>
  <layer id="5" name="background2" width="100" height="150">
   <data encoding="csv">
-0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,171,179,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 226,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,171,179,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
@@ -492,6 +492,7 @@
     <property name="initialOpen" type="bool" value="false"/>
     <property name="tileGrid" value="88,89,90;110,111,112;132,133,134"/>
     <property name="tilesetImage" value="tilemap_packed_terrain_expansion.png"/>
+    <property name="timerDuration" type="float" value="1"/>
    </properties>
   </object>
   <object id="92" name="3b" type="Gate" x="738" y="536" width="54" height="36">
@@ -499,6 +500,7 @@
     <property name="initialOpen" type="bool" value="false"/>
     <property name="tileGrid" value="88,89,90;110,111,112;132,133,134"/>
     <property name="tilesetImage" value="tilemap_packed_terrain_expansion.png"/>
+    <property name="timerDuration" type="float" value="1"/>
    </properties>
   </object>
   <object id="93" name="3c" type="Gate" x="738" y="572" width="54" height="36">
@@ -506,6 +508,7 @@
     <property name="initialOpen" type="bool" value="false"/>
     <property name="tileGrid" value="88,89,90;110,111,112;132,133,134"/>
     <property name="tilesetImage" value="tilemap_packed_terrain_expansion.png"/>
+    <property name="timerDuration" type="float" value="1"/>
    </properties>
   </object>
   <object id="94" name="3d" type="Gate" x="738" y="608" width="54" height="36">
@@ -513,6 +516,7 @@
     <property name="initialOpen" type="bool" value="false"/>
     <property name="tileGrid" value="88,89,90;110,111,112;132,133,134"/>
     <property name="tilesetImage" value="tilemap_packed_terrain_expansion.png"/>
+    <property name="timerDuration" type="float" value="1"/>
    </properties>
   </object>
   <object id="95" name="3e" type="Gate" x="738" y="644" width="54" height="36">
@@ -520,6 +524,7 @@
     <property name="initialOpen" type="bool" value="false"/>
     <property name="tileGrid" value="88,89,90;110,111,112;132,133,134"/>
     <property name="tilesetImage" value="tilemap_packed_terrain_expansion.png"/>
+    <property name="timerDuration" type="float" value="1"/>
    </properties>
   </object>
   <object id="96" name="3f" type="Gate" x="738" y="680" width="54" height="36">
@@ -527,6 +532,7 @@
     <property name="initialOpen" type="bool" value="false"/>
     <property name="tileGrid" value="88,89,90;110,111,112;132,133,134"/>
     <property name="tilesetImage" value="tilemap_packed_terrain_expansion.png"/>
+    <property name="timerDuration" type="float" value="1"/>
    </properties>
   </object>
   <object id="112" name="3g" type="Gate" x="738" y="716" width="54" height="36">
@@ -534,6 +540,7 @@
     <property name="initialOpen" type="bool" value="false"/>
     <property name="tileGrid" value="88,89,90;110,111,112;132,133,134"/>
     <property name="tilesetImage" value="tilemap_packed_terrain_expansion.png"/>
+    <property name="timerDuration" type="float" value="1"/>
    </properties>
   </object>
   <object id="114" name="3h" type="Gate" x="738" y="752" width="54" height="36">
@@ -541,6 +548,7 @@
     <property name="initialOpen" type="bool" value="false"/>
     <property name="tileGrid" value="88,89,90;110,111,112;132,133,134"/>
     <property name="tilesetImage" value="tilemap_packed_terrain_expansion.png"/>
+    <property name="timerDuration" type="float" value="1"/>
    </properties>
   </object>
   <object id="116" name="3i" type="Gate" x="738" y="788" width="54" height="36">
@@ -548,6 +556,7 @@
     <property name="initialOpen" type="bool" value="false"/>
     <property name="tileGrid" value="88,89,90;110,111,112;132,133,134"/>
     <property name="tilesetImage" value="tilemap_packed_terrain_expansion.png"/>
+    <property name="timerDuration" type="float" value="1"/>
    </properties>
   </object>
   <object id="118" name="4a" type="Gate" x="738" y="824" width="54" height="36">
@@ -555,6 +564,7 @@
     <property name="initialOpen" type="bool" value="false"/>
     <property name="tileGrid" value="88,89,90;110,111,112;132,133,134"/>
     <property name="tilesetImage" value="tilemap_packed_terrain_expansion.png"/>
+    <property name="timerDuration" type="float" value="1"/>
    </properties>
   </object>
   <object id="119" name="4b" type="Gate" x="738" y="860" width="54" height="36">
@@ -562,6 +572,7 @@
     <property name="initialOpen" type="bool" value="false"/>
     <property name="tileGrid" value="88,89,90;110,111,112;132,133,134"/>
     <property name="tilesetImage" value="tilemap_packed_terrain_expansion.png"/>
+    <property name="timerDuration" type="float" value="1"/>
    </properties>
   </object>
   <object id="124" name="4c" type="Gate" x="738" y="896" width="54" height="36">
@@ -569,6 +580,7 @@
     <property name="initialOpen" type="bool" value="false"/>
     <property name="tileGrid" value="88,89,90;110,111,112;132,133,134"/>
     <property name="tilesetImage" value="tilemap_packed_terrain_expansion.png"/>
+    <property name="timerDuration" type="float" value="1"/>
    </properties>
   </object>
   <object id="126" name="4d" type="Gate" x="738" y="932" width="54" height="36">
@@ -576,6 +588,7 @@
     <property name="initialOpen" type="bool" value="false"/>
     <property name="tileGrid" value="88,89,90;110,111,112;132,133,134"/>
     <property name="tilesetImage" value="tilemap_packed_terrain_expansion.png"/>
+    <property name="timerDuration" type="float" value="1"/>
    </properties>
   </object>
   <object id="128" name="4e" type="Gate" x="738" y="968" width="54" height="36">
@@ -583,6 +596,7 @@
     <property name="initialOpen" type="bool" value="false"/>
     <property name="tileGrid" value="88,89,90;110,111,112;132,133,134"/>
     <property name="tilesetImage" value="tilemap_packed_terrain_expansion.png"/>
+    <property name="timerDuration" type="float" value="1"/>
    </properties>
   </object>
   <object id="130" name="4f" type="Gate" x="738" y="1004" width="54" height="36">
@@ -590,6 +604,7 @@
     <property name="initialOpen" type="bool" value="false"/>
     <property name="tileGrid" value="88,89,90;110,111,112;132,133,134"/>
     <property name="tilesetImage" value="tilemap_packed_terrain_expansion.png"/>
+    <property name="timerDuration" type="float" value="1"/>
    </properties>
   </object>
   <object id="132" name="4g" type="Gate" x="738" y="1040" width="54" height="36">
@@ -597,6 +612,7 @@
     <property name="initialOpen" type="bool" value="false"/>
     <property name="tileGrid" value="88,89,90;110,111,112;132,133,134"/>
     <property name="tilesetImage" value="tilemap_packed_terrain_expansion.png"/>
+    <property name="timerDuration" type="float" value="1"/>
    </properties>
   </object>
   <object id="134" name="5a" type="Gate" x="738" y="1076" width="54" height="36">
@@ -604,6 +620,7 @@
     <property name="initialOpen" type="bool" value="false"/>
     <property name="tileGrid" value="88,89,90;110,111,112;132,133,134"/>
     <property name="tilesetImage" value="tilemap_packed_terrain_expansion.png"/>
+    <property name="timerDuration" type="float" value="1"/>
    </properties>
   </object>
   <object id="136" name="5b" type="Gate" x="738" y="1112" width="54" height="36">
@@ -611,6 +628,7 @@
     <property name="initialOpen" type="bool" value="false"/>
     <property name="tileGrid" value="88,89,90;110,111,112;132,133,134"/>
     <property name="tilesetImage" value="tilemap_packed_terrain_expansion.png"/>
+    <property name="timerDuration" type="float" value="1"/>
    </properties>
   </object>
   <object id="138" name="5c" type="Gate" x="738" y="1148" width="54" height="36">
@@ -618,6 +636,7 @@
     <property name="initialOpen" type="bool" value="false"/>
     <property name="tileGrid" value="88,89,90;110,111,112;132,133,134"/>
     <property name="tilesetImage" value="tilemap_packed_terrain_expansion.png"/>
+    <property name="timerDuration" type="float" value="1"/>
    </properties>
   </object>
   <object id="140" name="5d" type="Gate" x="738" y="1184" width="54" height="36">
@@ -625,6 +644,7 @@
     <property name="initialOpen" type="bool" value="false"/>
     <property name="tileGrid" value="88,89,90;110,111,112;132,133,134"/>
     <property name="tilesetImage" value="tilemap_packed_terrain_expansion.png"/>
+    <property name="timerDuration" type="float" value="1"/>
    </properties>
   </object>
   <object id="142" name="5e" type="Gate" x="738" y="1220" width="54" height="36">
@@ -632,6 +652,7 @@
     <property name="initialOpen" type="bool" value="false"/>
     <property name="tileGrid" value="88,89,90;110,111,112;132,133,134"/>
     <property name="tilesetImage" value="tilemap_packed_terrain_expansion.png"/>
+    <property name="timerDuration" type="float" value="1"/>
    </properties>
   </object>
   <object id="144" name="5f" type="Gate" x="738" y="1256" width="54" height="36">
@@ -639,6 +660,7 @@
     <property name="initialOpen" type="bool" value="false"/>
     <property name="tileGrid" value="88,89,90;110,111,112;132,133,134"/>
     <property name="tilesetImage" value="tilemap_packed_terrain_expansion.png"/>
+    <property name="timerDuration" type="float" value="1"/>
    </properties>
   </object>
   <object id="146" name="5g" type="Gate" x="738" y="1292" width="54" height="36">
@@ -646,6 +668,7 @@
     <property name="initialOpen" type="bool" value="false"/>
     <property name="tileGrid" value="88,89,90;110,111,112;132,133,134"/>
     <property name="tilesetImage" value="tilemap_packed_terrain_expansion.png"/>
+    <property name="timerDuration" type="float" value="1"/>
    </properties>
   </object>
   <object id="148" name="5h" type="Gate" x="738" y="1328" width="54" height="36">
@@ -653,6 +676,7 @@
     <property name="initialOpen" type="bool" value="false"/>
     <property name="tileGrid" value="88,89,90;110,111,112;132,133,134"/>
     <property name="tilesetImage" value="tilemap_packed_terrain_expansion.png"/>
+    <property name="timerDuration" type="float" value="1"/>
    </properties>
   </object>
   <object id="150" name="6a" type="Gate" x="738" y="1364" width="54" height="36">
@@ -660,6 +684,7 @@
     <property name="initialOpen" type="bool" value="false"/>
     <property name="tileGrid" value="88,89,90;110,111,112;132,133,134"/>
     <property name="tilesetImage" value="tilemap_packed_terrain_expansion.png"/>
+    <property name="timerDuration" type="float" value="1"/>
    </properties>
   </object>
   <object id="152" name="6b" type="Gate" x="738" y="1400" width="54" height="36">
@@ -667,6 +692,7 @@
     <property name="initialOpen" type="bool" value="false"/>
     <property name="tileGrid" value="88,89,90;110,111,112;132,133,134"/>
     <property name="tilesetImage" value="tilemap_packed_terrain_expansion.png"/>
+    <property name="timerDuration" type="float" value="1"/>
    </properties>
   </object>
   <object id="154" name="6c" type="Gate" x="738" y="1436" width="54" height="36">
@@ -674,6 +700,7 @@
     <property name="initialOpen" type="bool" value="false"/>
     <property name="tileGrid" value="88,89,90;110,111,112;132,133,134"/>
     <property name="tilesetImage" value="tilemap_packed_terrain_expansion.png"/>
+    <property name="timerDuration" type="float" value="1"/>
    </properties>
   </object>
   <object id="156" name="6d" type="Gate" x="738" y="1472" width="54" height="36">
@@ -681,6 +708,7 @@
     <property name="initialOpen" type="bool" value="false"/>
     <property name="tileGrid" value="88,89,90;110,111,112;132,133,134"/>
     <property name="tilesetImage" value="tilemap_packed_terrain_expansion.png"/>
+    <property name="timerDuration" type="float" value="1"/>
    </properties>
   </object>
   <object id="158" name="6e" type="Gate" x="738" y="1508" width="54" height="36">
@@ -688,6 +716,7 @@
     <property name="initialOpen" type="bool" value="false"/>
     <property name="tileGrid" value="88,89,90;110,111,112;132,133,134"/>
     <property name="tilesetImage" value="tilemap_packed_terrain_expansion.png"/>
+    <property name="timerDuration" type="float" value="1"/>
    </properties>
   </object>
   <object id="160" name="6f" type="Gate" x="738" y="1544" width="54" height="36">
@@ -695,6 +724,7 @@
     <property name="initialOpen" type="bool" value="false"/>
     <property name="tileGrid" value="88,89,90;110,111,112;132,133,134"/>
     <property name="tilesetImage" value="tilemap_packed_terrain_expansion.png"/>
+    <property name="timerDuration" type="float" value="1"/>
    </properties>
   </object>
   <object id="162" name="6g" type="Gate" x="738" y="1580" width="54" height="36">
@@ -702,6 +732,7 @@
     <property name="initialOpen" type="bool" value="false"/>
     <property name="tileGrid" value="88,89,90;110,111,112;132,133,134"/>
     <property name="tilesetImage" value="tilemap_packed_terrain_expansion.png"/>
+    <property name="timerDuration" type="float" value="1"/>
    </properties>
   </object>
   <object id="164" name="6h" type="Gate" x="738" y="1616" width="54" height="36">
@@ -709,6 +740,7 @@
     <property name="initialOpen" type="bool" value="false"/>
     <property name="tileGrid" value="88,89,90;110,111,112;132,133,134"/>
     <property name="tilesetImage" value="tilemap_packed_terrain_expansion.png"/>
+    <property name="timerDuration" type="float" value="1"/>
    </properties>
   </object>
   <object id="166" name="7a" type="Gate" x="738" y="1652" width="54" height="36">
@@ -716,6 +748,7 @@
     <property name="initialOpen" type="bool" value="false"/>
     <property name="tileGrid" value="88,89,90;110,111,112;132,133,134"/>
     <property name="tilesetImage" value="tilemap_packed_terrain_expansion.png"/>
+    <property name="timerDuration" type="float" value="1"/>
    </properties>
   </object>
   <object id="168" name="7b" type="Gate" x="738" y="1688" width="54" height="36">
@@ -723,6 +756,7 @@
     <property name="initialOpen" type="bool" value="false"/>
     <property name="tileGrid" value="88,89,90;110,111,112;132,133,134"/>
     <property name="tilesetImage" value="tilemap_packed_terrain_expansion.png"/>
+    <property name="timerDuration" type="float" value="1"/>
    </properties>
   </object>
   <object id="170" name="7c" type="Gate" x="738" y="1724" width="54" height="36">
@@ -730,6 +764,7 @@
     <property name="initialOpen" type="bool" value="false"/>
     <property name="tileGrid" value="88,89,90;110,111,112;132,133,134"/>
     <property name="tilesetImage" value="tilemap_packed_terrain_expansion.png"/>
+    <property name="timerDuration" type="float" value="1"/>
    </properties>
   </object>
   <object id="172" name="7d" type="Gate" x="738" y="1760" width="54" height="36">
@@ -737,6 +772,7 @@
     <property name="initialOpen" type="bool" value="false"/>
     <property name="tileGrid" value="88,89,90;110,111,112;132,133,134"/>
     <property name="tilesetImage" value="tilemap_packed_terrain_expansion.png"/>
+    <property name="timerDuration" type="float" value="1"/>
    </properties>
   </object>
   <object id="175" name="7e" type="Gate" x="738" y="1796" width="54" height="36">
@@ -744,6 +780,7 @@
     <property name="initialOpen" type="bool" value="false"/>
     <property name="tileGrid" value="88,89,90;110,111,112;132,133,134"/>
     <property name="tilesetImage" value="tilemap_packed_terrain_expansion.png"/>
+    <property name="timerDuration" type="float" value="1"/>
    </properties>
   </object>
   <object id="177" name="7f" type="Gate" x="738" y="1832" width="54" height="36">
@@ -751,6 +788,7 @@
     <property name="initialOpen" type="bool" value="false"/>
     <property name="tileGrid" value="88,89,90;110,111,112;132,133,134"/>
     <property name="tilesetImage" value="tilemap_packed_terrain_expansion.png"/>
+    <property name="timerDuration" type="float" value="1"/>
    </properties>
   </object>
   <object id="179" name="7g" type="Gate" x="738" y="1868" width="54" height="36">
@@ -758,6 +796,7 @@
     <property name="initialOpen" type="bool" value="false"/>
     <property name="tileGrid" value="88,89,90;110,111,112;132,133,134"/>
     <property name="tilesetImage" value="tilemap_packed_terrain_expansion.png"/>
+    <property name="timerDuration" type="float" value="1"/>
    </properties>
   </object>
   <object id="181" name="7h" type="Gate" x="738" y="1904" width="54" height="36">
@@ -765,6 +804,7 @@
     <property name="initialOpen" type="bool" value="false"/>
     <property name="tileGrid" value="88,89,90;110,111,112;132,133,134"/>
     <property name="tilesetImage" value="tilemap_packed_terrain_expansion.png"/>
+    <property name="timerDuration" type="float" value="1"/>
    </properties>
   </object>
   <object id="183" name="7h" type="Gate" x="738" y="1940" width="54" height="36">
@@ -772,6 +812,7 @@
     <property name="initialOpen" type="bool" value="false"/>
     <property name="tileGrid" value="88,89,90;110,111,112;132,133,134"/>
     <property name="tilesetImage" value="tilemap_packed_terrain_expansion.png"/>
+    <property name="timerDuration" type="float" value="1"/>
    </properties>
   </object>
   <object id="185" name="7i" type="Gate" x="738" y="1976" width="54" height="36">
@@ -779,6 +820,7 @@
     <property name="initialOpen" type="bool" value="false"/>
     <property name="tileGrid" value="88,89,90;110,111,112;132,133,134"/>
     <property name="tilesetImage" value="tilemap_packed_terrain_expansion.png"/>
+    <property name="timerDuration" type="float" value="1"/>
    </properties>
   </object>
   <object id="187" name="8a" type="Gate" x="738" y="2012" width="54" height="36">
@@ -786,6 +828,7 @@
     <property name="initialOpen" type="bool" value="false"/>
     <property name="tileGrid" value="88,89,90;110,111,112;132,133,134"/>
     <property name="tilesetImage" value="tilemap_packed_terrain_expansion.png"/>
+    <property name="timerDuration" type="float" value="1"/>
    </properties>
   </object>
   <object id="189" name="8b" type="Gate" x="738" y="2048" width="54" height="36">
@@ -793,6 +836,7 @@
     <property name="initialOpen" type="bool" value="false"/>
     <property name="tileGrid" value="88,89,90;110,111,112;132,133,134"/>
     <property name="tilesetImage" value="tilemap_packed_terrain_expansion.png"/>
+    <property name="timerDuration" type="float" value="1"/>
    </properties>
   </object>
   <object id="191" name="8c" type="Gate" x="738" y="2084" width="54" height="36">
@@ -800,6 +844,7 @@
     <property name="initialOpen" type="bool" value="false"/>
     <property name="tileGrid" value="88,89,90;110,111,112;132,133,134"/>
     <property name="tilesetImage" value="tilemap_packed_terrain_expansion.png"/>
+    <property name="timerDuration" type="float" value="1"/>
    </properties>
   </object>
   <object id="193" name="8d" type="Gate" x="738" y="2120" width="54" height="36">
@@ -807,6 +852,7 @@
     <property name="initialOpen" type="bool" value="false"/>
     <property name="tileGrid" value="88,89,90;110,111,112;132,133,134"/>
     <property name="tilesetImage" value="tilemap_packed_terrain_expansion.png"/>
+    <property name="timerDuration" type="float" value="1"/>
    </properties>
   </object>
   <object id="195" name="8e" type="Gate" x="738" y="2156" width="54" height="36">
@@ -814,6 +860,7 @@
     <property name="initialOpen" type="bool" value="false"/>
     <property name="tileGrid" value="88,89,90;110,111,112;132,133,134"/>
     <property name="tilesetImage" value="tilemap_packed_terrain_expansion.png"/>
+    <property name="timerDuration" type="float" value="1"/>
    </properties>
   </object>
   <object id="197" name="8f" type="Gate" x="738" y="2192" width="54" height="36">
@@ -821,6 +868,7 @@
     <property name="initialOpen" type="bool" value="false"/>
     <property name="tileGrid" value="88,89,90;110,111,112;132,133,134"/>
     <property name="tilesetImage" value="tilemap_packed_terrain_expansion.png"/>
+    <property name="timerDuration" type="float" value="1"/>
    </properties>
   </object>
   <object id="199" name="8g" type="Gate" x="738" y="2228" width="54" height="36">
@@ -828,6 +876,7 @@
     <property name="initialOpen" type="bool" value="false"/>
     <property name="tileGrid" value="88,89,90;110,111,112;132,133,134"/>
     <property name="tilesetImage" value="tilemap_packed_terrain_expansion.png"/>
+    <property name="timerDuration" type="float" value="1"/>
    </properties>
   </object>
   <object id="201" name="8h" type="Gate" x="738" y="2264" width="54" height="36">
@@ -835,6 +884,7 @@
     <property name="initialOpen" type="bool" value="false"/>
     <property name="tileGrid" value="88,89,90;110,111,112;132,133,134"/>
     <property name="tilesetImage" value="tilemap_packed_terrain_expansion.png"/>
+    <property name="timerDuration" type="float" value="1"/>
    </properties>
   </object>
   <object id="203" name="8i" type="Gate" x="738" y="2300" width="54" height="36">
@@ -842,6 +892,7 @@
     <property name="initialOpen" type="bool" value="false"/>
     <property name="tileGrid" value="88,89,90;110,111,112;132,133,134"/>
     <property name="tilesetImage" value="tilemap_packed_terrain_expansion.png"/>
+    <property name="timerDuration" type="float" value="1"/>
    </properties>
   </object>
   <object id="205" name="8j" type="Gate" x="738" y="2336" width="54" height="36">
@@ -849,6 +900,7 @@
     <property name="initialOpen" type="bool" value="false"/>
     <property name="tileGrid" value="88,89,90;110,111,112;132,133,134"/>
     <property name="tilesetImage" value="tilemap_packed_terrain_expansion.png"/>
+    <property name="timerDuration" type="float" value="1"/>
    </properties>
   </object>
   <object id="207" name="9a" type="Gate" x="738" y="2372" width="54" height="36">
@@ -856,6 +908,7 @@
     <property name="initialOpen" type="bool" value="false"/>
     <property name="tileGrid" value="88,89,90;110,111,112;132,133,134"/>
     <property name="tilesetImage" value="tilemap_packed_terrain_expansion.png"/>
+    <property name="timerDuration" type="float" value="1"/>
    </properties>
   </object>
   <object id="209" name="9b" type="Gate" x="738" y="2408" width="54" height="36">
@@ -863,6 +916,7 @@
     <property name="initialOpen" type="bool" value="false"/>
     <property name="tileGrid" value="88,89,90;110,111,112;132,133,134"/>
     <property name="tilesetImage" value="tilemap_packed_terrain_expansion.png"/>
+    <property name="timerDuration" type="float" value="1"/>
    </properties>
   </object>
   <object id="211" name="9c" type="Gate" x="738" y="2444" width="54" height="36">
@@ -870,6 +924,7 @@
     <property name="initialOpen" type="bool" value="false"/>
     <property name="tileGrid" value="88,89,90;110,111,112;132,133,134"/>
     <property name="tilesetImage" value="tilemap_packed_terrain_expansion.png"/>
+    <property name="timerDuration" type="float" value="1"/>
    </properties>
   </object>
   <object id="212" name="9d" type="Gate" x="738" y="2480" width="54" height="36">
@@ -877,6 +932,7 @@
     <property name="initialOpen" type="bool" value="false"/>
     <property name="tileGrid" value="88,89,90;110,111,112;132,133,134"/>
     <property name="tilesetImage" value="tilemap_packed_terrain_expansion.png"/>
+    <property name="timerDuration" type="float" value="1"/>
    </properties>
   </object>
   <object id="214" name="9e" type="Gate" x="738" y="2516" width="54" height="36">
@@ -884,6 +940,7 @@
     <property name="initialOpen" type="bool" value="false"/>
     <property name="tileGrid" value="88,89,90;110,111,112;132,133,134"/>
     <property name="tilesetImage" value="tilemap_packed_terrain_expansion.png"/>
+    <property name="timerDuration" type="float" value="1"/>
    </properties>
   </object>
   <object id="216" name="9f" type="Gate" x="738" y="2552" width="54" height="36">
@@ -891,6 +948,7 @@
     <property name="initialOpen" type="bool" value="false"/>
     <property name="tileGrid" value="88,89,90;110,111,112;132,133,134"/>
     <property name="tilesetImage" value="tilemap_packed_terrain_expansion.png"/>
+    <property name="timerDuration" type="float" value="1"/>
    </properties>
   </object>
   <object id="218" name="9g" type="Gate" x="738" y="2588" width="54" height="36">
@@ -898,6 +956,7 @@
     <property name="initialOpen" type="bool" value="false"/>
     <property name="tileGrid" value="88,89,90;110,111,112;132,133,134"/>
     <property name="tilesetImage" value="tilemap_packed_terrain_expansion.png"/>
+    <property name="timerDuration" type="float" value="1"/>
    </properties>
   </object>
   <object id="83" name="door" type="ExitDoor" x="752.333" y="2642.67" width="26" height="40"/>
@@ -966,351 +1025,351 @@
   <object id="106" name="3b" type="Button" x="755.333" y="528.333" width="20" height="8">
    <properties>
     <property name="mode" value="timer"/>
-    <property name="timerDuration" type="float" value="2"/>
+    <property name="timerDuration" type="float" value="1"/>
    </properties>
   </object>
   <object id="107" name="3c" type="Button" x="755.583" y="563.583" width="20" height="8">
    <properties>
     <property name="mode" value="timer"/>
-    <property name="timerDuration" type="float" value="2"/>
+    <property name="timerDuration" type="float" value="1"/>
    </properties>
   </object>
   <object id="108" name="3d" type="Button" x="755.625" y="600.375" width="20" height="8">
    <properties>
     <property name="mode" value="timer"/>
-    <property name="timerDuration" type="float" value="2"/>
+    <property name="timerDuration" type="float" value="1"/>
    </properties>
   </object>
   <object id="109" name="3e" type="Button" x="755.625" y="636.5" width="20" height="8">
    <properties>
     <property name="mode" value="timer"/>
-    <property name="timerDuration" type="float" value="2"/>
+    <property name="timerDuration" type="float" value="1"/>
    </properties>
   </object>
   <object id="110" name="3f" type="Button" x="755" y="672" width="20" height="8">
    <properties>
     <property name="mode" value="timer"/>
-    <property name="timerDuration" type="float" value="2"/>
+    <property name="timerDuration" type="float" value="1"/>
    </properties>
   </object>
   <object id="111" name="3g" type="Button" x="755" y="708" width="20" height="8">
    <properties>
     <property name="mode" value="timer"/>
-    <property name="timerDuration" type="float" value="2"/>
+    <property name="timerDuration" type="float" value="1"/>
    </properties>
   </object>
   <object id="113" name="3h" type="Button" x="755" y="744" width="20" height="8">
    <properties>
     <property name="mode" value="timer"/>
-    <property name="timerDuration" type="float" value="2"/>
+    <property name="timerDuration" type="float" value="1"/>
    </properties>
   </object>
   <object id="115" name="3i" type="Button" x="755" y="780" width="20" height="8">
    <properties>
     <property name="mode" value="timer"/>
-    <property name="timerDuration" type="float" value="2"/>
+    <property name="timerDuration" type="float" value="1"/>
    </properties>
   </object>
   <object id="117" name="4a" type="Button" x="755" y="816" width="20" height="8">
    <properties>
     <property name="mode" value="timer"/>
-    <property name="timerDuration" type="float" value="2"/>
+    <property name="timerDuration" type="float" value="1"/>
    </properties>
   </object>
   <object id="120" name="4b" type="Button" x="755" y="852" width="20" height="8">
    <properties>
     <property name="mode" value="timer"/>
-    <property name="timerDuration" type="float" value="2"/>
+    <property name="timerDuration" type="float" value="1"/>
    </properties>
   </object>
   <object id="123" name="4c" type="Button" x="755" y="888" width="20" height="8">
    <properties>
     <property name="mode" value="timer"/>
-    <property name="timerDuration" type="float" value="2"/>
+    <property name="timerDuration" type="float" value="1"/>
    </properties>
   </object>
   <object id="125" name="4d" type="Button" x="755" y="924" width="20" height="8">
    <properties>
     <property name="mode" value="timer"/>
-    <property name="timerDuration" type="float" value="2"/>
+    <property name="timerDuration" type="float" value="1"/>
    </properties>
   </object>
   <object id="127" name="4e" type="Button" x="755" y="960" width="20" height="8">
    <properties>
     <property name="mode" value="timer"/>
-    <property name="timerDuration" type="float" value="2"/>
+    <property name="timerDuration" type="float" value="1"/>
    </properties>
   </object>
   <object id="129" name="4f" type="Button" x="755" y="996" width="20" height="8">
    <properties>
     <property name="mode" value="timer"/>
-    <property name="timerDuration" type="float" value="2"/>
+    <property name="timerDuration" type="float" value="1"/>
    </properties>
   </object>
   <object id="131" name="4g" type="Button" x="755" y="1032" width="20" height="8">
    <properties>
     <property name="mode" value="timer"/>
-    <property name="timerDuration" type="float" value="2"/>
+    <property name="timerDuration" type="float" value="1"/>
    </properties>
   </object>
   <object id="133" name="5a" type="Button" x="755" y="1068" width="20" height="8">
    <properties>
     <property name="mode" value="timer"/>
-    <property name="timerDuration" type="float" value="2"/>
+    <property name="timerDuration" type="float" value="1"/>
    </properties>
   </object>
   <object id="135" name="5b" type="Button" x="755" y="1104" width="20" height="8">
    <properties>
     <property name="mode" value="timer"/>
-    <property name="timerDuration" type="float" value="2"/>
+    <property name="timerDuration" type="float" value="1"/>
    </properties>
   </object>
   <object id="137" name="5c" type="Button" x="755" y="1140" width="20" height="8">
    <properties>
     <property name="mode" value="timer"/>
-    <property name="timerDuration" type="float" value="2"/>
+    <property name="timerDuration" type="float" value="1"/>
    </properties>
   </object>
   <object id="139" name="5d" type="Button" x="755" y="1176" width="20" height="8">
    <properties>
     <property name="mode" value="timer"/>
-    <property name="timerDuration" type="float" value="2"/>
+    <property name="timerDuration" type="float" value="1"/>
    </properties>
   </object>
   <object id="141" name="5e" type="Button" x="755" y="1212" width="20" height="8">
    <properties>
     <property name="mode" value="timer"/>
-    <property name="timerDuration" type="float" value="2"/>
+    <property name="timerDuration" type="float" value="1"/>
    </properties>
   </object>
   <object id="143" name="5f" type="Button" x="755" y="1248" width="20" height="8">
    <properties>
     <property name="mode" value="timer"/>
-    <property name="timerDuration" type="float" value="2"/>
+    <property name="timerDuration" type="float" value="1"/>
    </properties>
   </object>
   <object id="145" name="5g" type="Button" x="755" y="1284" width="20" height="8">
    <properties>
     <property name="mode" value="timer"/>
-    <property name="timerDuration" type="float" value="2"/>
+    <property name="timerDuration" type="float" value="1"/>
    </properties>
   </object>
   <object id="147" name="5h" type="Button" x="755" y="1320" width="20" height="8">
    <properties>
     <property name="mode" value="timer"/>
-    <property name="timerDuration" type="float" value="2"/>
+    <property name="timerDuration" type="float" value="1"/>
    </properties>
   </object>
   <object id="149" name="6a" type="Button" x="755" y="1356" width="20" height="8">
    <properties>
     <property name="mode" value="timer"/>
-    <property name="timerDuration" type="float" value="2"/>
+    <property name="timerDuration" type="float" value="1"/>
    </properties>
   </object>
   <object id="151" name="6b" type="Button" x="755" y="1392" width="20" height="8">
    <properties>
     <property name="mode" value="timer"/>
-    <property name="timerDuration" type="float" value="2"/>
+    <property name="timerDuration" type="float" value="1"/>
    </properties>
   </object>
   <object id="153" name="6c" type="Button" x="755" y="1428" width="20" height="8">
    <properties>
     <property name="mode" value="timer"/>
-    <property name="timerDuration" type="float" value="2"/>
+    <property name="timerDuration" type="float" value="1"/>
    </properties>
   </object>
   <object id="155" name="6d" type="Button" x="755" y="1464" width="20" height="8">
    <properties>
     <property name="mode" value="timer"/>
-    <property name="timerDuration" type="float" value="2"/>
+    <property name="timerDuration" type="float" value="1"/>
    </properties>
   </object>
   <object id="157" name="6e" type="Button" x="755" y="1500" width="20" height="8">
    <properties>
     <property name="mode" value="timer"/>
-    <property name="timerDuration" type="float" value="2"/>
+    <property name="timerDuration" type="float" value="1"/>
    </properties>
   </object>
   <object id="159" name="6f" type="Button" x="755" y="1536" width="20" height="8">
    <properties>
     <property name="mode" value="timer"/>
-    <property name="timerDuration" type="float" value="2"/>
+    <property name="timerDuration" type="float" value="1"/>
    </properties>
   </object>
   <object id="161" name="6g" type="Button" x="755" y="1572" width="20" height="8">
    <properties>
     <property name="mode" value="timer"/>
-    <property name="timerDuration" type="float" value="2"/>
+    <property name="timerDuration" type="float" value="1"/>
    </properties>
   </object>
   <object id="163" name="6h" type="Button" x="755" y="1608" width="20" height="8">
    <properties>
     <property name="mode" value="timer"/>
-    <property name="timerDuration" type="float" value="2"/>
+    <property name="timerDuration" type="float" value="1"/>
    </properties>
   </object>
   <object id="165" name="7a" type="Button" x="755" y="1644" width="20" height="8">
    <properties>
     <property name="mode" value="timer"/>
-    <property name="timerDuration" type="float" value="2"/>
+    <property name="timerDuration" type="float" value="1"/>
    </properties>
   </object>
   <object id="167" name="7b" type="Button" x="755" y="1680" width="20" height="8">
    <properties>
     <property name="mode" value="timer"/>
-    <property name="timerDuration" type="float" value="2"/>
+    <property name="timerDuration" type="float" value="1"/>
    </properties>
   </object>
   <object id="169" name="7c" type="Button" x="755" y="1716" width="20" height="8">
    <properties>
     <property name="mode" value="timer"/>
-    <property name="timerDuration" type="float" value="2"/>
+    <property name="timerDuration" type="float" value="1"/>
    </properties>
   </object>
   <object id="171" name="7d" type="Button" x="755" y="1752" width="20" height="8">
    <properties>
     <property name="mode" value="timer"/>
-    <property name="timerDuration" type="float" value="2"/>
+    <property name="timerDuration" type="float" value="1"/>
    </properties>
   </object>
   <object id="174" name="7e" type="Button" x="755" y="1788" width="20" height="8">
    <properties>
     <property name="mode" value="timer"/>
-    <property name="timerDuration" type="float" value="2"/>
+    <property name="timerDuration" type="float" value="1"/>
    </properties>
   </object>
   <object id="176" name="7f" type="Button" x="755" y="1824" width="20" height="8">
    <properties>
     <property name="mode" value="timer"/>
-    <property name="timerDuration" type="float" value="2"/>
+    <property name="timerDuration" type="float" value="1"/>
    </properties>
   </object>
   <object id="178" name="7g" type="Button" x="755" y="1860" width="20" height="8">
    <properties>
     <property name="mode" value="timer"/>
-    <property name="timerDuration" type="float" value="2"/>
+    <property name="timerDuration" type="float" value="1"/>
    </properties>
   </object>
   <object id="180" name="7h" type="Button" x="755" y="1896" width="20" height="8">
    <properties>
     <property name="mode" value="timer"/>
-    <property name="timerDuration" type="float" value="2"/>
+    <property name="timerDuration" type="float" value="1"/>
    </properties>
   </object>
   <object id="182" name="7h" type="Button" x="755" y="1932" width="20" height="8">
    <properties>
     <property name="mode" value="timer"/>
-    <property name="timerDuration" type="float" value="2"/>
+    <property name="timerDuration" type="float" value="1"/>
    </properties>
   </object>
   <object id="184" name="7i" type="Button" x="755" y="1968" width="20" height="8">
    <properties>
     <property name="mode" value="timer"/>
-    <property name="timerDuration" type="float" value="2"/>
+    <property name="timerDuration" type="float" value="1"/>
    </properties>
   </object>
   <object id="186" name="8a" type="Button" x="755" y="2004" width="20" height="8">
    <properties>
     <property name="mode" value="timer"/>
-    <property name="timerDuration" type="float" value="2"/>
+    <property name="timerDuration" type="float" value="1"/>
    </properties>
   </object>
   <object id="188" name="8b" type="Button" x="755" y="2040" width="20" height="8">
    <properties>
     <property name="mode" value="timer"/>
-    <property name="timerDuration" type="float" value="2"/>
+    <property name="timerDuration" type="float" value="1"/>
    </properties>
   </object>
   <object id="190" name="8c" type="Button" x="755" y="2076" width="20" height="8">
    <properties>
     <property name="mode" value="timer"/>
-    <property name="timerDuration" type="float" value="2"/>
+    <property name="timerDuration" type="float" value="1"/>
    </properties>
   </object>
   <object id="192" name="8d" type="Button" x="755" y="2112" width="20" height="8">
    <properties>
     <property name="mode" value="timer"/>
-    <property name="timerDuration" type="float" value="2"/>
+    <property name="timerDuration" type="float" value="1"/>
    </properties>
   </object>
   <object id="194" name="8e" type="Button" x="755" y="2148" width="20" height="8">
    <properties>
     <property name="mode" value="timer"/>
-    <property name="timerDuration" type="float" value="2"/>
+    <property name="timerDuration" type="float" value="1"/>
    </properties>
   </object>
   <object id="196" name="8f" type="Button" x="755" y="2184" width="20" height="8">
    <properties>
     <property name="mode" value="timer"/>
-    <property name="timerDuration" type="float" value="2"/>
+    <property name="timerDuration" type="float" value="1"/>
    </properties>
   </object>
   <object id="198" name="8g" type="Button" x="755" y="2220" width="20" height="8">
    <properties>
     <property name="mode" value="timer"/>
-    <property name="timerDuration" type="float" value="2"/>
+    <property name="timerDuration" type="float" value="1"/>
    </properties>
   </object>
   <object id="200" name="8h" type="Button" x="755" y="2256" width="20" height="8">
    <properties>
     <property name="mode" value="timer"/>
-    <property name="timerDuration" type="float" value="2"/>
+    <property name="timerDuration" type="float" value="1"/>
    </properties>
   </object>
   <object id="202" name="8i" type="Button" x="755" y="2292" width="20" height="8">
    <properties>
     <property name="mode" value="timer"/>
-    <property name="timerDuration" type="float" value="2"/>
+    <property name="timerDuration" type="float" value="1"/>
    </properties>
   </object>
   <object id="204" name="8j" type="Button" x="755" y="2328" width="20" height="8">
    <properties>
     <property name="mode" value="timer"/>
-    <property name="timerDuration" type="float" value="2"/>
+    <property name="timerDuration" type="float" value="1"/>
    </properties>
   </object>
   <object id="206" name="9a" type="Button" x="755" y="2364" width="20" height="8">
    <properties>
     <property name="mode" value="timer"/>
-    <property name="timerDuration" type="float" value="2"/>
+    <property name="timerDuration" type="float" value="1"/>
    </properties>
   </object>
   <object id="208" name="9b" type="Button" x="755" y="2400" width="20" height="8">
    <properties>
     <property name="mode" value="timer"/>
-    <property name="timerDuration" type="float" value="2"/>
+    <property name="timerDuration" type="float" value="1"/>
    </properties>
   </object>
   <object id="210" name="9c" type="Button" x="755" y="2436" width="20" height="8">
    <properties>
     <property name="mode" value="timer"/>
-    <property name="timerDuration" type="float" value="2"/>
+    <property name="timerDuration" type="float" value="1"/>
    </properties>
   </object>
   <object id="213" name="9d" type="Button" x="755" y="2472" width="20" height="8">
    <properties>
     <property name="mode" value="timer"/>
-    <property name="timerDuration" type="float" value="2"/>
+    <property name="timerDuration" type="float" value="1"/>
    </properties>
   </object>
   <object id="215" name="9e" type="Button" x="755" y="2508" width="20" height="8">
    <properties>
     <property name="mode" value="timer"/>
-    <property name="timerDuration" type="float" value="2"/>
+    <property name="timerDuration" type="float" value="1"/>
    </properties>
   </object>
   <object id="217" name="9f" type="Button" x="755" y="2544" width="20" height="8">
    <properties>
     <property name="mode" value="timer"/>
-    <property name="timerDuration" type="float" value="2"/>
+    <property name="timerDuration" type="float" value="1"/>
    </properties>
   </object>
   <object id="219" name="9g" type="Button" x="755" y="2580" width="20" height="8">
    <properties>
     <property name="mode" value="timer"/>
-    <property name="timerDuration" type="float" value="2"/>
+    <property name="timerDuration" type="float" value="1"/>
    </properties>
   </object>
-  <object id="220" name="player" type="Player" x="757" y="42" width="20" height="20"/>
+  <object id="220" name="player" type="Player" x="755" y="49.5" width="20" height="20"/>
  </objectgroup>
 </map>
