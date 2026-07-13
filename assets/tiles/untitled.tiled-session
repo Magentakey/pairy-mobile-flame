@@ -1,5 +1,5 @@
 {
-    "activeFile": "level-05.tmx",
+    "activeFile": "level-06.tmx",
     "expandedProjectPaths": [
         "."
     ],
@@ -59,8 +59,8 @@
             "scale": 1.5,
             "selectedLayer": 3,
             "viewCenter": {
-                "x": 882.9999999999999,
-                "y": 680.3333333333333
+                "x": 900,
+                "y": 450.3333333333333
             }
         },
         "level-03.tmx": {
@@ -70,7 +70,7 @@
             "scale": 0.5,
             "selectedLayer": 3,
             "viewCenter": {
-                "x": 443,
+                "x": 900,
                 "y": 449
             }
         },
@@ -86,30 +86,33 @@
             "expandedObjectLayers": [
                 4
             ],
-            "scale": 2,
+            "scale": 0.5,
             "selectedLayer": 3,
             "viewCenter": {
-                "x": 1644.25,
-                "y": 1076.75
+                "x": 821,
+                "y": 1549
             }
         },
         "level-05.tmx": {
             "expandedObjectLayers": [
                 6
             ],
-            "scale": 2,
+            "scale": 1.5,
             "selectedLayer": 3,
             "viewCenter": {
-                "x": 1208.75,
-                "y": 535.75
+                "x": 1705,
+                "y": 605
             }
         },
         "level-06.tmx": {
-            "scale": 0.75,
-            "selectedLayer": 0,
+            "expandedObjectLayers": [
+                6
+            ],
+            "scale": 3,
+            "selectedLayer": 3,
             "viewCenter": {
-                "x": 323.33333333333326,
-                "y": 179.33333333333331
+                "x": 1517.1666666666665,
+                "y": 620.8333333333333
             }
         },
         "level-07.tmx": {
@@ -233,7 +236,8 @@
         "level-02.tmx",
         "level-03.tmx",
         "level-04.tmx",
-        "level-05.tmx"
+        "level-05.tmx",
+        "level-06.tmx"
     ],
     "project": "untitled.tiled-project",
     "property.type": "float",
