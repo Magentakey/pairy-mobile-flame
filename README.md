@@ -129,7 +129,6 @@ pairy/
 | Tileset & tilemap | [Kenney Pixel Platformer](https://kenney.nl/assets/pixel-platformer) | CC0 |
 | Tileset (ekspansi) | [Kenney Platformer Art Deluxe](https://kenney.nl/assets/platformer-art-deluxe) | CC0 |
 | UI (tombol, panel) | [Kenney UI Pack](https://kenney.nl/assets/ui-pack) | CC0 |
-| Sprite peri (fairy) | [Elthen's 2D Pixel Art Fairy Sprites](https://elthen.itch.io/2d-pixel-art-fairy-sprites) | Berbayar (~$1) |
 | Sprite pemain | [Pixel Adventure — Pixel Frog](https://pixelfrog-assets.itch.io/pixel-adventure-1) | CC0 |
 | Musik latar (BGM) | [OpenGameArt](https://opengameart.org) | CC0 |
 | Sound effect (SFX) | [Kenney Audio](https://kenney.nl/assets/category:Audio), [Freesound](https://freesound.org) | CC0 |
