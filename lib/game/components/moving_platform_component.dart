@@ -24,7 +24,7 @@ class MovingPlatformComponent extends PositionComponent
     // Default sama seperti behavior lama (tileset industrilla, ID 4/5/6).
     // Untuk asset custom, isi property Tiled: tilesetImage & tileGrid
     // (lihat lib/game/tile_grid.dart untuk format).
-    this.tilesetImage = 'tilemap_packed_industrilla expansion.png',
+    this.tilesetImage = 'tilemap_packed_industrilla_expansion.png',
     this.tileGrid = '4,5,6',
   }) : isMoving = initialMoving,
        super(anchor: Anchor.topLeft);

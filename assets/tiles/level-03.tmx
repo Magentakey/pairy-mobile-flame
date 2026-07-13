@@ -168,7 +168,7 @@
 </data>
  </layer>
  <objectgroup id="2" name="Spawnpoints">
-  <object id="146" name="player" type="Player" x="362.774" y="591.433" width="20" height="20"/>
+  <object id="146" name="player" type="Player" x="327.774" y="591.433" width="20" height="20"/>
   <object id="147" name="door" type="ExitDoor" x="1746.6" y="573.766" width="26" height="40"/>
   <object id="148" name="snowman" type="Trigger" x="-0.392276" y="577.266" width="71" height="33.5"/>
   <object id="150" name="snowman" type="Text" x="-0.558946" y="553.349" width="21.3333" height="13.3333">
@@ -176,14 +176,14 @@
     <property name="content" value="omg snow!"/>
    </properties>
   </object>
-  <object id="151" name="red fairy" type="Fairy" x="395.607" y="555.099" width="20" height="20">
+  <object id="151" name="red fairy" type="Fairy" x="360.607" y="555.099" width="20" height="20">
    <properties>
     <property name="color" value="red"/>
    </properties>
   </object>
-  <object id="152" name="blue fairy" type="Fairy" x="361.607" y="554.099" width="20" height="20"/>
+  <object id="152" name="blue fairy" type="Fairy" x="326.607" y="554.099" width="20" height="20"/>
   <object id="153" name="1a" type="Fountain" x="451.607" y="492.766" width="24" height="30"/>
-  <object id="178" name="2a" type="Fountain" x="560.607" y="492.766" width="24" height="30">
+  <object id="178" name="2b" type="Fountain" x="560.607" y="492.766" width="24" height="30">
    <properties>
     <property name="color" value="red"/>
    </properties>
@@ -191,7 +191,7 @@
   <object id="180" name="3a" type="Fountain" x="668.607" y="492.766" width="24" height="30"/>
   <object id="182" name="3b" type="Fountain" x="776.607" y="492.766" width="24" height="30">
    <properties>
-    <property name="actived" type="bool" value="false"/>
+    <property name="actived" type="bool" value="true"/>
     <property name="color" value="red"/>
    </properties>
   </object>
@@ -200,7 +200,7 @@
     <property name="color" value="red"/>
    </properties>
   </object>
-  <object id="177" name="2b" type="Fountain" x="586.107" y="492.766" width="24" height="30"/>
+  <object id="177" name="2a" type="Fountain" x="586.107" y="492.766" width="24" height="30"/>
   <object id="179" name="3a" type="Fountain" x="694.107" y="492.766" width="24" height="30">
    <properties>
     <property name="actived" type="bool" value="false"/>
@@ -226,28 +226,28 @@
     <property name="tilesetImage" value="tilemap_packed_terrain_expansion.png"/>
    </properties>
   </object>
-  <object id="173" name="2b" type="Gate" x="648.607" y="540.766" width="54" height="72">
+  <object id="173" name="2b" type="Gate" x="593.607" y="540.766" width="54" height="72">
    <properties>
     <property name="initialOpen" type="bool" value="false"/>
     <property name="tileGrid" value="88,89,90;110,111,112;132,133,134"/>
     <property name="tilesetImage" value="tilemap_packed_terrain_expansion.png"/>
    </properties>
   </object>
-  <object id="174" name="2a" type="Gate" x="594.607" y="540.766" width="54" height="72">
+  <object id="174" name="2a" type="Gate" x="539.607" y="540.766" width="54" height="72">
    <properties>
     <property name="initialOpen" type="bool" value="false"/>
     <property name="tileGrid" value="88,89,90;110,111,112;132,133,134"/>
     <property name="tilesetImage" value="tilemap_packed_terrain_expansion.png"/>
    </properties>
   </object>
-  <object id="175" name="1b" type="Gate" x="540.607" y="540.766" width="54" height="72">
+  <object id="175" name="1b" type="Gate" x="485.607" y="540.766" width="54" height="72">
    <properties>
     <property name="initialOpen" type="bool" value="false"/>
     <property name="tileGrid" value="88,89,90;110,111,112;132,133,134"/>
     <property name="tilesetImage" value="tilemap_packed_terrain_expansion.png"/>
    </properties>
   </object>
-  <object id="176" name="1a" type="Gate" x="486.607" y="540.766" width="54" height="72">
+  <object id="176" name="1a" type="Gate" x="431.607" y="540.766" width="54" height="72">
    <properties>
     <property name="initialOpen" type="bool" value="false"/>
     <property name="tileGrid" value="88,89,90;110,111,112;132,133,134"/>
@@ -259,8 +259,7 @@
     <property name="distanceTiles" type="int" value="10"/>
     <property name="speed" type="float" value="55"/>
     <property name="tileGrid" value="4,5,6"/>
-    <property name="tilesetImage">tilemap_packed_industrilla
-expansion.png</property>
+    <property name="tilesetImage" value="tilemap_packed_industrilla_expansion.png"/>
    </properties>
   </object>
   <object id="184" name="4" type="MovingPlatform" x="936" y="665.667" width="72" height="18">
@@ -268,8 +267,7 @@ expansion.png</property>
     <property name="distanceTiles" type="int" value="10"/>
     <property name="speed" type="float" value="44"/>
     <property name="tileGrid" value="4,5,6"/>
-    <property name="tilesetImage">tilemap_packed_industrilla
-expansion.png</property>
+    <property name="tilesetImage" value="tilemap_packed_industrilla_expansion.png"/>
    </properties>
   </object>
   <object id="185" name="4" type="MovingPlatform" x="936" y="719.667" width="72" height="18">
@@ -277,8 +275,7 @@ expansion.png</property>
     <property name="distanceTiles" type="int" value="10"/>
     <property name="speed" type="float" value="32"/>
     <property name="tileGrid" value="4,5,6"/>
-    <property name="tilesetImage">tilemap_packed_industrilla
-expansion.png</property>
+    <property name="tilesetImage" value="tilemap_packed_industrilla_expansion.png"/>
    </properties>
   </object>
   <object id="186" name="4" type="MovingPlatform" x="936" y="773.667" width="72" height="18">
@@ -286,8 +283,7 @@ expansion.png</property>
     <property name="distanceTiles" type="int" value="10"/>
     <property name="speed" type="float" value="64"/>
     <property name="tileGrid" value="4,5,6"/>
-    <property name="tilesetImage">tilemap_packed_industrilla
-expansion.png</property>
+    <property name="tilesetImage" value="tilemap_packed_industrilla_expansion.png"/>
    </properties>
   </object>
   <object id="188" name="4" type="MovingPlatform" x="936" y="827.667" width="72" height="18">
@@ -295,8 +291,7 @@ expansion.png</property>
     <property name="distanceTiles" type="int" value="10"/>
     <property name="speed" type="float" value="25"/>
     <property name="tileGrid" value="4,5,6"/>
-    <property name="tilesetImage">tilemap_packed_industrilla
-expansion.png</property>
+    <property name="tilesetImage" value="tilemap_packed_industrilla_expansion.png"/>
    </properties>
   </object>
  </objectgroup>

@@ -142,7 +142,7 @@ class Level extends World with HasGameReference<PairyGame> {
           initialMoving: initialMoving,
           tilesetImage:
               _getStringProp(sp, 'tilesetImage') ??
-              'tilemap_packed_industrilla expansion.png',
+              'tilemap_packed_industrilla_expansion.png',
           tileGrid: _getStringProp(sp, 'tileGrid') ?? '4,5,6',
         )..priority = interactivePriority;
         add(platform);

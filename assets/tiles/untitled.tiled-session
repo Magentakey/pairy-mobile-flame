@@ -1,12 +1,12 @@
 {
-    "activeFile": "level-01.tmx",
+    "activeFile": "level-04.tmx",
     "expandedProjectPaths": [
         "."
     ],
     "fileStates": {
         "background.tsx": {
             "dynamicWrapping": false,
-            "scaleInDock": 4,
+            "scaleInDock": 3,
             "scaleInEditor": 3
         },
         "bg-extrud.tsx": {
@@ -45,33 +45,33 @@
             "expandedObjectLayers": [
                 2
             ],
-            "scale": 3,
+            "scale": 0.5,
             "selectedLayer": 3,
             "viewCenter": {
-                "x": 887.8333333333333,
-                "y": 712.5
+                "x": 775,
+                "y": 705
             }
         },
         "level-02.tmx": {
             "expandedObjectLayers": [
                 2
             ],
-            "scale": 2,
-            "selectedLayer": 3,
+            "scale": 0.33,
+            "selectedLayer": 1,
             "viewCenter": {
-                "x": 629.25,
-                "y": 567.75
+                "x": 428.78787878787887,
+                "y": 925.7575757575756
             }
         },
         "level-03.tmx": {
             "expandedObjectLayers": [
                 2
             ],
-            "scale": 2,
-            "selectedLayer": 2,
+            "scale": 0.5,
+            "selectedLayer": 3,
             "viewCenter": {
-                "x": 352.25,
-                "y": 586.25
+                "x": 689,
+                "y": 615
             }
         },
         "level-03tmx.tmx": {
@@ -86,18 +86,18 @@
             "expandedObjectLayers": [
                 4
             ],
-            "scale": 2,
+            "scale": 0.75,
             "selectedLayer": 3,
             "viewCenter": {
-                "x": 1829.25,
-                "y": 899.25
+                "x": 425.99999999999994,
+                "y": 2432.6666666666665
             }
         },
         "level-05.tmx": {
             "scale": 0.75,
             "selectedLayer": 0,
             "viewCenter": {
-                "x": 322.66666666666663,
+                "x": 321.99999999999994,
                 "y": 179.33333333333326
             }
         },
@@ -162,7 +162,7 @@
             "scaleInEditor": 3
         },
         "t3.tsx": {
-            "scaleInDock": 2,
+            "scaleInDock": 1.5,
             "scaleInEditor": 3
         },
         "t4-metal expansion.tsx": {
@@ -177,7 +177,7 @@
         },
         "t6-adventure.tsx": {
             "dynamicWrapping": false,
-            "scaleInDock": 2,
+            "scaleInDock": 1,
             "scaleInEditor": 2
         },
         "t7-automation.tsx": {
@@ -194,7 +194,7 @@
         },
         "tileset-tiles.tsx": {
             "dynamicWrapping": false,
-            "scaleInDock": 3,
+            "scaleInDock": 1.5,
             "scaleInEditor": 3
         },
         "tutorial.tmx": {
@@ -204,7 +204,7 @@
             "scale": 3,
             "selectedLayer": 4,
             "viewCenter": {
-                "x": 985.1666666666666,
+                "x": 1060.1666666666665,
                 "y": 583.5
             }
         }
@@ -219,13 +219,18 @@
         "tutorial.tmx",
         "t3.tsx",
         "t2.tsx",
-        "level-01.tmx",
         "tileset-tiles.tsx",
         "level-11.tmx",
         "level-12.tmx",
         "background.tsx",
         "t4-metal expansion.tsx",
-        "t5-automation.tsx"
+        "t5-automation.tsx",
+        "t6-adventure.tsx",
+        "level-01.tmx",
+        "level-02.tmx",
+        "level-03.tmx",
+        "level-04.tmx",
+        "level-05.tmx"
     ],
     "project": "untitled.tiled-project",
     "property.type": "bool",
@@ -233,14 +238,14 @@
         "tutorial.tmx",
         "t3.tsx",
         "t2.tsx",
-        "t5-automation.tsx",
-        "t4-metal expansion.tsx",
-        "background.tsx",
-        "level-12.tmx",
-        "level-11.tmx",
         "tileset-tiles.tsx",
-        "level-01.tmx",
+        "level-11.tmx",
+        "level-12.tmx",
+        "background.tsx",
+        "t4-metal expansion.tsx",
+        "t5-automation.tsx",
         "t6-adventure.tsx",
+        "level-01.tmx",
         "level-02.tmx"
     ],
     "resizeMap.removeObjects": true,
