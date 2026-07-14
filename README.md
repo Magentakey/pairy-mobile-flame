@@ -142,3 +142,11 @@ pairy/
 Dokumentasi lengkap cara membuat level baru menggunakan **Tiled Map Editor** (aturan naming layer, konvensi ID lever-gate, dll) tersedia dalam bentuk PDF.
 
 > 📄 [**manual.pdf**](manual.pdf) — tersedia di root repo.
+
+---
+
+## Dokumen desain per level
+
+Dokumentasi desain tiap level (layout puzzle, penempatan lever-gate-fountain, alur peri per level 1–12) tersedia dalam bentuk PDF.
+
+> 📄 [**map-per-level.pdf**](map-per-level.pdf) — tersedia di root repo.
